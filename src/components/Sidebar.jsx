@@ -29,6 +29,7 @@ export default function Sidebar({ menuItems }) {
               ${location.pathname.split("/").pop() === item.route ? "bg-green-700 text-white font-semibold" : "hover:bg-gray-700 text-gray-300"}`}>
               <div>{item.icon}</div>
               <p className={`${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden`}>{item.label}</p>
+              
             </Link>
           </li>
         ))}

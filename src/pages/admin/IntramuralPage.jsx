@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from "react-router-dom";
 import Sidebar from '../../components/Sidebar';
+import { Link } from 'react-router-dom';
 
 import { GrTrophy, GrLocation, GrHistory } from "react-icons/gr";
 import { MdOutlinePeopleAlt, MdOutlinePersonAddAlt } from "react-icons/md";
@@ -28,6 +29,9 @@ export default function IntramuralPage() {
 
       {/* Full-Width Header */}
       <header className="h-16 bg-green-900 text-white flex items-center justify-center shadow-md">
+      <Link to = "/admin/intramurals">
+          Home
+        </Link>
         Intramural Page
       </header>
 

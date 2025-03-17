@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "../../components/Sidebar";
 import { Outlet } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 // Admin Icons
 import { GrTrophy, GrHistory } from "react-icons/gr";
 
@@ -29,13 +29,17 @@ export default function AdminPage() {
 
       {/* Full-Width Header */}
       <header className="h-16 bg-green-900 text-white flex items-center justify-center shadow-md">
+        <Link to = "/admin/intramurals">
+          Home
+        </Link>
+        
         Admin Page
       </header>
 
       {/* Main Content: Sidebar & Outlet */}
       <main className="flex flex-1">
         <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full" />
-        <div className="flex-1 h-full w-full p-6 bg-gray-100">
+        <div className="flex-1 h-full w-full p-6">
           <Outlet />
         </div>
       </main>

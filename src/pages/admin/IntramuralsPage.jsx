@@ -1,23 +1,27 @@
 import React, { useState } from "react";
-import Breadcrumb from "../../components/Breadcrumb";
-import IntramuralsCard from "../../components/admin/IntramuralsCard";
+import { Link } from "react-router-dom";
+import IntramuralCard from "../../components/IntramuralCard";
 
 const intramuralsData = [
   {
     id: 1,
-    name: "Women's Volleyball",
+    name: "Salingkusog",
     type: "Double elim",
     participants: 4,
+    location: "VSU",
     status: "complete",
-    date: "Mar 2025",
+    month: "March",
+    date: "March 2025",
   },
   {
     id: 2,
-    name: "Men's Basketball",
+    name: "Saling Ina mo",
     type: "Double elim",
     participants: 0,
+    location: "SLSU",
     status: "pending",
-    date: "",
+    month: "January",
+    date: "January 2025",
   },
 ];
 
@@ -31,7 +35,7 @@ export default function IntramuralsPage() {
   );
 
   return (
-    <div className="p-6 bg-gray-100 text-gray-900">
+    <div className="h-full w-full p-6 bg-gray-100 text-gray-900">
       {/* Tabs */}
       <div className="flex gap-6 mb-4 text-gray-600">
         {["all", "pending", "in progress", "complete"].map((tab) => (
@@ -50,15 +54,22 @@ export default function IntramuralsPage() {
       {/* Search Bar */}
       <input
         type="text"
-        placeholder="Search your intramurals"
+        placeholder="Search your intramural"
         className="w-full p-2 mb-4 border rounded bg-white text-gray-700 border-gray-400"
         onChange={(e) => setSearch(e.target.value)}
       />
 
       {/* Intramural List */}
+      <ul className="flex flex-row">
       {filteredIntramurals.map((intramural) => (
-        <IntramuralsCard key={intramural.id} intramural={intramural} />
+        <li key={intramural.id}>
+          <Link to="/intramural" state={{ id: intramural.id }}>
+            <IntramuralCard intramural={intramural} />
+          </Link>
+        </li>
       ))}
+      </ul>
+
     </div>
   );
 }

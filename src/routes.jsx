@@ -6,7 +6,7 @@ import ProtectedRoute from "./context/ProtectedRoute";
 
 // Admin child components
 import AdminLogsPage from "./pages/admin/AdminLogsPage";
-import IntramuralsPage from "./pages/admin/IntramuralsPage"; // ✅ Ensure this has <Outlet />
+import IntramuralsPage from "./pages/admin/IntramuralsPage";
 import DocumentsPage from "./pages/admin/DocumentsPage";
 import EventsPage from "./pages/admin/EventsPage";
 import TeamsPage from "./pages/admin/TeamsPage";

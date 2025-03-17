@@ -14,6 +14,9 @@ import VenuesPage from "./pages/admin/VenuesPage";
 import IntramuralLogsPage from "./pages/admin/IntramuralLogsPage";
 import VarsityPlayersPage from "./pages/admin/VarsityPlayersPage";
 
+//Within Intramural Pages
+import IntramuralPage from "./pages/admin/IntramuralPage";
+
 const routes = [
   {
     path: "/admin",
@@ -27,15 +30,26 @@ const routes = [
       {
         path: "intramurals",
         element: <IntramuralsPage />,
-        children: [
-          { path: "documents", element: <DocumentsPage /> },
-          { path: "events", element: <EventsPage /> },
-          { path: "logs", element: <IntramuralLogsPage /> },
-          { path: "teams", element: <TeamsPage /> },
-          { path: "varsity_players", element: <VarsityPlayersPage /> },
-          { path: "venues", element: <VenuesPage /> },
-        ],
       },
+    ],
+  },
+  {
+    path: "intramural",
+    element: (
+      <ProtectedRoute roles = {["admin"]}>
+        <IntramuralPage/>
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: "venues", element: <VenuesPage /> },
+      { path: "events", element: <EventsPage /> },
+      { path: "teams", element: <TeamsPage /> },
+      { path: "vplayers", element: <VarsityPlayersPage /> },
+      { path: "documents", element: <DocumentsPage /> },
+      { path: "logs", element: <IntramuralLogsPage /> },
+      
+      
+      
     ],
   },
   {

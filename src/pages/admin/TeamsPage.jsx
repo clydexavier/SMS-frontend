@@ -2,6 +2,13 @@ import React from 'react'
 
 export default function TeamsPage() {
   return (
-    <div className="h-full w-full p-6 bg-gray-100 text-gray-900">TeamsPage</div>
+    <div className="flex flex-col w-full h-full">
+      <div>
+        <h2 className="text-xl font-semibold mb-2 text-[#006600]">Teams</h2>
+      </div>
+      <div className="flex-1 p-6 bg-gray-100 text-gray-900">
+        
+      </div>
+    </div>
   )
 }

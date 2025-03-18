@@ -5,17 +5,18 @@ import { Link } from 'react-router-dom';
 
 import { GrTrophy, GrLocation, GrHistory } from "react-icons/gr";
 import { MdOutlinePeopleAlt, MdOutlinePersonAddAlt } from "react-icons/md";
-import { IoDocumentsOutline } from "react-icons/io5";
+import { IoDocumentsOutline ,IoMedalOutline} from "react-icons/io5";
 
-const isize = 25;
+const isize = 20;
 
 const menuItems = [
-  { icon: <GrTrophy size={isize} color="white" />, label: 'Events', route: 'events' },
-  { icon: <GrLocation size={isize} color="white" />, label: 'Venues', route: 'venues' },
-  { icon: <MdOutlinePeopleAlt size={isize} color="white" />, label: 'Teams', route: 'teams' },
-  { icon: <MdOutlinePersonAddAlt size={isize} color="white" />, label: 'Varsity Players', route: 'vplayers' },
-  { icon: <IoDocumentsOutline size={isize} color="white" />, label: 'Documents', route: 'documents' },
-  { icon: <GrHistory size={isize} color="white" />, label: 'Log', route: 'logs' },
+  { icon: <GrTrophy size={isize} color="black" />,label: "Intramurals", route: "/admin/intramurals",},
+  { icon: <IoMedalOutline size={isize} color="black" />, label: 'Events', route: 'events' },
+  { icon: <GrLocation size={isize} color="black" />, label: 'Venues', route: 'venues' },
+  { icon: <MdOutlinePeopleAlt size={isize} color="black" />, label: 'Teams', route: 'teams' },
+  { icon: <MdOutlinePersonAddAlt size={isize} color="black" />, label: 'Varsity Players', route: 'vplayers' },
+  { icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
+  { icon: <GrHistory size={isize} color="black" />, label: 'Log', route: 'logs' },
 ];
 
 export default function IntramuralPage() {
@@ -28,7 +29,7 @@ export default function IntramuralPage() {
       </noscript>
 
       {/* Full-Width Header */}
-      <header className="h-16 bg-green-900 text-white flex items-center justify-center shadow-md">
+      <header className="h-16 bg-[#003204] text-white flex items-center justify-center shadow-md">
       <Link to = "/admin/intramurals">
           Home
         </Link>

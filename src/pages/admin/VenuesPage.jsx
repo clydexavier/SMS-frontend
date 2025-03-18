@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaPlus } from "react-icons/fa";
-
+import VenueCard from "../../components/VenueCard";
 
 const venuesData = [
   {
@@ -29,11 +28,13 @@ const venuesData = [
 
 export default function VenuesPage() {
   return (
-    <div className="h-full w-full p-6 bg-gray-100 text-gray-900">
-      <div className="w-48 h-48 flex flex-col items-center justify-center border-2  border-gray-400 bg-gray-100 rounded-lg shadow-md hover:bg-gray-200 cursor-pointer">
-        <FaPlus className="text-gray-500 text-2xl" />
-       <p className="text-gray-600 font-medium mt-2">Add new venue</p>
-     </div>
-  </div>
+    <div className="flex flex-col w-full h-full">
+      <div>
+        <h2 className="text-xl font-semibold mb-2 text-[#006600]">Venues</h2>
+      </div>
+      <div className="flex-1 p-6 bg-gray-100 text-gray-900">
+        <VenueCard/>
+      </div>
+    </div>
   )
 }

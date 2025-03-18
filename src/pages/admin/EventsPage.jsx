@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import EventCard from "../../components/admin/EventCard";
+import Filter from "../../components/Filter";
 
 const eventsData = [
   {
@@ -36,40 +37,28 @@ export default function EventsPage() {
   );
 
   return (
-    <div className="h-full w-full p-6 bg-gray-100 text-gray-900">
-      {/* Tabs */}
-      <div className="flex gap-6 mb-4 text-gray-600">
-        {["all", "pending", "in progress", "complete"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 uppercase text-sm border-b-2 ${
-              activeTab === tab ? "text-gray-900 border-gray-900 font-semibold" : "border-transparent"
-            }`}
-          >
-            {tab.replace("-", " ")}
-          </button>
-        ))}
+    <div className="flex flex-col w-full h-full">
+      <div>
+        <h2 className="text-xl font-semibold mb-2 text-[#006600]">Events</h2>
       </div>
-
-      {/* Search Bar */}
-      <input
-        type="text"
-        placeholder="Search your events"
-        className="w-full p-2 mb-4 border rounded bg-white text-gray-700 border-gray-400"
-        onChange={(e) => setSearch(e.target.value)}
-      />
-
-      <ul className="flex flex-row">
-      {filteredEvents.map((event) => (
-        <li key={event.id}>
-          <Link to="/intramural" state={{ id: event.id }}>
-            <EventCard event={event} />
-          </Link>
-        </li>
-      ))}
-      </ul>
-
+      <div className=" flex-1 p-6 bg-gray-100 text-gray-900">   
+        <Filter
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          search={search}
+          setSearch={setSearch}
+          placeholder="Search event"
+        />
+        <ul className="flex flex-row">
+        {filteredEvents.map((event) => (
+          <li key={event.id}>
+            <Link to="/intramural" state={{ id: event.id }}>
+              <EventCard event={event} />
+            </Link>
+          </li>
+        ))}
+        </ul>
+      </div>
     </div>
   )
 }

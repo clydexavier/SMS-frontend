@@ -7,12 +7,12 @@ import { GrTrophy, GrHistory } from "react-icons/gr";
 
 const menuItems = [
   {
-    icon: <GrTrophy size={25} color="white" />,
+    icon: <GrTrophy size={20} color="black" />,
     label: "Intramurals",
     route: "intramurals",
   },
   {
-    icon: <GrHistory size={25} color="white" />,
+    icon: <GrHistory size={20} color="black" />,
     label: "Log",
     route: "logs",
   },
@@ -28,7 +28,7 @@ export default function AdminPage() {
       </noscript>
 
       {/* Full-Width Header */}
-      <header className="h-16 bg-green-900 text-white flex items-center justify-center shadow-md">
+      <header className="h-16 bg-[#003204] text-black flex items-center justify-center shadow-md">
         <Link to = "/admin/intramurals">
           Home
         </Link>
@@ -38,7 +38,7 @@ export default function AdminPage() {
 
       {/* Main Content: Sidebar & Outlet */}
       <main className="flex flex-1">
-        <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full" />
+        <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-400 text-black-300" />
         <div className="flex-1 h-full w-full p-6">
           <Outlet />
         </div>

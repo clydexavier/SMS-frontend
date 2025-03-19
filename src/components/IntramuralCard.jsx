@@ -10,7 +10,7 @@ function IntramuralCard({intramural}) {
       
       {/* Content */}
       <div className="p-4">
-        <p className="text-lg font-semibold text-gray-800">{intramural.date}</p>
+        <p className="text-lg font-semibold text-gray-800">{intramural.start_date}</p>
         <p className={`text-sm font-medium ${
           intramural.status === "complete" ? "text-green-600" : "text-yellow-600"
         }`}>Status: {intramural.status}</p>

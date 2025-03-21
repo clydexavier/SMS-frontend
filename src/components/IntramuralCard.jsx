@@ -20,7 +20,7 @@ function IntramuralCard({ intramural, openEditModal }) {
   }, []);
 
   return (
-    <div className="m-4 bg-white p-4 rounded-lg shadow-md border w-64 relative overflow-hidden">
+    <div className="m-4 ml-0 bg-white p-4 rounded-lg shadow-md border w-64 relative overflow-hidden">
       {/* Header with Link */}
       <Link to="/intramural/events" state={{ id: intramural.id }}>
         <div className="bg-gray-800 text-white p-2 rounded-t-lg flex flex-col items-center">
@@ -59,12 +59,16 @@ function IntramuralCard({ intramural, openEditModal }) {
         {/* Dropdown Menu */}
         {menuOpen && (
           <div className="absolute right-0 bottom-8 w-40 bg-white border rounded-md shadow-lg z-50">
-            <button className="block w-full px-4 py-2 text-left text-sm hover:bg-[#83b67e]" 
-              onClick={() => openEditModal(intramural)}
+            <button className="block w-full px-4 py-2 text-left text-sm hover:bg-green-100" 
+              onClick={() => {openEditModal(intramural);
+                setMenuOpen((prev) => !prev);
+
+              }}
             >
               Update
             </button>
-            <button className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-[#83b67e]">
+            <button className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-green-100" onClick={() => setMenuOpen((prev) => !prev)
+              }>
               Delete
             </button>
           </div>

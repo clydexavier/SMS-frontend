@@ -36,23 +36,16 @@ export default function IntramuralsPage() {
     setSelectedIntramural(null);
   };
 
+  const addIntramural = (newIntramural) => {
+    setIntramurals([...intramurals, { id: intramurals.length + 1, ...newIntramural }]);
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
-    setSelectedIntramural(null); // Clear previous selected intramural
+    setSelectedIntramural(null);
     setIsModalOpen(true);
   };
   const closeModal = () => setIsModalOpen(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form Data:", formData);
-    closeModal(); // Close modal after submission
-  };
 
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
@@ -62,9 +55,7 @@ export default function IntramuralsPage() {
     intramural.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const addIntramural = (newIntramural) => {
-    setIntramurals([...intramurals, { id: intramurals.length + 1, ...newIntramural }]);
-  };
+  
 
   return (
     <div className="flex flex-col w-full h-full">

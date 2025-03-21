@@ -1,10 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import IntramuralCard from "../../components/IntramuralCard";
 import Filter from "../../components/Filter";
 import IntramuralModal from "../../components/admin/IntramuralModal";
-
-
 
 export default function IntramuralsPage() {
 
@@ -27,10 +24,23 @@ export default function IntramuralsPage() {
     },
   ]);
   // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
+  const [selectedIntramural, setSelectedIntramural] = useState(null);
 
-  const openModal = () => setIsModalOpen(true);
+  const openEditModal = (intramural) => {
+    setSelectedIntramural(intramural);
+    setIsModalOpen(true);
+  };
+
+  const updateIntramural = (id, updatedData) => {
+    setIntramurals((prev) => prev.map((i) => (i.id === id ? { ...i, ...updatedData } : i)));
+    setSelectedIntramural(null);
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => {
+    setSelectedIntramural(null); // Clear previous selected intramural
+    setIsModalOpen(true);
+  };
   const closeModal = () => setIsModalOpen(false);
 
   const handleChange = (e) => {
@@ -86,9 +96,7 @@ export default function IntramuralsPage() {
         <ul className="flex flex-row">
           {filteredIntramurals.map((intramural) => (
             <li key={intramural.id}>
-              <Link to="/intramural/events" state={{ id: intramural.id }}>
-                <IntramuralCard intramural={intramural} />
-              </Link>
+              <IntramuralCard intramural={intramural} openEditModal={openEditModal} />
             </li>
           ))}
         </ul>
@@ -99,6 +107,8 @@ export default function IntramuralsPage() {
         isModalOpen={isModalOpen}
         closeModal={closeModal}
         addIntramural={addIntramural}
+        updateIntramural={updateIntramural}
+        existingIntramural={selectedIntramural}  // Pass the selected item for editing
       />
     </div>
   );

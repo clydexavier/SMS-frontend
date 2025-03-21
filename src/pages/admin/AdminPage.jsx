@@ -28,7 +28,7 @@ export default function AdminPage() {
       </noscript>
 
       {/* Full-Width Header */}
-      <header className="h-16 bg-[#003204] text-black flex items-center justify-center shadow-md">
+      <header className="h-16 bg-[#003204] text-white flex items-center justify-center shadow-md">
         <Link to = "/admin/intramurals">
           Home
         </Link>

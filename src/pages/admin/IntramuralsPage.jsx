@@ -47,6 +47,7 @@ export default function IntramuralsPage() {
   };
   const closeModal = () => setIsModalOpen(false);
 
+  
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 

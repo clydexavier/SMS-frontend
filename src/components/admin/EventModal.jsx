@@ -1,10 +1,201 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdClose } from "react-icons/io";
 
-export default function EventModal() {
+export default function EventModal({ 
+  isModalOpen, 
+  closeModal, 
+  addEvent, 
+  updateEvent, 
+  existingEvent
+}) {
+  const [formData, setFormData] = useState({
+    name: "",
+    tournament_type: "",
+    category: "",
+    type: "",
+    participants: "",
+    gold: "",
+    silver: "",
+    bronze: "",
+    venue: "",
+    status: "pending",
+  });
+
+  useEffect(() => {
+    if (existingEvent) {
+      setFormData({
+        name: existingEvent.name || "",
+        tournament_type: existingEvent.tournament_type || "",
+        category: existingEvent.category || "",
+        type: existingEvent.type || "",
+        participants: existingEvent.participants || "",
+        gold: existingEvent.gold || "",
+        silver: existingEvent.silver || "",
+        bronze: existingEvent.bronze || "",
+        venue: existingEvent.venue || "",
+        status: "pending", // Always set to pending
+      });
+    } else {
+      setFormData({
+        name: "",
+        tournament_type: "",
+        category: "",
+        type: "",
+        participants: "",
+        gold: "",
+        silver: "",
+        bronze: "",
+        venue: "",
+        status: "pending",
+      });
+    }
+  }, [existingEvent]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (existingEvent) {
+      updateEvent(existingEvent.id, formData);
+    } else {
+      addEvent(formData);
+    }
+    closeModal();
+  };
+
+  const handleNumberInput = (e) => {
+    if (e.key === "." || e.key === ",") {
+      e.preventDefault();
+    }
+  }
+
   return (
-    <div>EventModal</div>
-  )
+    isModalOpen && (
+      <div className="fixed inset-0 flex items-center justify-center backdrop-blur-xs">
+        <div className="relative p-4 w-full max-w-md">
+          <div className="relative bg-white rounded-lg shadow-lg dark:bg-gray-700">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200 dark:border-gray-600">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {existingEvent ? "Update Event" : "Add New Event"}
+              </h3>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="cursor-pointer text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              >
+                <IoMdClose size={25} />
+                <span className="sr-only">Close modal</span>
+              </button>
+            </div>
+    
+            {/* Form */}
+            <form className="p-4 md:p-5" onSubmit={handleSubmit}>
+              <div className="grid gap-4 mb-4 grid-cols-2">
+                {/* Name */}
+                <div className="col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    placeholder="Type event name"
+                    required
+                  />
+                </div>
+    
+                {/* Type */}
+                <div className="col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Tournament Type
+                  </label>
+                  <input
+                    type="text"
+                    name="tournament_type"
+                    value={formData.tournament_type}
+                    onChange={handleChange}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    placeholder="Select tournament type"
+                    required
+                  />
+                </div>
+    
+                {/* Gold */}
+                <div className="col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Gold
+                  </label>
+                  <input
+                    type="number"
+                    name="gold"
+                    value={formData.gold}
+                    onChange={handleChange}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    placeholder="Enter number of golds"
+                    required
+                    min={1}
+                    pattern="[0-9]*"
+                    onKeyDown={handleNumberInput}
+                  />
+                </div>
+                {/* Silver */}
+                <div className="col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Silver
+                  </label>
+                  <input
+                    type="number"
+                    name="silver"
+                    value={formData.silver}
+                    onChange={handleChange}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    placeholder="Enter number of silvers"
+                    required
+                    min={1}
+                    pattern="[0-9]*"
+                    onKeyDown={handleNumberInput}
+                  />
+                </div>
+                {/* Bronze */}
+                <div className="col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Bronze
+                  </label>
+                  <input
+                    type="number"
+                    name="bronze"
+                    value={formData.bronze}
+                    onChange={handleChange}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    placeholder="Enter number of bronzes"
+                    required
+                    min={1}
+                    pattern="[0-9]*"
+                    onKeyDown={handleNumberInput}
+                  />
+                </div>
+              </div>
+    
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900"
+              >
+                {existingEvent ? "Update Event" : "Add New Event"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    ) 
+  );
 }

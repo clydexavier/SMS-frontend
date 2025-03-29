@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import VenueCard from "../../components/admin/VenueCard";
 import Filter from "../../components/Filter";
 import VenueModal from "../../components/admin/VenueModal";
 

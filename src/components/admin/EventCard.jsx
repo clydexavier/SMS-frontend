@@ -21,7 +21,7 @@ export default function EventCard({ event, openEditModal }) {
   return (
     <div className="m-4 ml-0 bg-white p-4 rounded-lg shadow-md border w-64 relative overflow-hidden">
       {/* Header with Link */}
-      <Link to="/event/details" state={{ id: event.id }}>
+      <Link to="/event" state={{ id: event.id }}>
         <div className="bg-gray-800 text-white p-2 rounded-t-lg flex flex-col items-center">
           <span className="text-2xl font-extrabold">{event.name}</span>
         </div>

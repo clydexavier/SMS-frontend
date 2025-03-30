@@ -1,148 +1,112 @@
-import React from 'react'
-import { useRef, useState } from 'react'
-import { Link } from 'react-router-dom';
-import logo from "../../assets/react.svg"
-
+import React, { useRef, useState, useContext } from 'react';
+import logo from "../../assets/react.svg";
+import { Link, useNavigate } from 'react-router-dom';
+import { userContext } from "../../context/ContextProvider";
 
 export default function RegisterPage() {
-    const nameRef = useRef();
-    const emailRef = useRef();
-    const passwordRef = useRef();
-    const passwordConfirmationRef = useRef();
+  const nameRef = useRef();
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  const passwordConfirmationRef = useRef();
+  const [errorMessage, setErrorMessage] = useState("");
+  const { setAuthenticated } = useContext(userContext);
+  const navigate = useNavigate();
+
+  const Submit = (ev) => {
+    ev.preventDefault();
+    if (passwordRef.current.value !== passwordConfirmationRef.current.value) {
+      setErrorMessage("Passwords do not match");
+      return;
+    }
     
-    const [errorMessage, setErrorMessage] = useState("");
-    /*
-    const {setUser, setToken} = useStateContext();
+    const payload = {
+      name: nameRef.current.value,
+      email: emailRef.current.value,
+      password: passwordRef.current.value,
+    };
+    setAuthenticated(true);
+    navigate("/dashboard");
+  };
 
-    const Submit =  (ev) =>{
-        ev.preventDefault();
-        setErrorMessage("");
-
-        const payload = {
-            name: nameRef.current.value,
-            email: emailRef.current.value,
-            password: passwordRef.current.value,
-            password_confirmation: passwordConfirmationRef.current.value,
-        }
-        axiosClient.post("/register",payload).then(({data})=>{
-            setUser(data.user);
-            setToken(data.token);
-        }).catch(err => {
-            const response = err.response;
-            if(response && response.status === 422){
-                setErrorMessage(Object.values(response.data.errors)[0][0]);
-            }
-        });
-    }*/
-
-    return(
-        <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <img
-            alt="Your Company"
-            src={logo}
-            className="mx-auto h-10 w-auto"
-          />
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-            Sign in to your account
-          </h2>
+  return (
+    <div className="flex min-h-screen flex-col justify-center items-center bg-gray-100 px-6">
+      <div className="bg-white shadow-lg rounded-lg p-8 max-w-sm w-full">
+        <div className="text-center">
+          <img alt="Your Company" src={logo} className="mx-auto h-12 w-auto" />
+          <h2 className="mt-6 text-2xl font-bold text-gray-800">Create an account</h2>
         </div>
-
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" /*onSubmit={Submit}*/>
-               {errorMessage && (<div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-                    <span className="font-medium">
-                        {errorMessage}
-                    </span> 
-                </div>)}
-
-                <div>
-              <label htmlFor="name" className="block text-sm/6 font-medium text-gray-900">
-                Name
-              </label>
-              <div className="mt-2">
-                <input
-                    ref={nameRef}
-                    id="name"
-                    name="name"
-                    type="text"
-                    required
-                    autoComplete="name"
-                    className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
-              </div>
+        <form className="mt-6 space-y-4" onSubmit={Submit}>
+          {errorMessage && (
+            <div className="p-3 text-sm text-red-800 rounded bg-red-100" role="alert">
+              {errorMessage}
             </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
-                Email address
-              </label>
-              <div className="mt-2">
-                <input
-                    ref={emailRef}
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
-                  Password
-                </label>
-              </div>
-              <div className="mt-2">
-                <input
-                ref={passwordRef}
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  autoComplete="new-password"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
-                  Confirm Password
-                </label>
-              </div>
-              <div className="mt-2">
-                <input
-                ref={passwordConfirmationRef}
-                  id="password_confirmation"
-                  name="password_confirmation"
-                  type="password"
-                  required
-                  autoComplete="new-password"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
-              </div>
-            </div>
-
-
-            <div>
-              <button
-                type="submit"
-                className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Register
-              </button>
-            </div>
-          </form>
-
-          <p className="mt-10 text-center text-sm/6 text-gray-500">
-            Already Have an Account? <Link className="font-semibold text-indigo-600 hover:text-indigo-500" to= '/login'>Login</Link>
-          </p>
-        </div>
+          )}
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Name
+            </label>
+            <input
+              ref={nameRef}
+              id="name"
+              name="name"
+              type="text"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 p-2"
+            />
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email address
+            </label>
+            <input
+              ref={emailRef}
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 p-2"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              ref={passwordRef}
+              id="password"
+              name="password"
+              type="password"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 p-2"
+            />
+          </div>
+          <div>
+            <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
+            <input
+              ref={passwordConfirmationRef}
+              id="password_confirmation"
+              name="password_confirmation"
+              type="password"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 p-2"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-green-600 text-white rounded-md shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            Register
+          </button>
+        </form>
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link className="font-semibold text-green-600 hover:text-green-500" to="/login">
+            Login
+          </Link>
+        </p>
       </div>
-    )
+    </div>
+  );
 }

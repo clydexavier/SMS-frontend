@@ -1,7 +1,9 @@
-import React, { useRef, useState, useContext } from 'react';
+import React, { useRef, useState } from 'react';
 import logo from "../../assets/react.svg";
 import { Link, useNavigate } from 'react-router-dom';
-import { userContext } from "../../context/ContextProvider";
+import { useStateContext } from "../../context/ContextProvider"; 
+import axiosClient from '../../axiosClient';
+
 
 export default function RegisterPage() {
   const nameRef = useRef();
@@ -9,24 +11,31 @@ export default function RegisterPage() {
   const passwordRef = useRef();
   const passwordConfirmationRef = useRef();
   const [errorMessage, setErrorMessage] = useState("");
-  const { setAuthenticated } = useContext(userContext);
+
+  const { setUser, setToken ,setRole} = useStateContext(); 
   const navigate = useNavigate();
 
-  const Submit = (ev) => {
+  const Submit =  (ev) =>{
     ev.preventDefault();
-    if (passwordRef.current.value !== passwordConfirmationRef.current.value) {
-      setErrorMessage("Passwords do not match");
-      return;
-    }
-    
+    setErrorMessage("");
+
     const payload = {
-      name: nameRef.current.value,
-      email: emailRef.current.value,
-      password: passwordRef.current.value,
-    };
-    setAuthenticated(true);
-    navigate("/dashboard");
-  };
+        name: nameRef.current.value,
+        email: emailRef.current.value,
+        password: passwordRef.current.value,
+        password_confirmation: passwordConfirmationRef.current.value,
+    }
+    axiosClient.post("/register",payload).then(({data})=>{
+        setUser(data.user);
+        setToken(data.token);
+        setRole(data.user.role);
+        }).catch(err => {
+            const response = err.response;
+            if(response && response.status === 422){
+                setErrorMessage(Object.values(response.data.errors)[0][0]);
+            }
+      });
+    }
 
   return (
     <div className="flex min-h-screen flex-col justify-center items-center bg-gray-100 px-6">

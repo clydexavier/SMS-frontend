@@ -1,15 +1,47 @@
-import { createContext, use, useState } from "react";
-import React from "react";
+import { useContext } from "react";
+import { useState } from "react";
+import { createContext } from "react";
 
-export const userContext= createContext();
+const StateContext = createContext({
+    user: null,
+    token: null,
+    role: null,
+    setRole: () => {},
+    setUser: () => {},
+    setToken: () => {}
+});
 
-const ContextProvider = ({children}) => {
-    const [role, setRole] = useState('admin');
-    const [authenticated, setAuthenticated] = useState(true);
+export const ContextProvider = ({children}) => {
+    const [role, _setRole] = useState(localStorage.getItem("role") || null);
+    const [user, setUser] = useState({});
+    const [token, _setToken] = useState(localStorage.getItem('ACCESS_TOKEN'));
+
+    const setToken = (token) => {
+        _setToken(token)
+        if(token){
+            localStorage.setItem('ACCESS_TOKEN',token);
+        }
+        else{
+            localStorage.removeItem('ACCESS_TOKEN');
+        }
+    }
+    const setRole = (newRole) => {
+        localStorage.setItem("role", newRole);
+        _setRole(newRole); // Assuming setStateRole is your state setter
+      };      
+    
     return (
-        <userContext.Provider value= {{role,setRole, authenticated, setAuthenticated}}>
+        <StateContext.Provider value={{
+            user,
+            token,
+            role,
+            setRole,
+            setUser,
+            setToken
+        }}>
             {children}
-        </userContext.Provider>
+        </StateContext.Provider>
     )
 }
-export default ContextProvider
+
+export const useStateContext = () => useContext(StateContext)

@@ -1,14 +1,14 @@
-import React, { useRef, useState, useContext } from 'react';
+import React, { useRef, useState , useEffect} from 'react';
 import logo from "../../assets/react.svg";
-import { Link, useNavigate } from 'react-router-dom';
-import { userContext } from "../../context/ContextProvider";
+import axiosClient from '../../axiosClient';
+import { Link } from 'react-router-dom';
+import { useStateContext } from "../../context/ContextProvider";
 
 export default function LoginPage() {
   const emailRef = useRef();
   const passwordRef = useRef();
+  const { setUser, setToken, setRole,user, token,role } = useStateContext();
   const [errorMessage, setErrorMessage] = useState("");
-  const { role, setAuthenticated } = useContext(userContext);
-  const navigate = useNavigate();
 
   const Submit = (ev) => {
     ev.preventDefault();
@@ -16,8 +16,18 @@ export default function LoginPage() {
       email: emailRef.current.value,
       password: passwordRef.current.value,
     };
-    setAuthenticated(true);
-    navigate(`/${role}`);
+
+    axiosClient.post("/login", payload).then(({ data }) => {
+      setUser(data.user);
+      setToken(data.token);
+      setRole(data.user.role);
+      setErrorMessage("");
+    }).catch(err => {
+      const response = err.response;
+      if (response && response.status === 422) {
+        setErrorMessage(response.data.message);
+      }
+    });
   };
 
   return (

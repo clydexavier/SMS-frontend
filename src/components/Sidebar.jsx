@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from '../assets/react.svg';
 import React from "react";
+import axiosClient from "../axiosClient";
 
+import { useStateContext } from "../context/ContextProvider";
 // Admin Icons
 import { MdMenuOpen } from "react-icons/md";
 import { FaRegUserCircle } from "react-icons/fa";
@@ -10,9 +12,27 @@ import { LuLogOut } from "react-icons/lu";
 
 export default function Sidebar({ menuItems }) {
   const location = useLocation();
-  const user = { name: "Clyde" };
   const [open, setOpen] = useState(true);
+  const { setUser, setToken, setRole,user } = useStateContext();
 
+
+  const onLogout = async (ev) => {
+    ev.preventDefault();
+    try {
+      await axiosClient.get('/logout');
+      setUser(null);
+      setToken(null);
+      setRole(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  useEffect(() => {
+    axiosClient.get('/user')
+      .then(({ data }) => setUser(data))
+      .catch(err => console.error("Error fetching user:", err));
+  }, []);
   return (
     <nav className={`shadow-md h-full p-2 flex flex-col duration-500 bg-gray-200  border-gray-800 ${open ? 'w-60' : 'w-16'}`}>
       {/* Header */}
@@ -41,7 +61,7 @@ export default function Sidebar({ menuItems }) {
 
         {/* Logout Option */}
         <li>
-          <div className="px-3 py-2 my-2 rounded-md duration-300 cursor-pointer flex gap-2 items-center hover:bg-gray-700 text-black-300">
+          <div className="px-3 py-2 my-2 rounded-md duration-300 cursor-pointer flex gap-2 items-center hover:bg-gray-700 text-black-300" onClick={onLogout}>
             <div><LuLogOut size={20} /></div>
             <p className={`${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden`}>Logout</p>
           </div>

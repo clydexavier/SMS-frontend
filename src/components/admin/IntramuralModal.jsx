@@ -8,7 +8,7 @@ export default function IntramuralModal({
   closeModal, 
   addIntramural, 
   updateIntramural, 
-  existingIntramural  
+  existingIntramural,
 }) {
   const [formData, setFormData] = useState({
       name: "",
@@ -53,13 +53,15 @@ export default function IntramuralModal({
     };
 
     const handleSubmit = (e) => {
-      e.preventDefault();
-      const formattedData = {
-        ...formData,
-        start_date: formData.start_date ? formData.start_date.toISOString() : null,
-        end_date: formData.end_date ? formData.end_date.toISOString() : null,
-      };
-  
+        const formattedData = {
+            ...formData,
+            start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : null,
+            end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
+        };
+    
+        console.log("Submitting Data:", formattedData);
+    
+
       if (existingIntramural) {
         updateIntramural(existingIntramural.id, formattedData);
       } else {

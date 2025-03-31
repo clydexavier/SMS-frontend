@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { FiMoreVertical } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
-function IntramuralCard({ intramural, openEditModal }) {
+function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -18,6 +18,15 @@ function IntramuralCard({ intramural, openEditModal }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Handle delete confirmation
+  const handleDelete = () => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${intramural.name}?`);
+    if (confirmDelete) {
+      deleteIntramural(intramural.id);
+    }
+    setMenuOpen(false);
+  };
 
   return (
     <div className="m-4 ml-0 bg-white p-4 rounded-lg shadow-md border w-64 relative overflow-hidden">
@@ -59,16 +68,19 @@ function IntramuralCard({ intramural, openEditModal }) {
         {/* Dropdown Menu */}
         {menuOpen && (
           <div className="absolute right-0 bottom-8 w-40 bg-white border rounded-md shadow-lg z-50">
-            <button className="block w-full px-4 py-2 text-left text-sm hover:bg-green-100" 
-              onClick={() => {openEditModal(intramural);
-                setMenuOpen((prev) => !prev);
-
+            <button 
+              className="block w-full px-4 py-2 text-left text-sm hover:bg-green-100" 
+              onClick={() => {
+                openEditModal(intramural);
+                setMenuOpen(false);
               }}
             >
               Update
             </button>
-            <button className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-green-100" onClick={() => setMenuOpen((prev) => !prev)
-              }>
+            <button 
+              className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-100" 
+              onClick={handleDelete}
+            >
               Delete
             </button>
           </div>

@@ -9,7 +9,7 @@ export default function Filter({ activeTab, setActiveTab, search, setSearch, pla
     { label: "All", value: "all" },
     { label: "In Progress", value: "in progress" },
     { label: "Pending", value: "pending" },
-    { label: "Complete", value: "complete" },
+    { label: "Completed", value: "completed" },
   ];
 
   // Close dropdown when clicking outside

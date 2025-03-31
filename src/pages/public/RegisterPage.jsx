@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import logo from "../../assets/react.svg";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useStateContext } from "../../context/ContextProvider"; 
 import axiosClient from '../../axiosClient';
 
@@ -13,7 +13,6 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const { setUser, setToken ,setRole} = useStateContext(); 
-  const navigate = useNavigate();
 
   const Submit =  (ev) =>{
     ev.preventDefault();

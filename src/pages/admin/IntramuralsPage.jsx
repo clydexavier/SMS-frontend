@@ -1,53 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axiosClient from "../../axiosClient";
 import IntramuralCard from "../../components/IntramuralCard";
 import Filter from "../../components/Filter";
 import IntramuralModal from "../../components/admin/IntramuralModal";
+import { data } from "react-router-dom";
 
 export default function IntramuralsPage() {
 
-  const [intramurals, setIntramurals] = useState([
-    {
-      id: 1,
-      name: "Salingkusog",
-      location: "VSU",
-      status: "complete",
-      start_date: "March 2025",
-      end_date: "March 2025",
-    },
-    {
-      id: 2,
-      name: "Saling Ina mo",
-      location: "SLSU",
-      status: "pending",
-      start_date: "January 2025",
-      end_date: "March 2025",
-    },
-  ]);
-  // Modal state
+  //Intramurals State
+  const [intramurals, setIntramurals] = useState([]);
   const [selectedIntramural, setSelectedIntramural] = useState(null);
 
-  const openEditModal = (intramural) => {
-    setSelectedIntramural(intramural);
-    setIsModalOpen(true);
-  };
-
-  const updateIntramural = (id, updatedData) => {
-    setIntramurals((prev) => prev.map((i) => (i.id === id ? { ...i, ...updatedData } : i)));
-    setSelectedIntramural(null);
-  };
-
-  const addIntramural = (newIntramural) => {
-    setIntramurals([...intramurals, { id: intramurals.length + 1, ...newIntramural }]);
-  };
-
+  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
     setSelectedIntramural(null);
     setIsModalOpen(true);
   };
-  const closeModal = () => setIsModalOpen(false);
 
+  const closeModal = () => setIsModalOpen(false);
   
+  const openEditModal = (intramural) => {
+    setSelectedIntramural(intramural);
+    setIsModalOpen(true);
+  };
+
+  //Filter state
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -57,6 +35,53 @@ export default function IntramuralsPage() {
   );
 
   
+  //CRUD REQUESTS
+  const addIntramural = (newIntramural) => {
+    axiosClient.post("/intramurals/create", newIntramural)
+      .then(() => {
+        console.log("Intramural created");
+        fetchIntramurals(); // Refresh the list
+        closeModal();
+      })
+      .catch(err => {
+        console.error("Error creating intramural:", err.response?.data || err);
+      });
+  };
+  
+  
+  const updateIntramural = (id, updatedData) => {
+    axiosClient.patch(`/intramurals/${id}/edit`, updatedData)
+      .then(() => {
+        console.log("Intramural updated");
+        fetchIntramurals(); 
+        closeModal();
+      })
+      .catch(err => {
+        console.error("Error updating intramural:", err.response?.data || err);
+      });
+  };
+  
+  const deleteIntramural = (id) => {
+    axiosClient.delete(`/intramurals/${id}`)
+      .then(() => {
+        console.log("Intramural deleted");
+        fetchIntramurals(); // Refresh the list
+      })
+      .catch(err => {
+        console.error("Error deleting intramural:", err.response?.data || err);
+      });
+  };
+
+  const fetchIntramurals = () => {
+    axiosClient.get('/intramurals')
+      .then(({ data }) => setIntramurals(data))
+      .catch(err => console.error("Error fetching intramurals:", err));
+  };
+  
+
+  useEffect(() => {
+    fetchIntramurals();
+  }, []);
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -88,7 +113,7 @@ export default function IntramuralsPage() {
         <ul className="flex flex-row">
           {filteredIntramurals.map((intramural) => (
             <li key={intramural.id}>
-              <IntramuralCard intramural={intramural} openEditModal={openEditModal} />
+              <IntramuralCard intramural={intramural} openEditModal={openEditModal} deleteIntramural={deleteIntramural} />
             </li>
           ))}
         </ul>
@@ -100,8 +125,8 @@ export default function IntramuralsPage() {
         closeModal={closeModal}
         addIntramural={addIntramural}
         updateIntramural={updateIntramural}
-        existingIntramural={selectedIntramural}  // Pass the selected item for editing
-      />
+        existingIntramural={selectedIntramural}
+        />
     </div>
   );
 }

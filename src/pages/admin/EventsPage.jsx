@@ -51,7 +51,6 @@ export default function EventsPage() {
 
   // Delete event
   const deleteEvent = async (id) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
       try {
         setLoading(true);
         await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
@@ -62,7 +61,7 @@ export default function EventsPage() {
       } finally {
         setLoading(false);
       }
-    }
+
   };
 
   const openModal = () => {

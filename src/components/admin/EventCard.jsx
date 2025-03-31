@@ -6,7 +6,14 @@ export default function EventCard({ event, openEditModal,deleteEvent }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-
+  // Handle delete confirmation
+  const handleDelete = () => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${event.name}?`);
+    if (confirmDelete) {
+      deleteEvent(event.id);
+    }
+    setMenuOpen(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -71,7 +78,7 @@ export default function EventCard({ event, openEditModal,deleteEvent }) {
             </button>
             <button
               className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-green-100"
-              onClick={deleteEvent(event.id)}
+              onClick={handleDelete}
             >
               Delete
             </button>

@@ -17,7 +17,7 @@ export default function EventModal({
     name: "",
     tournament_type: "",
     category: "",
-    intrams_id: {intrams_id},
+    intrams_id: intrams_id, // Fix: just use the value, not an object
     type: "",
     gold: "",
     silver: "",
@@ -35,10 +35,10 @@ export default function EventModal({
         gold: existingEvent.gold || "",
         silver: existingEvent.silver || "",
         bronze: existingEvent.bronze || "",
-        intrams_id: {intrams_id},
+        intrams_id: intrams_id, 
         tournament_type: existingEvent.tournament_type || "",
         venue: existingEvent.venue || "",
-        status: "pending",
+        status: existingEvent.status || "pending", 
       });
     } else {
       setFormData({
@@ -48,13 +48,13 @@ export default function EventModal({
         gold:"",
         silver: "",
         bronze: "",
-        intrams_id: {intrams_id},
+        intrams_id: intrams_id, 
         tournament_type: "",
         status: "pending",
-
+        venue: "", 
       });
     }
-  }, [existingEvent]);
+  }, [existingEvent, intrams_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -146,9 +146,9 @@ export default function EventModal({
                     required
                   >
                     <option value="" disabled>Select event category</option>
-                    <option value="Men">Men</option>
-                    <option value="Women">Women</option>
-                    <option value="Mixed">Mixed</option>
+                    <option value="men">Men</option>
+                    <option value="women">Women</option>
+                    <option value="mixed">Mixed</option>
                   </select>
                 </div>
 
@@ -165,9 +165,9 @@ export default function EventModal({
                     required
                   >
                     <option value="" disabled>Select event type</option>
-                    <option value="Men">Sports</option>
-                    <option value="Women">Music</option>
-                    <option value="Mixed">Dance</option>
+                    <option value="sports">Sports</option>
+                    <option value="music">Music</option>
+                    <option value="dance">Dance</option>
                   </select>
                 </div>
                 {/* Gold */}

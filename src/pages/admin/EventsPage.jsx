@@ -20,49 +20,49 @@ export default function EventsPage() {
   };
 
   // Create new event
-  const addEvent = async (newEvent) => {
-    try {
-      setLoading(true);
-      const response = await axiosClient.post(`/intramurals/${intrams_id}/events/create`, newEvent);
-      setEvents([...events, response.data]);
-      closeModal();
-    } catch (err) {
-      setError("Failed to create event");
-      console.error("Error creating event:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const addEvent = async (newEvent) => {
+  try {
+    setLoading(true);
+    await axiosClient.post(`/intramurals/${intrams_id}/events/create`, newEvent);
+    fetchEvents(); // 🔥 Re-fetch events
+    closeModal();
+  } catch (err) {
+    setError("Failed to create event");
+    console.error("Error creating event:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // Update existing event
-  const updateEvent = async (id, updatedData) => {
-    try {
-      setLoading(true);
-      const response = await axiosClient.put(`/intramurals/${intrams_id}/events/${id}/edit`, updatedData);
-      setEvents(prev => prev.map(event => event.id === id ? response.data : event));
-      closeModal();
-    } catch (err) {
-      setError("Failed to update event");
-      console.error("Error updating event:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+// Update existing event
+const updateEvent = async (id, updatedData) => {
+  try {
+    setLoading(true);
+    await axiosClient.patch(`/intramurals/${intrams_id}/events/${id}/edit`, updatedData);
+    fetchEvents(); // 🔥 Re-fetch events
+    closeModal();
+  } catch (err) {
+    setError("Failed to update event");
+    console.error("Error updating event:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // Delete event
-  const deleteEvent = async (id) => {
-      try {
-        setLoading(true);
-        await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
-        setEvents(prev => prev.filter(event => event.id !== id));
-      } catch (err) {
-        setError("Failed to delete event");
-        console.error("Error deleting event:", err);
-      } finally {
-        setLoading(false);
-      }
+// Delete event
+const deleteEvent = async (id) => {
+  try {
+    setLoading(true);
+    await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
+    fetchEvents(); // 🔥 Re-fetch events
+  } catch (err) {
+    setError("Failed to delete event");
+    console.error("Error deleting event:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  };
 
   const openModal = () => {
     setSelectedEvent(null);
@@ -81,9 +81,8 @@ export default function EventsPage() {
   const filteredEvents = events.filter(
     (event) =>
       (activeTab === "all" || event.status === activeTab) &&
-      event.name.toLowerCase().includes(search.toLowerCase())
+      (typeof event.name === 'string' ? event.name.toLowerCase().includes(search.toLowerCase()) : false)
   );
-
   // Fetch all events
   const fetchEvents = async () => {
     try {

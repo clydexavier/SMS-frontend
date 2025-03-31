@@ -3,7 +3,6 @@ import axiosClient from "../../axiosClient";
 import IntramuralCard from "../../components/IntramuralCard";
 import Filter from "../../components/Filter";
 import IntramuralModal from "../../components/admin/IntramuralModal";
-import { data } from "react-router-dom";
 
 export default function IntramuralsPage() {
 
@@ -84,49 +83,55 @@ export default function IntramuralsPage() {
   }, []);
 
   return (
-    <div className="flex flex-col w-full h-full">
-      {/* Section Title */}
-      <div>
-        <h2 className="text-xl font-semibold mb-2 text-[#006600]">Intramurals</h2>
-      </div>
-
-      {/* Add Button */}
-      <div className="flex justify-end pt-4 pb-4 pr-4 mb-4 bg-gray-100">
-        <button 
-          type="button" 
-          className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900"
-          onClick={openModal}
-        >
-          Add intramural
-        </button>
-      </div>
-
-      {/* Filter and List */}
-      <div className="flex-1 p-6 bg-gray-100 text-gray-900">
-        <Filter
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          search={search}
-          setSearch={setSearch}
-          placeholder="Search intramural"
-        />
-        <ul className="flex flex-row">
-          {filteredIntramurals.map((intramural) => (
-            <li key={intramural.id}>
-              <IntramuralCard intramural={intramural} openEditModal={openEditModal} deleteIntramural={deleteIntramural} />
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Intramural Modal */}
-      <IntramuralModal
-        isModalOpen={isModalOpen}
-        closeModal={closeModal}
-        addIntramural={addIntramural}
-        updateIntramural={updateIntramural}
-        existingIntramural={selectedIntramural}
-        />
+  <div className="flex flex-col w-full h-full">
+    {/* Section Title */}
+    <div>
+      <h2 className="text-xl font-semibold mb-2 text-[#006600]">Intramurals</h2>
     </div>
+
+    {/* Add Button */}
+    <div className="flex justify-end md:justify-end md:flex-row flex-col md:items-center gap-4 pt-4 pb-4 pr-4 mb-4 bg-gray-100">
+      <button 
+        type="button" 
+        className="self-start md:self-auto cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 dark:focus:ring-yellow-900"
+        onClick={openModal}
+      >
+        Add intramural
+      </button>
+    </div>
+
+    {/* Filter and List */}
+    <div className="flex-1 p-6 bg-gray-100 text-gray-900">
+      <Filter
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        search={search}
+        setSearch={setSearch}
+        placeholder="Search intramural"
+      />
+      <ul className="flex relative flex-col md:flex-row gap-4 md:items-start items-center">
+      {filteredIntramurals.map((intramural) => (
+        <li key={intramural.id}>
+          <IntramuralCard
+            intramural={intramural}
+            openEditModal={openEditModal}
+            deleteIntramural={deleteIntramural}
+          />
+        </li>
+      ))}
+    </ul>
+
+    </div>
+
+    {/* Intramural Modal */}
+    <IntramuralModal
+      isModalOpen={isModalOpen}
+      closeModal={closeModal}
+      addIntramural={addIntramural}
+      updateIntramural={updateIntramural}
+      existingIntramural={selectedIntramural}
+    />
+  </div>
+
   );
 }

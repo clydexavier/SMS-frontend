@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdClose } from "react-icons/io";
+import { useParams } from "react-router-dom";
 
 export default function EventModal({ 
   isModalOpen, 
@@ -10,12 +11,14 @@ export default function EventModal({
   updateEvent, 
   existingEvent
 }) {
+  const { intrams_id } = useParams();
+
   const [formData, setFormData] = useState({
     name: "",
     tournament_type: "",
     category: "",
+    intrams_id: {intrams_id},
     type: "",
-    participants: "",
     gold: "",
     silver: "",
     bronze: "",
@@ -27,28 +30,28 @@ export default function EventModal({
     if (existingEvent) {
       setFormData({
         name: existingEvent.name || "",
-        tournament_type: existingEvent.tournament_type || "",
         category: existingEvent.category || "",
         type: existingEvent.type || "",
-        participants: existingEvent.participants || "",
         gold: existingEvent.gold || "",
         silver: existingEvent.silver || "",
         bronze: existingEvent.bronze || "",
+        intrams_id: {intrams_id},
+        tournament_type: existingEvent.tournament_type || "",
         venue: existingEvent.venue || "",
-        status: "pending", // Always set to pending
+        status: "pending",
       });
     } else {
       setFormData({
         name: "",
-        tournament_type: "",
-        category: "",
-        type: "",
-        participants: "",
-        gold: "",
+        category:"",
+        type:"",
+        gold:"",
         silver: "",
         bronze: "",
-        venue: "",
+        intrams_id: {intrams_id},
+        tournament_type: "",
         status: "pending",
+
       });
     }
   }, [existingEvent]);
@@ -118,15 +121,17 @@ export default function EventModal({
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Tournament Type
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="tournament_type"
                     value={formData.tournament_type}
                     onChange={handleChange}
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                    placeholder="Select tournament type"
                     required
-                  />
+                  >
+                    <option value="" disabled>Select event category</option>
+                    <option value="single elimination">Single Elimination</option>
+                    <option value="double elimination">Double Elimination</option>
+                  </select>
                 </div>
                 {/* Category */}
                 <div className="col-span-2">
@@ -144,6 +149,25 @@ export default function EventModal({
                     <option value="Men">Men</option>
                     <option value="Women">Women</option>
                     <option value="Mixed">Mixed</option>
+                  </select>
+                </div>
+
+                {/* Type */}
+                <div className="col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Type
+                  </label>
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleChange}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    required
+                  >
+                    <option value="" disabled>Select event type</option>
+                    <option value="Men">Sports</option>
+                    <option value="Women">Music</option>
+                    <option value="Mixed">Dance</option>
                   </select>
                 </div>
                 {/* Gold */}

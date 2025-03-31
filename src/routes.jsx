@@ -51,7 +51,7 @@ const routes = [
         ],
       },
       {
-        path: "intramural",
+        path: ":intrams_id",
         element: (
           <ProtectedRoute roles = {["admin"]}>
             <IntramuralPage/>
@@ -70,7 +70,7 @@ const routes = [
         ],
       },
       {
-        path: "event",
+        path: ":event_id",
         element: (
           <ProtectedRoute roles = {["admin"]}>
             <EventPage/>

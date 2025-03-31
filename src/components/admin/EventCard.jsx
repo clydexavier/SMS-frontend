@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { FiMoreVertical } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
-export default function EventCard({ event, openEditModal }) {
+export default function EventCard({ event, openEditModal,deleteEvent }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -69,7 +71,7 @@ export default function EventCard({ event, openEditModal }) {
             </button>
             <button
               className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-green-100"
-              onClick={() => setMenuOpen((prev) => !prev)}
+              onClick={deleteEvent(event.id)}
             >
               Delete
             </button>

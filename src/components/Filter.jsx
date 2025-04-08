@@ -1,16 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { FaChevronDown, FaFilter } from "react-icons/fa";
 
-export default function Filter({ activeTab, setActiveTab, search, setSearch, placeholder }) {
+export default function Filter({ activeTab, setActiveTab, search, setSearch, placeholder, filterOptions }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  const filterOptions = [
-    { label: "All", value: "all" },
-    { label: "In Progress", value: "in progress" },
-    { label: "Pending", value: "pending" },
-    { label: "Completed", value: "completed" },
-  ];
 
   // Close dropdown when clicking outside
   useEffect(() => {

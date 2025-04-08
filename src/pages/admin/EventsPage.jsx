@@ -13,6 +13,13 @@ export default function EventsPage() {
 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const filterOptions = [
+    { label: "All", value: "all" },
+    { label: "In Progress", value: "in progress" },
+    { label: "Pending", value: "pending" },
+    { label: "Completed", value: "completed" },
+  ];
 
   const openEditModal = (event) => {
     setSelectedEvent(event);
@@ -144,6 +151,7 @@ const deleteEvent = async (id) => {
           search={search}
           setSearch={setSearch}
           placeholder="Search event"
+          filterOptions={filterOptions}
         />
         {events.length === 0 && !loading ? (
           <div className="text-center py-8 text-gray-500">

@@ -32,7 +32,6 @@ export default function VenueModal({
     if (existingVenue) {
       updateVenue(existingVenue.id, formData);
     } else {
-      console.log(formData);
       addVenue(formData);
     }
     closeModal();

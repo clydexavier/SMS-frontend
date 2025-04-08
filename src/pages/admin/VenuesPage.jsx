@@ -5,13 +5,17 @@ import { useParams } from "react-router-dom";
 import axiosClient from "../../axiosClient";
 
 export default function VenuesPage() {
-  //venues state
+  const filterOptions = [
+    { label: "All", value: "all" },
+    { label: "Indoor", value: "Indoor" },
+    { label: "Outdoor", value: "Outdoor" },
+  ];
+
   const { intrams_id } = useParams();
   const [venues, setVenues] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  //modal state
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -25,7 +29,7 @@ export default function VenuesPage() {
     try {
       setLoading(true);
       await axiosClient.post(`/intramurals/${intrams_id}/venues/create`, newVenue);
-      fetchVenues();
+      await fetchVenues();
       closeModal();
     } catch (err) {
       setError("Failed to create venue");
@@ -40,7 +44,7 @@ export default function VenuesPage() {
     try {
       setLoading(true);
       await axiosClient.patch(`/intramurals/${intrams_id}/venues/${id}/edit`, updatedData);
-      fetchVenues();
+      await fetchVenues();
       closeModal();
     } catch (err) {
       setError("Failed to update venue");
@@ -51,19 +55,16 @@ export default function VenuesPage() {
   };
 
   // Delete venue
-  const deleteVenue = async (id, name) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
-    if (confirmDelete) {
-      try {
-        setLoading(true);
-        await axiosClient.delete(`/intramurals/${intrams_id}/venues/${id}`);
-        fetchVenues();
-      } catch (err) {
-        setError("Failed to delete venue");
-        console.error("Error deleting venue:", err);
-      } finally {
-        setLoading(false);
-      }
+  const deleteVenue = async (id) => {
+    try {
+      setLoading(true);
+      await axiosClient.delete(`/intramurals/${intrams_id}/venues/${id}`);
+      await fetchVenues();
+    } catch (err) {
+      setError("Failed to delete venue");
+      console.error("Error deleting venue:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,6 +108,41 @@ export default function VenuesPage() {
     }
   }, [intrams_id]);
 
+  // Skeleton loader component
+  const SkeletonLoader = () => (
+    <div className="animate-pulse">
+      {/* Skeleton for filter section */}
+      <div className="h-10 bg-gray-200 rounded mb-4 w-full"></div>
+      
+      {/* Skeleton for table */}
+      <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+        <div className="min-w-full">
+          {/* Header skeleton */}
+          <div className="bg-gray-50 px-6 py-3">
+            <div className="grid grid-cols-5 gap-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-4 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Table rows skeleton */}
+          {[1, 2, 3, 4, 5].map((row) => (
+            <div key={row} className="border-t border-gray-200 px-6 py-4">
+              <div className="grid grid-cols-5 gap-4">
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col w-full h-full">
       {/* Section Title */}
@@ -133,24 +169,23 @@ export default function VenuesPage() {
         </div>
       )}
 
-      {/* Loading indicator */}
-      {loading && (
-        <div className="flex justify-center items-center p-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
-        </div>
-      )}
-
-      {/* Filter and Table */}
+      {/* Main Content Area */}
       <div className="flex-1 p-6 bg-gray-100 text-gray-900">
+        {/* Always show filter */}
         <Filter
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           search={search}
           setSearch={setSearch}
           placeholder="Search venue"
+          filterOptions={filterOptions}
         />
 
-        {venues.length === 0 && !loading ? (
+        {loading ? (
+          /* Skeleton Loader */
+          <SkeletonLoader />
+        ) : venues.length === 0 ? (
+          /* Empty State */
           <div className="text-center py-8 text-gray-500">
             No venues found. Click "Add Venue" to create one.
           </div>
@@ -195,7 +230,7 @@ export default function VenuesPage() {
                       </button>
                       <button
                         className="ml-4 text-red-600 hover:text-red-900"
-                        onClick={() => deleteVenue(venue.id, venue.name)}
+                        onClick={() => deleteVenue(venue.id)}
                       >
                         Delete
                       </button>

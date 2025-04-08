@@ -5,11 +5,13 @@ import { useParams } from "react-router-dom";
 import axiosClient from "../../axiosClient";
 
 export default function VenuesPage() {
+  //venues state
   const { intrams_id } = useParams();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  //modal state
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 

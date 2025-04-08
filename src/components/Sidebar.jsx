@@ -34,7 +34,7 @@ export default function Sidebar({ menuItems }) {
       .catch(err => console.error("Error fetching user:", err));
   }, []);
   return (
-    <nav className={`shadow-md h-full p-2 flex flex-col duration-500 bg-gray-200  border-gray-800 ${open ? 'w-60' : 'w-16'}`}>
+    <nav className={`shadow-md h-full p-2 flex flex-col duration-500 bg-gray-200  border-gray-800 overflow-y-auto ${open ? 'w-60' : 'w-16'}`}>
       {/* Header */}
       <div className="px-3 py-2 h-20 flex justify-between items-center">
         <img src={logo} alt="Logo" className={`${open ? 'w-10' : 'w-0'} rounded-md`} />

@@ -84,8 +84,6 @@ export default function VenuesPage() {
     setError(null);
   };
 
-  
-
   const filteredVenues = venues.filter(
     (venue) =>
       (activeTab === "all" || venue.type === activeTab) &&
@@ -114,56 +112,52 @@ export default function VenuesPage() {
 
   // Skeleton loader component
   const SkeletonLoader = () => (
-    <div className="animate-pulse">
-      {/* Skeleton for filter section */}
-      <div className="h-10 bg-gray-200 rounded mb-4 w-full"></div>
-      
+    <div className="animate-pulse overflow-x-auto">
       {/* Skeleton for table */}
-      <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-        <div className="min-w-full">
-          {/* Header skeleton */}
-          <div className="bg-gray-50 px-6 py-3">
-            <div className="grid grid-cols-5 gap-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-4 bg-gray-200 rounded"></div>
+      <div className="shadow-md rounded-lg">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              {[1, 2, 3, 4].map((i) => (
+                <th key={i} className="px-6 py-3">
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                </th>
               ))}
-            </div>
-          </div>
-          
-          {/* Table rows skeleton */}
-          {[1, 2, 3, 4, 5].map((row) => (
-            <div key={row} className="border-t border-gray-200 px-6 py-4">
-              <div className="grid grid-cols-5 gap-4">
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          ))}
-        </div>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {[1, 2, 3, 4, 5].map((row) => (
+              <tr key={row}>
+                {[1, 2, 3, 4].map((col) => (
+                  <td key={col} className="px-6 py-4">
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 
   return (
     <div className="flex flex-col w-full h-full">
-      {/* Section Title */}
-      <div>
-        <h2 className="text-xl font-semibold mb-2 text-[#006600]">Venues</h2>
-      </div>
-
-      {/* Add Button */}
-      <div className="flex justify-end pt-4 pb-4 pr-4 mb-4 bg-gray-100">
-        <button
-          type="button"
-          className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
-          onClick={openModal}
-          disabled={loading}
-        >
-          Add Venue
-        </button>
+      {/* Section Title and Button Section */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold mb-2 sm:mb-0 text-[#006600]">Venues</h2>
+        
+        {/* Add Button - Moves to left on mobile */}
+        <div className="w-full sm:w-auto pt-2 sm:pt-0">
+          <button
+            type="button"
+            className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
+            onClick={openModal}
+            disabled={loading}
+          >
+            Add Venue
+          </button>
+        </div>
       </div>
 
       {/* Error message */}
@@ -174,7 +168,7 @@ export default function VenuesPage() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 p-6 bg-gray-100 text-gray-900">
+      <div className="flex-1 p-2 sm:p-4 md:p-6 bg-gray-100 text-gray-900 rounded-lg">
         {/* Always show filter */}
         <Filter
           activeTab={activeTab}
@@ -194,21 +188,21 @@ export default function VenuesPage() {
             No venues found. Click "Add Venue" to create one.
           </div>
         ) : (
-          /* Venue Table */
-          <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+          /* Horizontally Scrollable Table Container */
+          <div className="overflow-x-auto bg-white shadow-md rounded-lg mt-4">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Location
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Actions
                   </th>
                 </tr>
@@ -227,13 +221,13 @@ export default function VenuesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-indigo-600 hover:text-indigo-900 mr-4"
                         onClick={() => openEditModal(venue)}
                       >
                         Edit
                       </button>
                       <button
-                        className="ml-4 text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-900"
                         onClick={() => deleteVenue(venue.id)}
                       >
                         Delete

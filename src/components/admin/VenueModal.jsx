@@ -11,7 +11,6 @@ export default function VenueModal({
   const [formData, setFormData] = useState({
     name: "",
     location: "",
-    capacity: "",
     type: "",
   });
 
@@ -19,7 +18,7 @@ export default function VenueModal({
     if (existingVenue) {
       setFormData(existingVenue);
     } else {
-      setFormData({ name: "", location: "", capacity: "", type: "" });
+      setFormData({ name: "", location: "", type: "" });
     }
   }, [existingVenue]);
 
@@ -33,6 +32,7 @@ export default function VenueModal({
     if (existingVenue) {
       updateVenue(existingVenue.id, formData);
     } else {
+      console.log(formData);
       addVenue(formData);
     }
     closeModal();
@@ -90,23 +90,6 @@ export default function VenueModal({
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
                     placeholder="Enter location"
                     required
-                  />
-                </div>
-    
-                {/* Capacity */}
-                <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    Capacity
-                  </label>
-                  <input
-                    type="number"
-                    name="capacity"
-                    value={formData.capacity}
-                    onChange={handleChange}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                    placeholder="Enter capacity"
-                    required
-                    min={1}
                   />
                 </div>
     

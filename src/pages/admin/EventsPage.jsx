@@ -24,7 +24,7 @@ const addEvent = async (newEvent) => {
   try {
     setLoading(true);
     await axiosClient.post(`/intramurals/${intrams_id}/events/create`, newEvent);
-    fetchEvents(); // 🔥 Re-fetch events
+    fetchEvents(); 
     closeModal();
   } catch (err) {
     setError("Failed to create event");
@@ -39,7 +39,7 @@ const updateEvent = async (id, updatedData) => {
   try {
     setLoading(true);
     await axiosClient.patch(`/intramurals/${intrams_id}/events/${id}/edit`, updatedData);
-    fetchEvents(); // 🔥 Re-fetch events
+    fetchEvents();
     closeModal();
   } catch (err) {
     setError("Failed to update event");
@@ -54,7 +54,7 @@ const deleteEvent = async (id) => {
   try {
     setLoading(true);
     await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
-    fetchEvents(); // 🔥 Re-fetch events
+    fetchEvents(); 
   } catch (err) {
     setError("Failed to delete event");
     console.error("Error deleting event:", err);

@@ -37,6 +37,7 @@ export default function VenuesPage() {
   const updateVenue = async (id, updatedData) => {
     try {
       setLoading(true);
+      console.log(updatedData);
       await axiosClient.patch(`/intramurals/${intrams_id}/venues/${id}/edit`, updatedData);
       fetchVenues();
       closeModal();

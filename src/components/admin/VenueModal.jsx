@@ -108,8 +108,8 @@ export default function VenueModal({
                     <option value="" disabled>
                         Select Type
                     </option>
-                    <option value="indoor">Indoor</option>
-                    <option value="outdoor">Outdoor</option>
+                    <option value="Indoor">Indoor</option>
+                    <option value="Outdoor">Outdoor</option>
                   </select>
                 </div>
               </div>

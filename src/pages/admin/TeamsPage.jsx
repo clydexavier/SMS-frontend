@@ -16,9 +16,18 @@ export default function TeamsPage() {
     },
   ]);
 
+  //filter states
+  const filterOptions = [
+    { label: "All", value: "all" },
+    { label: "Indoor", value: "Indoor" },
+    { label: "Outdoor", value: "Outdoor" },
+  ];
+  const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
+
+  //modal states
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const openEditModal = (team) => {
     setSelectedTeam(team);
     setIsModalOpen(true);
@@ -46,8 +55,6 @@ export default function TeamsPage() {
 
   const closeModal = () => setIsModalOpen(false);
 
-  const [search, setSearch] = useState("");
-
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -72,10 +79,13 @@ export default function TeamsPage() {
 
       {/* Filter and Table */}
       <div className="flex-1 p-6 bg-gray-100 text-gray-900">
-        <Filter
+      <Filter
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
           search={search}
           setSearch={setSearch}
-          placeholder="Search team"
+          placeholder="Search team name"
+          filterOptions={filterOptions}
         />
 
         {/* Team Table */}

@@ -5,6 +5,12 @@ import Filter from "../../components/Filter";
 import IntramuralModal from "../../components/admin/IntramuralModal";
 
 export default function IntramuralsPage() {
+  const filterOptions = [
+    { label: "All", value: "all" },
+    { label: "In Progress", value: "in progress" },
+    { label: "Pending", value: "pending" },
+    { label: "Completed", value: "completed" },
+  ];
 
   //Intramurals State
   const [intramurals, setIntramurals] = useState([]);
@@ -108,6 +114,7 @@ export default function IntramuralsPage() {
         search={search}
         setSearch={setSearch}
         placeholder="Search intramural"
+        filterOptions={filterOptions}
       />
       <ul className="flex relative flex-col md:flex-row gap-4 md:items-start items-center">
       {filteredIntramurals.map((intramural) => (

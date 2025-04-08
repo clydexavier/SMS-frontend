@@ -5,20 +5,25 @@ import { useParams } from "react-router-dom";
 import axiosClient from "../../axiosClient";
 
 export default function VenuesPage() {
-  const filterOptions = [
-    { label: "All", value: "all" },
-    { label: "Indoor", value: "Indoor" },
-    { label: "Outdoor", value: "Outdoor" },
-  ];
-
+  
+  //page states
   const { intrams_id } = useParams();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  //filter states
+  const filterOptions = [
+    { label: "All", value: "all" },
+    { label: "Indoor", value: "Indoor" },
+    { label: "Outdoor", value: "Outdoor" },
+  ];
+  const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
+  
+  //modal state
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const openEditModal = (venue) => {
     setSelectedVenue(venue);
     setIsModalOpen(true);
@@ -79,8 +84,7 @@ export default function VenuesPage() {
     setError(null);
   };
 
-  const [activeTab, setActiveTab] = useState("all");
-  const [search, setSearch] = useState("");
+  
 
   const filteredVenues = venues.filter(
     (venue) =>
@@ -177,7 +181,7 @@ export default function VenuesPage() {
           setActiveTab={setActiveTab}
           search={search}
           setSearch={setSearch}
-          placeholder="Search venue"
+          placeholder="Search venue name"
           filterOptions={filterOptions}
         />
 

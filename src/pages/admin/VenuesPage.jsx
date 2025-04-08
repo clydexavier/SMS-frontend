@@ -37,7 +37,6 @@ export default function VenuesPage() {
   const updateVenue = async (id, updatedData) => {
     try {
       setLoading(true);
-      console.log(updatedData);
       await axiosClient.patch(`/intramurals/${intrams_id}/venues/${id}/edit`, updatedData);
       fetchVenues();
       closeModal();
@@ -50,16 +49,19 @@ export default function VenuesPage() {
   };
 
   // Delete venue
-  const deleteVenue = async (id) => {
-    try {
-      setLoading(true);
-      await axiosClient.delete(`/intramurals/${intrams_id}/venues/${id}`);
-      fetchVenues();
-    } catch (err) {
-      setError("Failed to delete venue");
-      console.error("Error deleting venue:", err);
-    } finally {
-      setLoading(false);
+  const deleteVenue = async (id, name) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
+    if (confirmDelete) {
+      try {
+        setLoading(true);
+        await axiosClient.delete(`/intramurals/${intrams_id}/venues/${id}`);
+        fetchVenues();
+      } catch (err) {
+        setError("Failed to delete venue");
+        console.error("Error deleting venue:", err);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -191,7 +193,7 @@ export default function VenuesPage() {
                       </button>
                       <button
                         className="ml-4 text-red-600 hover:text-red-900"
-                        onClick={() => deleteVenue(venue.id)}
+                        onClick={() => deleteVenue(venue.id, venue.name)}
                       >
                         Delete
                       </button>

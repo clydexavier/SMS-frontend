@@ -29,64 +29,68 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
   };
 
   return (
-    <div className="m-4 ml-0 bg-white p-4 rounded-lg shadow-md border w-64 relative overflow-hidden">
-      {/* Header with Link */}
-      <Link to={`/${intramural.id}/events`} state={{ id: intramural.id }}>
-        <div className="bg-gray-800 text-white p-2 rounded-t-lg flex flex-col items-center">
-          <span className="text-2xl font-extrabold">{intramural.name}</span>
-        </div>
-      </Link>
+    <div className="w-full h-full box-border bg-white rounded-lg shadow-md border relative overflow-hidden flex flex-col">
 
-      {/* Content */}
-      <div className="p-4">
-        <p className="text-lg font-semibold text-gray-800">{intramural.start_date}</p>
-        <p
-          className={`text-sm font-medium ${
-            intramural.status === "complete" ? "text-green-600" : "text-yellow-600"
-          }`}
-        >
-          Status: {intramural.status}
-        </p>
-        <p
-          className={`text-sm ${
-            intramural.location ? "text-gray-600" : "text-red-600 font-medium"
-          }`}
-        >
-          {intramural.location ? `Location: ${intramural.location}` : "No location yet"}
-        </p>
+    {/* Header with Link */}
+    <Link to={`/${intramural.id}/events`} state={{ id: intramural.id }} className="w-full">
+      <div className="w-full bg-gray-800 text-white p-2 rounded-t-lg flex flex-col items-center">
+        <span className=" text-2xl font-extrabold text-center sm:text-xl text-base">
+          {intramural.name}
+        </span>
       </div>
+    </Link>
 
-      {/* Three-Dot Button with Dropdown */}
-      <div className="absolute bottom-2 right-2" ref={menuRef}>
-        <button
-          onClick={() => setMenuOpen((prev) => !prev)}
-          className="p-2 rounded-full hover:bg-gray-200"
-        >
-          <FiMoreVertical size={20} className="text-gray-600" />
-        </button>
-
-        {/* Dropdown Menu */}
-        {menuOpen && (
-          <div className="absolute right-0 bottom-8 w-40 bg-white border rounded-md shadow-lg z-50">
-            <button 
-              className="block w-full px-4 py-2 text-left text-sm hover:bg-green-100" 
-              onClick={() => {
-                openEditModal(intramural);
-                setMenuOpen(false);
-              }}
-            >
-              Update
-            </button>
-            <button 
-              className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-100" 
-              onClick={handleDelete}
-            >
-              Delete
-            </button>
-          </div>
-        )}
-      </div>
+    {/* Content */}
+    <div className="h-full w-full p-4">
+      <p className="text-sm sm:text-xs md:text-sm lg:text-base font-semibold text-gray-800">{intramural.start_date}</p>
+      <p
+        className={`text-sm sm:text-xs md:text-sm lg:text-base font-medium ${
+          intramural.status === "complete" ? "text-green-600" : "text-yellow-600"
+        }`}
+      >
+        Status: {intramural.status}
+      </p>
+      <p
+        className={`text-sm ${
+          intramural.location ? "text-gray-600" : "text-red-600 font-medium"
+        }`}
+      >
+        {intramural.location ? `Location: ${intramural.location}` : "No location yet"}
+      </p>
     </div>
+
+    {/* Three-Dot Button with Dropdown */}
+    <div className="absolute bottom-2 right-2" ref={menuRef}>
+      <button
+        onClick={() => setMenuOpen((prev) => !prev)}
+        className="p-2 rounded-full hover:bg-gray-200"
+      >
+        <FiMoreVertical className="text-gray-600 text-[20px] sm:text-[15px]" />
+      </button>
+
+      {/* Dropdown Menu */}
+      {menuOpen && (
+        <div className="absolute right-0 bottom-8 w-40 bg-white border rounded-md shadow-lg z-50">
+          <button 
+            className="block w-full px-4 py-2 text-left text-sm  text-sm sm:text-xs  hover:bg-green-100" 
+            onClick={() => {
+              openEditModal(intramural);
+              setMenuOpen(false);
+            }}
+          >
+            Update
+          </button>
+          <button 
+            className="block w-full px-4 py-2 text-left  text-sm sm:text-xs  text-red-600 hover:bg-red-100" 
+            onClick={handleDelete}
+          >
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+
   );
 }
 

@@ -2,17 +2,18 @@ import React from "react";
 import Sidebar from "../../components/Sidebar";
 import { Outlet } from "react-router-dom";
 import { Link } from "react-router-dom";
+//import ResponsiveDropdown from "../../components/ResponsiveDropdown";
 // Admin Icons
 import { GrTrophy, GrHistory } from "react-icons/gr";
 
 const menuItems = [
   {
-    icon: <GrTrophy size={20} color="black" />,
+    icon: <GrTrophy className="text-[20px] sm:text-[15px]" color="black" />,
     label: "Intramurals",
     route: "intramurals",
   },
   {
-    icon: <GrHistory size={20} color="black" />,
+    icon: <GrHistory className="text-[20px] sm:text-[15px]" color="black" />,
     label: "Log",
     route: "logs",
   },
@@ -20,34 +21,44 @@ const menuItems = [
 
 export default function AdminPage() {
   return (
-    <div className="flex flex-col w-screen h-screen overflow-hidden bg-gray-200">
+    <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">
       <noscript>
-        <strong>
+        <strong className="text-sm sm:text-xs md:text-sm lg:text-base">
           We're sorry but the frontend doesn't work properly without JavaScript enabled. Please enable it to continue.
         </strong>
       </noscript>
 
-      {/* Full-Width Header */}
+      {/* Header */}
       <header className="h-16 bg-green-900 text-white flex items-center justify-between px-6 shadow-md">
-        <Link to="/admin/intramurals" className="hover:text-gray-200 transition-colors">
+        <Link
+          to="/admin/intramurals"
+          className="hover:text-gray-200 transition-colors text-sm sm:text-xs md:text-sm lg:text-base"
+        >
           Home
         </Link>
-        <div className="font-semibold text-lg">Admin Page</div>
-        <div>{/* Empty div for symmetrical spacing */}</div>
+        <div className="font-semibold sm:text-sm md:text-md lg:text-lg">
+          Admin Page
+        </div>
+        <div></div>
       </header>
 
-      {/* Main Content: Sidebar & Outlet */}
+      {/* Responsive Dropdown - Only shows on mobile 
+      <div className="md:hidden w-full px-4 py-2 bg-gray-900">
+        <ResponsiveDropdown title="Your Tournaments" items={menuItems} />
+      </div>*/}
+
+      {/* Main Content */}
       <main className="flex flex-1 w-full overflow-auto">
-        <div className="w-64 overflow-y-auto flex-shrink-0">
-          <Sidebar 
-            menuItems={menuItems} 
-            className="bg-white shadow-md h-full hover:bg-gray-100" 
-          />
+        {/*  Sidebar for medium and up */}
+        <div className="hidden md:block">
+          <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
         </div>
-        <div className="flex-1 overflow-y-auto p-6">
+
+        <div className="flex-auto overflow-y-auto p-6 bg-green-200 text-sm sm:text-xs md:text-sm lg:text-base">
           <Outlet />
         </div>
       </main>
     </div>
+
   );
 }

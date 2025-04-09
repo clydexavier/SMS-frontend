@@ -34,47 +34,69 @@ export default function Sidebar({ menuItems }) {
       .catch(err => console.error("Error fetching user:", err));
   }, []);
   return (
-    <nav className={`shadow-md h-full p-2 flex flex-col duration-500 bg-gray-200  border-gray-800 overflow-y-auto ${open ? 'w-60' : 'w-16'}`}>
-      {/* Header */}
-      <div className="px-3 py-2 h-20 flex justify-between items-center">
-        <img src={logo} alt="Logo" className={`${open ? 'w-10' : 'w-0'} rounded-md`} />
-        <MdMenuOpen size={29} className={`text-black duration-500 cursor-pointer ${!open && 'rotate-180'}`} onClick={() => setOpen(!open)} />
-      </div>
+    <nav className={`overflow-y-auto overflow-x-hidden shadow-md h-full p-2 flex flex-col duration-500 bg-red-200 border-gray-800 ${open ? 'w-60' : 'w-16'}`}>
+  {/* Header */}
+  <div className="px-3 py-2 h-20 flex justify-between items-center">
+    <img src={logo} alt="Logo" className={`${open ? 'w-10' : 'w-0'} rounded-md`} />
+    <MdMenuOpen
+      size={25}
+      className={`text-black duration-500 cursor-pointer ${!open && 'rotate-180'}`}
+      onClick={() => setOpen(!open)}
+    />
+  </div>
 
-      {/* Menu Items */}
-      <ul className="flex-1 h-screen">
-        {menuItems.map((item, index) => (
-          <li key={index}>
-            <Link to={item.route}
-              className={`px-3 py-2 my-2 rounded-md duration-300  cursor-pointer flex gap-2 items-center 
-              ${location.pathname.split("/").pop() === item.route ? "bg-[#00a30e] text-white " : "hover:bg-gray-400 text-black-300"}`}>
-              <div>
-                {React.cloneElement(item.icon, {
-                  color: location.pathname.split("/").pop() === item.route ? "white" : "black",
-                })}
-              </div>
-              <p className={`${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden`}>{item.label}</p>
-              
-            </Link>
-          </li>
-        ))}
-
-        {/* Logout Option */}
-        <li>
-          <div className="px-3 py-2 my-2 rounded-md duration-300 cursor-pointer flex gap-2 items-center hover:bg-gray-700 text-black-300" onClick={onLogout}>
-            <div><LuLogOut size={20} /></div>
-            <p className={`${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden`}>Logout</p>
+  {/* Menu Items */}
+  <ul className="flex-1 h-screen">
+    {menuItems.map((item, index) => (
+      <li key={index}>
+        <Link
+          to={item.route}
+          className={`px-3 py-2 my-2 rounded-md duration-300 cursor-pointer flex gap-2 items-center 
+            ${location.pathname.split("/").pop() === item.route
+              ? "bg-[#00a30e] text-white"
+              : "hover:bg-gray-400 text-black-300"
+            }`}
+        >
+          <div>
+            {React.cloneElement(item.icon, {
+              color: location.pathname.split("/").pop() === item.route ? "white" : "black",
+            })}
           </div>
-        </li>
-      </ul>
+          <p
+            className={`${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden 
+              text-sm sm:text-xs md:text-sm lg:text-base`}
+          >
+            {item.label}
+          </p>
+        </Link>
+      </li>
+    ))}
 
-      {/* Footer */}
-      <div className="flex items-center gap-2 px-3 py-2">
-        <FaRegUserCircle size={20} className="text-black-300" />
-        <div className={`leading-5 ${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden`}>
-          <p className="text-black font-semibold">{user?.name}</p>
-        </div>
+    {/* Logout Option */}
+    <li>
+      <div
+        className="px-3 py-2 my-2 rounded-md duration-300 cursor-pointer flex gap-2 items-center hover:bg-gray-700 text-black-300"
+        onClick={onLogout}
+      >
+        <div><LuLogOut className="text-[20px] sm:text-[15px]" /></div>
+        <p
+          className={`${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden 
+            text-sm sm:text-xs md:text-sm lg:text-base`}
+        >
+          Logout
+        </p>
       </div>
-    </nav>
+    </li>
+  </ul>
+
+  {/* Footer */}
+  <div className="flex items-center gap-2 px-3 py-2">
+    <FaRegUserCircle className="text-[20px] sm:text-[15px]" />
+    <div className={`leading-5 ${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden`}>
+      <p className="text-black font-semibold text-sm sm:text-xs md:text-sm lg:text-base">{user?.name}</p>
+    </div>
+  </div>
+</nav>
+
   );
 }

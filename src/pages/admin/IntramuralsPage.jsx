@@ -22,6 +22,8 @@ export default function IntramuralsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 
+  //page states
+  const [pendingPage, setPendingPage] = useState(1);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 12,
@@ -69,14 +71,14 @@ export default function IntramuralsPage() {
   };
 
   const handlePageChange = (page) => {
-    setPagination((prev) => ({ ...prev, currentPage: page }));
+    setPendingPage(page); 
   };
 
   const addIntramural = async (newIntramural) => {
     try {
       setLoading(true);
       await axiosClient.post("/intramurals/create", newIntramural);
-      fetchIntramurals();
+      await fetchIntramurals();
       closeModal();
     } catch (err) {
       setError("Failed to create intramural");
@@ -90,7 +92,7 @@ export default function IntramuralsPage() {
     try {
       setLoading(true);
       await axiosClient.patch(`/intramurals/${id}/edit`, updatedData);
-      fetchIntramurals();
+      await fetchIntramurals();
       closeModal();
     } catch (err) {
       setError("Failed to update intramural");
@@ -104,7 +106,7 @@ export default function IntramuralsPage() {
     try {
       setLoading(true);
       await axiosClient.delete(`/intramurals/${id}`);
-      fetchIntramurals();
+      await fetchIntramurals();
     } catch (err) {
       setError("Failed to delete intramural");
       console.error("Error deleting intramural:", err);
@@ -114,12 +116,43 @@ export default function IntramuralsPage() {
   };
 
   useEffect(() => {
+    if (pendingPage === null && search === "" && activeTab === "all") return;
+  
+    setLoading(true); // ← Ensure the skeleton shows during fetch
+  
     const debounce = setTimeout(() => {
-      fetchIntramurals();
+      const pageToFetch = pendingPage ?? pagination.currentPage;
+  
+      axiosClient
+        .get("/intramurals", {
+          params: {
+            page: pageToFetch,
+            status: activeTab,
+            search: search,
+          },
+        })
+        .then(({ data }) => {
+          setIntramurals(data.data);
+          setPagination({
+            currentPage: data.meta.current_page,
+            perPage: data.meta.per_page,
+            total: data.meta.total,
+            lastPage: data.meta.last_page,
+          });
+        })
+        .catch((err) => {
+          setError("Failed to fetch intramurals");
+          console.error("Error fetching intramurals:", err);
+        })
+        .finally(() => {
+          setLoading(false);
+          setPendingPage(null);
+        });
     }, 500);
-
+  
     return () => clearTimeout(debounce);
-  }, [search, activeTab, pagination.currentPage]);
+  }, [search, activeTab, pendingPage]);
+  
 
   const SkeletonLoader = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

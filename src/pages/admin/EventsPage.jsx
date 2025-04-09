@@ -25,6 +25,7 @@ export default function EventsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 
+  const [pendingPage, setPendingPage] = useState(1); // <- Track user intent
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 12,
@@ -73,11 +74,12 @@ export default function EventsPage() {
       console.error("Error fetching events:", err);
     } finally {
       setLoading(false);
+      setPendingPage(null);
     }
   };
 
   const handlePageChange = (page) => {
-    setPagination((prev) => ({ ...prev, currentPage: page }));
+    setPendingPage(page);
   };
 
   const addEvent = async (newEvent) => {
@@ -87,7 +89,7 @@ export default function EventsPage() {
         `/intramurals/${intrams_id}/events/create`,
         newEvent
       );
-      fetchEvents();
+      await fetchEvents(pagination.currentPage);
       closeModal();
     } catch (err) {
       setError("Failed to create event");
@@ -104,7 +106,7 @@ export default function EventsPage() {
         `/intramurals/${intrams_id}/events/${id}/edit`,
         updatedData
       );
-      fetchEvents();
+      await fetchEvents(pagination.currentPage);
       closeModal();
     } catch (err) {
       setError("Failed to update event");
@@ -118,7 +120,7 @@ export default function EventsPage() {
     try {
       setLoading(true);
       await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
-      fetchEvents();
+      await fetchEvents(pagination.currentPage);
     } catch (err) {
       setError("Failed to delete event");
       console.error("Error deleting event:", err);
@@ -127,16 +129,19 @@ export default function EventsPage() {
     }
   };
 
-  // Fetch events when filters/search/page change with debounce
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
+    if (pendingPage === null && search === "" && activeTab === "all") return;
+    setLoading(true); // ← Ensure the skeleton shows during fetch
+
+    const debounce = setTimeout(() => {
+      const pageToFetch = pendingPage ?? pagination.currentPage;
       if (intrams_id) {
-        fetchEvents(pagination.currentPage);
+        fetchEvents(pageToFetch);
       }
     }, 500);
 
-    return () => clearTimeout(delayDebounce);
-  }, [search, activeTab, pagination.currentPage, intrams_id]);
+    return () => clearTimeout(debounce);
+  }, [search, activeTab, pendingPage, intrams_id]);
 
   const SkeletonLoader = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -180,11 +185,13 @@ export default function EventsPage() {
           activeTab={activeTab}
           setActiveTab={(value) => {
             setPagination((prev) => ({ ...prev, currentPage: 1 }));
+            setPendingPage(1);
             setActiveTab(value);
           }}
           search={search}
           setSearch={(value) => {
             setPagination((prev) => ({ ...prev, currentPage: 1 }));
+            setPendingPage(1);
             setSearch(value);
           }}
           placeholder="Search event"

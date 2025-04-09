@@ -32,23 +32,17 @@ export default function EventsPage() {
     lastPage: 1,
   });
 
-  const filteredEvents = events.filter(
-    (event) =>
-      (activeTab === "all" || event.status === activeTab) &&
-      (typeof event.name === "string"
-        ? event.name.toLowerCase().includes(search.toLowerCase())
-        : false)
-  );
-
   const openModal = () => {
     setSelectedEvent(null);
     setIsModalOpen(true);
   };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedEvent(null);
     setError(null);
   };
+
   const openEditModal = (event) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
@@ -58,9 +52,16 @@ export default function EventsPage() {
     try {
       setLoading(true);
       const { data } = await axiosClient.get(
-        `/intramurals/${intrams_id}/events?page=${page}`
+        `/intramurals/${intrams_id}/events`,
+        {
+          params: {
+            page: page,
+            status: activeTab,
+            search: search,
+          },
+        }
       );
-      setEvents(data.data); // Assuming `data.data` holds the paginated list
+      setEvents(data.data);
       setPagination({
         currentPage: data.meta.current_page,
         perPage: data.meta.per_page,
@@ -77,7 +78,6 @@ export default function EventsPage() {
 
   const handlePageChange = (page) => {
     setPagination((prev) => ({ ...prev, currentPage: page }));
-    fetchEvents(page);
   };
 
   const addEvent = async (newEvent) => {
@@ -87,7 +87,7 @@ export default function EventsPage() {
         `/intramurals/${intrams_id}/events/create`,
         newEvent
       );
-      await fetchEvents(pagination.currentPage);
+      fetchEvents();
       closeModal();
     } catch (err) {
       setError("Failed to create event");
@@ -104,7 +104,7 @@ export default function EventsPage() {
         `/intramurals/${intrams_id}/events/${id}/edit`,
         updatedData
       );
-      await fetchEvents(pagination.currentPage);
+      fetchEvents();
       closeModal();
     } catch (err) {
       setError("Failed to update event");
@@ -118,7 +118,7 @@ export default function EventsPage() {
     try {
       setLoading(true);
       await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
-      await fetchEvents(pagination.currentPage);
+      fetchEvents();
     } catch (err) {
       setError("Failed to delete event");
       console.error("Error deleting event:", err);
@@ -127,9 +127,16 @@ export default function EventsPage() {
     }
   };
 
+  // Fetch events when filters/search/page change with debounce
   useEffect(() => {
-    if (intrams_id) fetchEvents();
-  }, [intrams_id]);
+    const delayDebounce = setTimeout(() => {
+      if (intrams_id) {
+        fetchEvents(pagination.currentPage);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [search, activeTab, pagination.currentPage, intrams_id]);
 
   const SkeletonLoader = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -171,23 +178,29 @@ export default function EventsPage() {
       <div className="flex-1 p-6 bg-gray-100 text-gray-900">
         <Filter
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(value) => {
+            setPagination((prev) => ({ ...prev, currentPage: 1 }));
+            setActiveTab(value);
+          }}
           search={search}
-          setSearch={setSearch}
+          setSearch={(value) => {
+            setPagination((prev) => ({ ...prev, currentPage: 1 }));
+            setSearch(value);
+          }}
           placeholder="Search event"
           filterOptions={filterOptions}
         />
 
         {loading ? (
           <SkeletonLoader />
-        ) : filteredEvents.length === 0 ? (
+        ) : events.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             No events found. Click "Add Event" to create one.
           </div>
         ) : (
           <div className="w-full mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredEvents.map((event) => (
+              {events.map((event) => (
                 <div
                   key={event.id}
                   className="w-full h-40 p-4 bg-blue-200 outline outline-1 outline-black rounded-md"
@@ -200,12 +213,6 @@ export default function EventsPage() {
                 </div>
               ))}
             </div>
-
-            {filteredEvents.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                No {activeTab} events found.
-              </div>
-            )}
 
             <PaginationControls
               pagination={pagination}

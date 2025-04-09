@@ -111,7 +111,7 @@ const fetchIntramurals = async () => {
   // Skeleton loader component
   const SkeletonLoader = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {[...Array(4)].map((_, index) => (
+      {[...Array(8)].map((_, index) => (
         <div
           key={index}
           className="w-full h-40 p-4 bg-gray-300 animate-pulse rounded-md"
@@ -126,7 +126,7 @@ const fetchIntramurals = async () => {
   ); 
 
   return (
-    <div className="flex flex-col w-full h-full text-sm sm:text-xs md:text-sm lg:text-base">
+    <div className="flex flex-col w-full h-full text-sm sm:text-xs md:text-sm lg:text-sm">
       {/* Section Title */}
       <div>
         <h2 className="text-xl sm:text-lg md:text-xl font-semibold mb-2 text-[#006600]">Intramurals</h2>
@@ -137,7 +137,7 @@ const fetchIntramurals = async () => {
         <div className="flex justify-end">
           <button
             type="button"
-            className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg text-sm sm:text-xs md:text-sm lg:text-base px-5 py-2.5 mb-2"
+            className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg text-sm sm:text-xs md:text-sm lg:text-sm px-5 py-2.5 mb-2"
             onClick={openModal}
           >
             Add intramural
@@ -183,7 +183,7 @@ const fetchIntramurals = async () => {
           {/* Empty state message */}
           {filteredIntramurals.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              No intramurals found. Click "Add event" to create one.
+              No {activeTab} intramurals found.
             </div>
           )}
         </div>

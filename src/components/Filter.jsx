@@ -22,10 +22,10 @@ export default function Filter({ activeTab, setActiveTab, search, setSearch, pla
       <div className="relative inline-block text-left" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex w-full justify-start items-center gap-2 px-4 py-2 text-sm sm:text-xs md:text-sm lg:text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 focus:outline-none whitespace-nowrap"
+          className="inline-flex w-full justify-start items-center gap-2 px-4 py-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 focus:outline-none whitespace-nowrap"
         >
           <FaFilter className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-          <span className="text-sm sm:text-xs md:text-sm lg:text-base">
+          <span className="text-sm sm:text-xs md:text-sm lg:text-sm">
             {filterOptions.find((opt) => opt.value === activeTab)?.label}
           </span>
           <FaChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
@@ -40,7 +40,7 @@ export default function Filter({ activeTab, setActiveTab, search, setSearch, pla
                   activeTab === option.value
                     ? "bg-green-100 text-green-800"
                     : "text-gray-700"
-                } flex w-full items-center px-4 py-2 text-sm sm:text-xs md:text-sm lg:text-base hover:bg-green-50`}
+                } flex w-full items-center px-4 py-2 text-sm sm:text-xs md:text-sm lg:text-sm hover:bg-green-50`}
                 onClick={() => {
                   setActiveTab(option.value);
                   setIsOpen(false);
@@ -57,7 +57,7 @@ export default function Filter({ activeTab, setActiveTab, search, setSearch, pla
       <input
         type="text"
         placeholder={placeholder || "Search ..."}
-        className="w-full sm:w-auto flex-1 p-2 text-sm sm:text-xs md:text-sm lg:text-base border rounded bg-white text-gray-700 border-gray-400"
+        className="w-full sm:w-auto flex-1 p-2 text-sm sm:text-xs md:text-sm lg:text-sm border rounded bg-white text-gray-700 border-gray-400"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />

@@ -34,7 +34,7 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
     {/* Header with Link */}
     <Link to={`/${intramural.id}/events`} state={{ id: intramural.id }} className="w-full">
       <div className="w-full bg-gray-800 text-white p-2 rounded-t-lg flex flex-col items-center">
-        <span className=" text-2xl font-extrabold text-center sm:text-xl text-base">
+        <span className=" text-2xl font-extrabold text-center sm:text-xl text-sm">
           {intramural.name}
         </span>
       </div>
@@ -42,9 +42,9 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
 
     {/* Content */}
     <div className="h-full w-full p-4">
-      <p className="text-sm sm:text-xs md:text-sm lg:text-base font-semibold text-gray-800">{intramural.start_date}</p>
+      <p className="text-sm sm:text-xs md:text-sm lg:text-sm font-semibold text-gray-800">{intramural.start_date}</p>
       <p
-        className={`text-sm sm:text-xs md:text-sm lg:text-base font-medium ${
+        className={`text-sm sm:text-xs md:text-sm lg:text-sm font-medium ${
           intramural.status === "complete" ? "text-green-600" : "text-yellow-600"
         }`}
       >

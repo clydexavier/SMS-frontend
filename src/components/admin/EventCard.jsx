@@ -6,15 +6,6 @@ export default function EventCard({ event, openEditModal,deleteEvent }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Handle delete confirmation
-  const handleDelete = () => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${event.name}?`);
-    if (confirmDelete) {
-      deleteEvent(event.id);
-    }
-    setMenuOpen(false);
-  };
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -26,6 +17,17 @@ export default function EventCard({ event, openEditModal,deleteEvent }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
+  // Handle delete confirmation
+  const handleDelete = () => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${event.name}?`);
+    if (confirmDelete) {
+      deleteEvent(event.id);
+    }
+    setMenuOpen(false);
+  };
+
+  
 
   return (
     <div className="m-4 ml-0 bg-white p-4 rounded-lg shadow-md border w-64 relative overflow-hidden">

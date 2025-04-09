@@ -64,7 +64,7 @@ export default function Sidebar({ menuItems }) {
           </div>
           <p
             className={`${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden 
-              text-sm sm:text-xs md:text-sm lg:text-base`}
+              text-sm sm:text-xs md:text-sm lg:text-sm`}
           >
             {item.label}
           </p>
@@ -81,7 +81,7 @@ export default function Sidebar({ menuItems }) {
         <div><LuLogOut className="text-[20px] sm:text-[15px]" /></div>
         <p
           className={`${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden 
-            text-sm sm:text-xs md:text-sm lg:text-base`}
+            text-sm sm:text-xs md:text-sm lg:text-sm`}
         >
           Logout
         </p>
@@ -93,7 +93,7 @@ export default function Sidebar({ menuItems }) {
   <div className="flex items-center gap-2 px-3 py-2">
     <FaRegUserCircle className="text-[20px] sm:text-[15px]" />
     <div className={`leading-5 ${!open && 'w-0 translate-x-24'} duration-500 overflow-hidden`}>
-      <p className="text-black font-semibold text-sm sm:text-xs md:text-sm lg:text-base">{user?.name}</p>
+      <p className="text-black font-semibold text-sm sm:text-xs md:text-sm lg:text-sm">{user?.name}</p>
     </div>
   </div>
 </nav>

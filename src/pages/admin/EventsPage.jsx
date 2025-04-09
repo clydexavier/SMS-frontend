@@ -31,7 +31,7 @@ const addEvent = async (newEvent) => {
   try {
     setLoading(true);
     await axiosClient.post(`/intramurals/${intrams_id}/events/create`, newEvent);
-    fetchEvents(); 
+    await fetchEvents(); 
     closeModal();
   } catch (err) {
     setError("Failed to create event");

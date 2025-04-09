@@ -15,6 +15,10 @@ export default function IntramuralsPage() {
   //Intramurals State
   const [intramurals, setIntramurals] = useState([]);
   const [selectedIntramural, setSelectedIntramural] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,51 +45,85 @@ export default function IntramuralsPage() {
 
   
   //CRUD REQUESTS
-  const addIntramural = (newIntramural) => {
-    axiosClient.post("/intramurals/create", newIntramural)
-      .then(() => {
-        console.log("Intramural created");
-        fetchIntramurals(); // Refresh the list
-        closeModal();
-      })
-      .catch(err => {
-        console.error("Error creating intramural:", err.response?.data || err);
-      });
-  };
-  
-  const updateIntramural = (id, updatedData) => {
-    axiosClient.patch(`/intramurals/${id}/edit`, updatedData)
-      .then(() => {
-        console.log("Intramural updated");
-        fetchIntramurals(); 
-        closeModal();
-      })
-      .catch(err => {
-        console.error("Error updating intramural:", err.response?.data || err);
-      });
-  };
-  
-  const deleteIntramural = (id) => {
-    axiosClient.delete(`/intramurals/${id}`)
-      .then(() => {
-        console.log("Intramural deleted");
-        fetchIntramurals(); // Refresh the list
-      })
-      .catch(err => {
-        console.error("Error deleting intramural:", err.response?.data || err);
-      });
-  };
+  // Create new intramural
+const addIntramural = async (newIntramural) => {
+  try {
+    setLoading(true);
+    await axiosClient.post("/intramurals/create", newIntramural);
+    await fetchIntramurals();
+    closeModal();
+  } catch (err) {
+    setError("Failed to create intramural");
+    console.error("Error creating intramural:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const fetchIntramurals = () => {
-    axiosClient.get('/intramurals')
-      .then(({ data }) => setIntramurals(data))
-      .catch(err => console.error("Error fetching intramurals:", err));
-  };
-  
+// Update existing intramural
+const updateIntramural = async (id, updatedData) => {
+  try {
+    setLoading(true);
+    await axiosClient.patch(`/intramurals/${id}/edit`, updatedData);
+    await fetchIntramurals();
+    closeModal();
+  } catch (err) {
+    setError("Failed to update intramural");
+    console.error("Error updating intramural:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
+// Delete intramural
+const deleteIntramural = async (id) => {
+  try {
+    setLoading(true);
+    await axiosClient.delete(`/intramurals/${id}`);
+    await fetchIntramurals();
+  } catch (err) {
+    setError("Failed to delete intramural");
+    console.error("Error deleting intramural:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Fetch all intramurals
+const fetchIntramurals = async () => {
+  try {
+    setLoading(true);
+    const { data } = await axiosClient.get('/intramurals');
+    setIntramurals(data);
+  } catch (err) {
+    setError("Failed to fetch intramurals");
+    console.error("Error fetching intramurals:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Initial load
   useEffect(() => {
     fetchIntramurals();
   }, []);
+
+  // Skeleton loader component
+  const SkeletonLoader = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {[...Array(4)].map((_, index) => (
+        <div
+          key={index}
+          className="w-full h-40 p-4 bg-gray-300 animate-pulse rounded-md"
+        >
+          <div className="w-3/4 h-4 bg-gray-400 mb-3 rounded" />
+          <div className="w-1/2 h-4 bg-gray-400 mb-2 rounded" />
+          <div className="w-full h-2 bg-gray-400 rounded" />
+          <div className="w-5/6 h-2 bg-gray-400 mt-2 rounded" />
+        </div>
+      ))}
+    </div>
+  ); 
 
   return (
     <div className="flex flex-col w-full h-full text-sm sm:text-xs md:text-sm lg:text-base">
@@ -102,7 +140,7 @@ export default function IntramuralsPage() {
             className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg text-sm sm:text-xs md:text-sm lg:text-base px-5 py-2.5 mb-2"
             onClick={openModal}
           >
-            Add event
+            Add intramural
           </button>
         </div>
       </div>
@@ -117,7 +155,17 @@ export default function IntramuralsPage() {
           placeholder="Search intramural"
           filterOptions={filterOptions}
         />
-        <div className="w-full mt-4">
+
+{loading ? (
+          /* Skeleton Loader */
+          <SkeletonLoader />
+        ) : intramurals.length === 0 ? (
+          /* Empty State */
+          <div className="text-center py-8 text-gray-500">
+            No intramurals found. Click "Add Intramural" to create one.
+          </div>
+        ) : (
+          <div className="w-full mt-4">
           {/* Updated card container with proper responsive grid layout */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredIntramurals.map((intramural) => (
@@ -139,6 +187,9 @@ export default function IntramuralsPage() {
             </div>
           )}
         </div>
+        )}
+
+        
       </div>
     
       {/* Intramural Modal */}

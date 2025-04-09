@@ -29,6 +29,23 @@ export default function VenuesPage() {
     setIsModalOpen(true);
   };
 
+  const openModal = () => {
+    setSelectedVenue(null);
+    setIsModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedVenue(null);
+    setError(null);
+  };
+
+  const filteredVenues = venues.filter(
+    (venue) =>
+      (activeTab === "all" || venue.type === activeTab) &&
+      (typeof venue.name === 'string' ? venue.name.toLowerCase().includes(search.toLowerCase()) : false)
+  );
+
   // Create new venue
   const addVenue = async (newVenue) => {
     try {
@@ -73,22 +90,7 @@ export default function VenuesPage() {
     }
   };
 
-  const openModal = () => {
-    setSelectedVenue(null);
-    setIsModalOpen(true);
-  };
   
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedVenue(null);
-    setError(null);
-  };
-
-  const filteredVenues = venues.filter(
-    (venue) =>
-      (activeTab === "all" || venue.type === activeTab) &&
-      (typeof venue.name === 'string' ? venue.name.toLowerCase().includes(search.toLowerCase()) : false)
-  );
 
   // Fetch all venues
   const fetchVenues = async () => {

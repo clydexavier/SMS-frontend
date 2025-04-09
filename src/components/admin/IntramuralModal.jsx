@@ -93,7 +93,7 @@ export default function IntramuralModal({
                         <form className="p-4 md:p-5" onSubmit={handleSubmit}>
                             <div className="grid gap-4 mb-4 grid-cols-2">
                                 <div className="col-span-2">
-                                    <label htmlFor="name" className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-base font-medium text-gray-900 dark:text-white">
+                                    <label htmlFor="name" className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-900 dark:text-white">
                                         Name
                                     </label>
                                     <input
@@ -102,14 +102,14 @@ export default function IntramuralModal({
                                         id="name"
                                         value={formData.name}
                                         onChange={handleChange}
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs md:text-sm lg:text-base rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs md:text-sm lg:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
                                         placeholder="Type intramural name"
                                         required
                                     />
                                 </div>
 
                                 <div className="col-span-2">
-                                    <label htmlFor="location" className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-base font-medium text-gray-900 dark:text-white">
+                                    <label htmlFor="location" className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-900 dark:text-white">
                                         Location
                                     </label>
                                     <input
@@ -118,7 +118,7 @@ export default function IntramuralModal({
                                         id="location"
                                         value={formData.location}
                                         onChange={handleChange}
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs md:text-sm lg:text-base rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs md:text-sm lg:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
                                         placeholder="Type intramural location"
                                         required
                                     />
@@ -126,21 +126,21 @@ export default function IntramuralModal({
 
                                 <div className="col-span-2 flex items-center gap-4">
                                     <div className="relative w-full">
-                                        <label className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-base font-medium text-gray-900">Start Date</label>
+                                        <label className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-900">Start Date</label>
                                         <DatePicker
                                             selected={formData.start_date}
                                             onChange={handleStartDateChange}
                                             selectsStart
                                             startDate={formData.start_date}
                                             endDate={formData.end_date}
-                                            className="border border-gray-300 rounded-lg p-2 w-full text-gray-900 text-sm sm:text-xs md:text-sm lg:text-base"
+                                            className="border border-gray-300 rounded-lg p-2 w-full text-gray-900 text-sm sm:text-xs md:text-sm lg:text-sm"
                                             placeholderText="Select start date"
                                             required
                                         />
                                     </div>
 
                                     <div className="relative w-full">
-                                        <label className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-base font-medium text-gray-900">End Date</label>
+                                        <label className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-900">End Date</label>
                                         <DatePicker
                                             selected={formData.end_date}
                                             onChange={handleEndDateChange}
@@ -148,7 +148,7 @@ export default function IntramuralModal({
                                             startDate={formData.start_date}
                                             endDate={formData.end_date}
                                             minDate={formData.start_date}
-                                            className="border border-gray-300 rounded-lg p-2 w-full text-gray-900 text-sm sm:text-xs md:text-sm lg:text-base"
+                                            className="border border-gray-300 rounded-lg p-2 w-full text-gray-900 text-sm sm:text-xs md:text-sm lg:text-sm"
                                             placeholderText="Select end date"
                                             required
                                         />
@@ -156,7 +156,7 @@ export default function IntramuralModal({
                                 </div>
                             </div>
 
-                            <button type="submit" className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm sm:text-xs md:text-sm lg:text-base px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900">
+                            <button type="submit" className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm sm:text-xs md:text-sm lg:text-sm px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900">
                                 {existingIntramural ? "Update Intramural" : "Add New Intramural"}
                             </button>
                         </form>

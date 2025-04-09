@@ -44,7 +44,7 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
     <div className="h-full w-full p-4">
       <p className="text-sm sm:text-xs md:text-sm lg:text-sm font-semibold text-gray-800">{intramural.start_date}</p>
       <p
-        className={`text-sm sm:text-xs md:text-sm lg:text-sm font-medium ${
+        className={`text-sm sm: md:text-sm lg:text-sm font-medium ${
           intramural.status === "complete" ? "text-green-600" : "text-yellow-600"
         }`}
       >
@@ -72,7 +72,7 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
       {menuOpen && (
         <div className="absolute right-0 bottom-8 w-40 bg-white border rounded-md shadow-lg z-50">
           <button 
-            className="block w-full px-4 py-2 text-left text-sm  text-sm sm:text-xs  hover:bg-green-100" 
+            className="block w-full px-4 py-2 text-left text-sm  sm:  hover:bg-green-100" 
             onClick={() => {
               openEditModal(intramural);
               setMenuOpen(false);
@@ -81,7 +81,7 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
             Update
           </button>
           <button 
-            className="block w-full px-4 py-2 text-left  text-sm sm:text-xs  text-red-600 hover:bg-red-100" 
+            className="block w-full px-4 py-2 text-left  text-sm sm:  text-red-600 hover:bg-red-100" 
             onClick={handleDelete}
           >
             Delete

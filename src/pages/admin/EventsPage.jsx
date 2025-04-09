@@ -127,7 +127,7 @@ export default function EventsPage() {
   );
 
   return (
-    <div className="flex flex-col w-full h-full text-sm sm:text-xs md:text-sm lg:text-sm">
+    <div className="flex flex-col w-full h-full text-sm sm:-xs md:text-sm lg:text-sm">
       {/* Section Title */}
       <div>
         <h2 className="text-xl sm:text-lg md:text-xl font-semibold mb-2 text-[#006600]">

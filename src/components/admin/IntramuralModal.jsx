@@ -58,9 +58,6 @@ export default function IntramuralModal({
             start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : null,
             end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
         };
-    
-        console.log("Submitting Data:", formattedData);
-    
 
       if (existingIntramural) {
         updateIntramural(existingIntramural.id, formattedData);
@@ -100,6 +97,7 @@ export default function IntramuralModal({
                                         type="text"
                                         name="name"
                                         id="name"
+                                        autoComplete="off"
                                         value={formData.name}
                                         onChange={handleChange}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs md:text-sm lg:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -116,6 +114,7 @@ export default function IntramuralModal({
                                         type="text"
                                         name="location"
                                         id="location"
+                                        autoComplete="off"
                                         value={formData.location}
                                         onChange={handleChange}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs md:text-sm lg:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -126,8 +125,10 @@ export default function IntramuralModal({
 
                                 <div className="col-span-2 flex items-center gap-4">
                                     <div className="relative w-full">
-                                        <label className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-900">Start Date</label>
+                                        <label htmlFor="start_date" className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-900">Start Date</label>
                                         <DatePicker
+                                            id="start_date"
+                                            name="start_date"
                                             selected={formData.start_date}
                                             onChange={handleStartDateChange}
                                             selectsStart
@@ -140,8 +141,10 @@ export default function IntramuralModal({
                                     </div>
 
                                     <div className="relative w-full">
-                                        <label className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-900">End Date</label>
+                                        <label htmlFor="end_date" className="block mb-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-900">End Date</label>
                                         <DatePicker
+                                            id="end_date"
+                                            name="end_date"
                                             selected={formData.end_date}
                                             onChange={handleEndDateChange}
                                             selectsEnd

@@ -3,6 +3,7 @@ import axiosClient from "../../axiosClient";
 import IntramuralCard from "../../components/IntramuralCard";
 import Filter from "../../components/Filter";
 import IntramuralModal from "../../components/admin/IntramuralModal";
+import PaginationControls from "../../components/PaginationControls";
 
 export default function IntramuralsPage() {
   const filterOptions = [
@@ -12,103 +13,106 @@ export default function IntramuralsPage() {
     { label: "Completed", value: "completed" },
   ];
 
-  //Intramurals State
   const [intramurals, setIntramurals] = useState([]);
   const [selectedIntramural, setSelectedIntramural] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-
-
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
     setSelectedIntramural(null);
     setIsModalOpen(true);
   };
-
   const closeModal = () => setIsModalOpen(false);
-  
   const openEditModal = (intramural) => {
     setSelectedIntramural(intramural);
     setIsModalOpen(true);
   };
 
-  //Filter state
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
+
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    perPage: 12,
+    total: 0,
+    lastPage: 1,
+  });
 
   const filteredIntramurals = intramurals.filter((intramural) =>
     (activeTab === "all" || intramural.status === activeTab) &&
     intramural.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  
-  //CRUD REQUESTS
-  // Create new intramural
-const addIntramural = async (newIntramural) => {
-  try {
-    setLoading(true);
-    await axiosClient.post("/intramurals/create", newIntramural);
-    await fetchIntramurals();
-    closeModal();
-  } catch (err) {
-    setError("Failed to create intramural");
-    console.error("Error creating intramural:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  const fetchIntramurals = async (page = 1) => {
+    try {
+      setLoading(true);
+      const { data } = await axiosClient.get(`/intramurals?page=${page}`);
+      setIntramurals(data.data);
+      setPagination({
+        currentPage: data.meta.current_page,
+        perPage: data.meta.per_page,
+        total: data.meta.total,
+        lastPage: data.meta.last_page,
+      });
+    } catch (err) {
+      setError("Failed to fetch intramurals");
+      console.error("Error fetching intramurals:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-// Update existing intramural
-const updateIntramural = async (id, updatedData) => {
-  try {
-    setLoading(true);
-    await axiosClient.patch(`/intramurals/${id}/edit`, updatedData);
-    await fetchIntramurals();
-    closeModal();
-  } catch (err) {
-    setError("Failed to update intramural");
-    console.error("Error updating intramural:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  const handlePageChange = (page) => {
+    setPagination((prev) => ({ ...prev, currentPage: page }));
+    fetchIntramurals(page);
+  };
 
-// Delete intramural
-const deleteIntramural = async (id) => {
-  try {
-    setLoading(true);
-    await axiosClient.delete(`/intramurals/${id}`);
-    await fetchIntramurals();
-  } catch (err) {
-    setError("Failed to delete intramural");
-    console.error("Error deleting intramural:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  const addIntramural = async (newIntramural) => {
+    try {
+      setLoading(true);
+      await axiosClient.post("/intramurals/create", newIntramural);
+      await fetchIntramurals(pagination.currentPage);
+      closeModal();
+    } catch (err) {
+      setError("Failed to create intramural");
+      console.error("Error creating intramural:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-// Fetch all intramurals
-const fetchIntramurals = async () => {
-  try {
-    setLoading(true);
-    const { data } = await axiosClient.get('/intramurals');
-    setIntramurals(data);
-  } catch (err) {
-    setError("Failed to fetch intramurals");
-    console.error("Error fetching intramurals:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  const updateIntramural = async (id, updatedData) => {
+    try {
+      setLoading(true);
+      await axiosClient.patch(`/intramurals/${id}/edit`, updatedData);
+      await fetchIntramurals(pagination.currentPage);
+      closeModal();
+    } catch (err) {
+      setError("Failed to update intramural");
+      console.error("Error updating intramural:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Initial load
+  const deleteIntramural = async (id) => {
+    try {
+      setLoading(true);
+      await axiosClient.delete(`/intramurals/${id}`);
+      await fetchIntramurals(pagination.currentPage);
+    } catch (err) {
+      setError("Failed to delete intramural");
+      console.error("Error deleting intramural:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchIntramurals();
   }, []);
 
-  // Skeleton loader component
   const SkeletonLoader = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {[...Array(8)].map((_, index) => (
@@ -123,16 +127,14 @@ const fetchIntramurals = async () => {
         </div>
       ))}
     </div>
-  ); 
+  );
 
   return (
     <div className="flex flex-col w-full h-full text-sm sm:text-xs md:text-sm lg:text-sm">
-      {/* Section Title */}
       <div>
         <h2 className="text-xl sm:text-lg md:text-xl font-semibold mb-2 text-[#006600]">Intramurals</h2>
       </div>
-    
-      {/* Add Button */}
+
       <div className="w-full bg-gray-100 pt-4 pb-4 px-4 mb-4">
         <div className="flex justify-end">
           <button
@@ -144,9 +146,8 @@ const fetchIntramurals = async () => {
           </button>
         </div>
       </div>
-    
-      {/* Filter and List */}
-      <div className="flex-1 p-6 bg-gray-100 text-gray-900">
+
+      <div className="flex-1 p-6 bg-blue-100 text-gray-900">
         <Filter
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -156,43 +157,43 @@ const fetchIntramurals = async () => {
           filterOptions={filterOptions}
         />
 
-{loading ? (
-          /* Skeleton Loader */
+        {loading ? (
           <SkeletonLoader />
         ) : intramurals.length === 0 ? (
-          /* Empty State */
           <div className="text-center py-8 text-gray-500">
             No intramurals found. Click "Add Intramural" to create one.
           </div>
         ) : (
           <div className="w-full mt-4">
-          {/* Updated card container with proper responsive grid layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredIntramurals.map((intramural) => (
-              <div key={intramural.id}
-              className="w-full h-40 p-4 bg-red-200 outline outline-1 outline-black rounded-md">
-                <IntramuralCard
-                  intramural={intramural}
-                  openEditModal={openEditModal}
-                  deleteIntramural={deleteIntramural}
-            />
-              </div>
-            ))}
-          </div>
-          
-          {/* Empty state message */}
-          {filteredIntramurals.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No {activeTab} intramurals found.
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredIntramurals.map((intramural) => (
+                <div
+                  key={intramural.id}
+                  className="w-full h-40 p-4 bg-red-200 outline outline-1 outline-black rounded-md"
+                >
+                  <IntramuralCard
+                    intramural={intramural}
+                    openEditModal={openEditModal}
+                    deleteIntramural={deleteIntramural}
+                  />
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-        )}
 
-        
+            {filteredIntramurals.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No {activeTab} intramurals found.
+              </div>
+            )}
+
+            <PaginationControls 
+              pagination={pagination}
+              handlePageChange={handlePageChange} 
+            />
+          </div>
+        )}
       </div>
-    
-      {/* Intramural Modal */}
+
       <IntramuralModal
         isModalOpen={isModalOpen}
         closeModal={closeModal}

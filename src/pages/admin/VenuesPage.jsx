@@ -77,17 +77,21 @@ export default function VenuesPage() {
   };
 
   // Delete venue
-  const deleteVenue = async (id) => {
-    try {
-      setLoading(true);
-      await axiosClient.delete(`/intramurals/${intrams_id}/venues/${id}`);
-      await fetchVenues();
-    } catch (err) {
-      setError("Failed to delete venue");
-      console.error("Error deleting venue:", err);
-    } finally {
-      setLoading(false);
+  const deleteVenue = async (id, name) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
+    if (confirmDelete) {
+      try {
+        setLoading(true);
+        await axiosClient.delete(`/intramurals/${intrams_id}/venues/${id}`);
+        await fetchVenues();
+      } catch (err) {
+        setError("Failed to delete venue");
+        console.error("Error deleting venue:", err);
+      } finally {
+        setLoading(false);
+      }
     }
+    
   };
 
   
@@ -112,55 +116,56 @@ export default function VenuesPage() {
     }
   }, [intrams_id]);
 
-  // Skeleton loader component
-  const SkeletonLoader = () => (
-    <div className="animate-pulse overflow-x-auto">
-      {/* Skeleton for table */}
-      <div className="shadow-md rounded-lg">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {[1, 2, 3, 4].map((i) => (
-                <th key={i} className="px-6 py-3">
-                  <div className="h-4 bg-gray-200 rounded w-20"></div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {[1, 2, 3, 4, 5].map((row) => (
-              <tr key={row}>
-                {[1, 2, 3, 4].map((col) => (
-                  <td key={col} className="px-6 py-4">
+    // Skeleton loader component
+    const SkeletonLoader = () => (
+      <div className="animate-pulse overflow-x-auto">
+        {/* Skeleton for table */}
+        <div className="shadow-md rounded-lg">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                {[1, 2, 3, 4].map((i) => (
+                  <th key={i} className="px-6 py-3">
                     <div className="h-4 bg-gray-200 rounded w-20"></div>
-                  </td>
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="flex flex-col w-full h-full">
-      {/* Section Title and Button Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold mb-2 sm:mb-0 text-[#006600]">Venues</h2>
-        
-        {/* Add Button - Moves to left on mobile */}
-        <div className="w-full sm:w-auto pt-2 sm:pt-0">
-          <button
-            type="button"
-            className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
-            onClick={openModal}
-            disabled={loading}
-          >
-            Add Venue
-          </button>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {[1, 2, 3, 4, 5].map((row) => (
+                <tr key={row}>
+                  {[1, 2, 3, 4].map((col) => (
+                    <td key={col} className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+    );
+
+  return (
+    <div className="flex flex-col w-full h-full text-sm sm:text-xs md:text-sm lg:text-sm">
+        {/* Section Title and Button Section */}      
+        <div>
+          <h2 className="text-xl font-semibold mb-2 sm:mb-0 text-[#006600]">Venues</h2>
+        </div>
+        {/* Add Button */}
+        <div className="w-full bg-gray-100 pt-4 pb-4 px-4 mb-4">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg text-sm sm:-xs md:text-sm lg:text-sm px-5 py-2.5 mb-2"
+              onClick={openModal}
+              disabled={loading}
+            >
+              Add Venue
+            </button>
+          </div>
+        </div>
 
       {/* Error message */}
       {error && (
@@ -212,16 +217,16 @@ export default function VenuesPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredVenues.map((venue) => (
                   <tr key={venue.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm sm:-xs md:text-sm lg:text-sm text-gray-900">
                       {venue.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm sm:-xs md:text-sm lg:text-sm text-gray-500">
                       {venue.location}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm sm:-xs md:text-sm lg:text-sm text-gray-500">
                       {venue.type}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm sm:-xs md:text-sm lg:text-sm font-medium">
                       <button
                         className="text-indigo-600 hover:text-indigo-900 mr-4"
                         onClick={() => openEditModal(venue)}
@@ -230,7 +235,7 @@ export default function VenuesPage() {
                       </button>
                       <button
                         className="text-red-600 hover:text-red-900"
-                        onClick={() => deleteVenue(venue.id)}
+                        onClick={() => deleteVenue(venue.id, venue.name)}
                       >
                         Delete
                       </button>

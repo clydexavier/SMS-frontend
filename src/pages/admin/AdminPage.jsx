@@ -23,7 +23,7 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">
       <noscript>
-        <strong className="text-sm sm:text-xs md:text-sm lg:text-base">
+        <strong className="text-sm sm:text-xs md:text-sm lg:text-sm">
           We're sorry but the frontend doesn't work properly without JavaScript enabled. Please enable it to continue.
         </strong>
       </noscript>
@@ -32,7 +32,7 @@ export default function AdminPage() {
       <header className="h-16 bg-green-900 text-white flex items-center justify-between px-6 shadow-md">
         <Link
           to="/admin/intramurals"
-          className="hover:text-gray-200 transition-colors text-sm sm:text-xs md:text-sm lg:text-base"
+          className="hover:text-gray-200 transition-colors text-sm sm:text-xs md:text-sm lg:text-sm"
         >
           Home
         </Link>
@@ -54,7 +54,7 @@ export default function AdminPage() {
           <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
         </div>
 
-        <div className="flex-auto overflow-y-auto p-6 bg-green-200 text-sm sm:text-xs md:text-sm lg:text-base">
+        <div className="flex-auto overflow-y-auto p-6 bg-green-200 text-sm sm:text-xs md:text-sm lg:text-sm">
           <Outlet />
         </div>
       </main>

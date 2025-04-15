@@ -13,9 +13,11 @@ export default function TeamModal({
 }) {
   const [formData, setFormData] = useState({ 
     name: "", 
+    type: "",
     team_logo_path: null, 
     previewLogo: "" 
   });
+
   const [uploaded, setUploaded] = useState(false);
   const [removeLogo, setRemoveLogo] = useState(false);
 
@@ -23,11 +25,12 @@ export default function TeamModal({
     if (existingTeam) {
       setFormData({
         name: existingTeam.name || "",
+        type: existingTeam.type,
         team_logo_path: null,
         previewLogo: existingTeam.team_logo_path || "", // Change to team_logo_path
       });
     } else {
-      setFormData({ name: "", team_logo_path: null, previewLogo: "" });
+      setFormData({ name: "", type: "" ,team_logo_path: null, previewLogo: "" });
     }
     setUploaded(false);
     setRemoveLogo(false);
@@ -69,11 +72,15 @@ export default function TeamModal({
     const teamData = new FormData();
     
     // Add required fields
+    teamData.append('_method', 'PATCH'); // Important for method spoofing
     teamData.append("name", formData.name);
-    
-    if (existingTeam) {
-      teamData.append("id", existingTeam.id);
+    teamData.append("type", formData.type);
+
+
+    if(formData.id) {
+      teamData.append("id", formData.id);
     }
+
     // Add file if present
     if (formData.team_logo_path) {
       teamData.append("team_logo_path", formData.team_logo_path);
@@ -84,9 +91,13 @@ export default function TeamModal({
       teamData.append("remove_logo", "1");
     }
     
+    for (let [key, value] of teamData.entries()) {
+  console.log(`${key}:`, value);
+}
     // Use the passed in addTeam or updateTeam functions from the parent component
     if (existingTeam) {
       updateTeam(existingTeam.id, teamData);
+
     } else {
       addTeam(teamData);
     }
@@ -135,6 +146,24 @@ export default function TeamModal({
                   placeholder="Enter team name" 
                   maxLength="50" // Matches your validation max:50
                 />
+              </div>
+              <div className="col-span-2">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Team Type</label>
+                <select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleChange}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    required
+                  >
+                    <option value="" disabled>
+                        Select Type
+                    </option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                  </select>
               </div>
               <div className="col-span-2">
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Team Logo</label>

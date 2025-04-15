@@ -13,7 +13,7 @@ export default function TeamsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
 
   const [pagination, setPagination] = useState({
@@ -24,9 +24,10 @@ export default function TeamsPage() {
   });
 
   const filterOptions = [
-    { label: "All", value: "all" },
-    { label: "Indoor", value: "Indoor" },
-    { label: "Outdoor", value: "Outdoor" },
+    { label: "All", value: "All" },
+    { label: "A", value: "A" },
+    { label: "B", value: "B" },
+    { label: "C", value: "C" },
   ];
 
   const openModal = () => {
@@ -77,6 +78,7 @@ export default function TeamsPage() {
 
   const addTeam = async (newTeam) => {
     try {
+      console.log(newTeam);
       setLoading(true);
       await axiosClient.post(`/intramurals/${intrams_id}/overall_teams/create`, newTeam);
       await fetchTeams();
@@ -92,7 +94,12 @@ export default function TeamsPage() {
   const updateTeam = async (id, updatedData) => {
     try {
       setLoading(true);
-      await axiosClient.patch(`/intramurals/${intrams_id}/overall_teams/${id}/edit`, updatedData);
+      console.log(updatedData);
+      await axiosClient.post(`/intramurals/${intrams_id}/overall_teams/${id}/edit?`, updatedData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       await fetchTeams();
       closeModal();
     } catch (err) {
@@ -198,6 +205,7 @@ export default function TeamsPage() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Logo</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -216,6 +224,7 @@ export default function TeamsPage() {
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">{team.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{team.type}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         className="text-indigo-600 hover:text-indigo-900 mr-4"

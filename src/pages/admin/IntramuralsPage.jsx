@@ -118,7 +118,7 @@ export default function IntramuralsPage() {
   useEffect(() => {
     //  if (pendingPage === null && search === "" && activeTab === "all") return;
   
-    setLoading(true); // ← Ensure the skeleton shows during fetch
+    setLoading(true); 
   
     const debounce = setTimeout(() => {
       const pageToFetch = pendingPage ?? pagination.currentPage;

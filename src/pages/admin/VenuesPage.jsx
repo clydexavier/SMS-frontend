@@ -14,7 +14,7 @@ export default function VenuesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
 
   // Pagination
@@ -26,7 +26,7 @@ export default function VenuesPage() {
   });
 
   const filterOptions = [
-    { label: "All", value: "all" },
+    { label: "All", value: "All" },
     { label: "Indoor", value: "Indoor" },
     { label: "Outdoor", value: "Outdoor" },
   ];
@@ -122,6 +122,8 @@ export default function VenuesPage() {
 
   // Debounced fetch
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     const delayDebounce = setTimeout(() => {
       if (intrams_id) {
         fetchVenues(pagination.currentPage);
@@ -129,6 +131,7 @@ export default function VenuesPage() {
     }, 1000);
     return () => clearTimeout(delayDebounce);
   }, [search, activeTab, pagination.currentPage, intrams_id]);
+  
 
   const SkeletonLoader = () => (
     <div className="animate-pulse overflow-x-auto">

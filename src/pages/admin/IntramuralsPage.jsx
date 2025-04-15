@@ -116,7 +116,7 @@ export default function IntramuralsPage() {
   };
 
   useEffect(() => {
-    if (pendingPage === null && search === "" && activeTab === "all") return;
+    //  if (pendingPage === null && search === "" && activeTab === "all") return;
   
     setLoading(true); // ← Ensure the skeleton shows during fetch
   

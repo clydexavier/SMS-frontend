@@ -92,8 +92,8 @@ export default function TeamModal({
     }
     
     for (let [key, value] of teamData.entries()) {
-  console.log(`${key}:`, value);
-}
+      console.log(`${key}:`, value);
+    }
     // Use the passed in addTeam or updateTeam functions from the parent component
     if (existingTeam) {
       updateTeam(existingTeam.id, teamData);

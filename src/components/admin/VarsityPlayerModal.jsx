@@ -10,7 +10,7 @@ export default function VarsityPlayerModal({
 }) {
   const [formData, setFormData] = useState({
     name: "",
-    student_number: "",
+    id_number: "",
     sport: "",
     is_varsity: true,
     team_id: null,
@@ -20,17 +20,43 @@ export default function VarsityPlayerModal({
     if (existingPlayer) {
       setFormData(existingPlayer);
     } else {
-      setFormData({ name: "", student_number: "", sport: "", is_varsity: true, team_id: null });
+      setFormData({ name: "", id_number: "", sport: "", is_varsity: true, team_id: null });
     }
   }, [existingPlayer]);
 
+
+  const formatIDNumber = (value) => {
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, "");
+  
+    // Format into ##-#-#####
+    const part1 = digits.slice(0, 2);
+    const part2 = digits.slice(2, 3);
+    const part3 = digits.slice(3, 8);
+  
+    let formatted = part1;
+    if (part2) formatted += `-${part2}`;
+    if (part3) formatted += `-${part3}`;
+  
+    return formatted;
+  };
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  
+    const newValue =
+      name === "id_number" ? formatIDNumber(value) : value;
+  
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: newValue,
+    }));
   };
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(formData)
     if (existingPlayer) {
       updatePlayer(existingPlayer.id, formData);
     } else {
@@ -78,18 +104,18 @@ export default function VarsityPlayerModal({
                   />
                 </div>
 
-                {/* Student Number */}
+                {/* ID Number */}
                 <div className="col-span-2">
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    Student Number
+                    ID Number
                   </label>
                   <input
                     type="text"
-                    name="student_number"
-                    value={formData.student_number}
+                    name="id_number"
+                    value={formData.id_number}
                     onChange={handleChange}
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                    placeholder="Enter student number"
+                    placeholder="Enter ID number"
                     required
                   />
                 </div>

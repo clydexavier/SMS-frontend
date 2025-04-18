@@ -31,6 +31,9 @@ import BracketPage from "./pages/admin/BracketPage";
 import GamePage from "./pages/admin/GamePage";
 import ParticipantsPage from "./pages/admin/ParticipantsPage";
 
+import ParticipantPage from "./pages/admin/ParticipantPage";
+import PlayersPage from "./pages/admin/PlayersPage";
+
 const routes = [
   {
     path: "/",
@@ -81,6 +84,20 @@ const routes = [
           { path: "bracket", element: <BracketPage /> },
           { path: "games", element: <GamePage /> },
           { path: "participants", element: <ParticipantsPage /> },
+          { path: "logs", element: <VarsityPlayersPage /> },
+        ],
+      },
+      {
+        path: ":intrams_id/events/:event_id/participants/:participant_id",
+        element: (
+          <ProtectedRoute roles = {["admin"]}>
+            <ParticipantPage/>
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: "bracket", element: <BracketPage /> },
+          { path: "games", element: <GamePage /> },
+          { path: "players", element: <PlayersPage /> },
           { path: "logs", element: <VarsityPlayersPage /> },
         ],
       },

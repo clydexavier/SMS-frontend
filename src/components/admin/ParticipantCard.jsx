@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiMoreVertical } from "react-icons/fi";
+import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export default function ParticipantCard({ participant, openEditModal, deleteParticipant }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  
+    const { intrams_id, event_id } = useParams();
+    const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -28,11 +32,13 @@ export default function ParticipantCard({ participant, openEditModal, deletePart
   return (
     <div className="w-full h-full box-border bg-white rounded-lg shadow-md border relative overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="bg-green-700 text-white p-2 rounded-t-lg flex flex-col items-center">
-        <span className="text-2xl sm:text-xl text-center font-extrabold">
-          {participant.name}
-        </span>
-      </div>
+      <Link to={`/${intrams_id}/events/${event_id}/participants/${participant.id}/players`} className="w-full" >
+        <div className="bg-green-700 text-white p-2 rounded-t-lg flex flex-col items-center">
+            <span className="text-2xl sm:text-xl text-center font-extrabold">
+            {participant.name}
+            </span>
+        </div>
+      </Link>
 
       {/* Content */}
       <div className="p-4">

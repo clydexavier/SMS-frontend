@@ -1,15 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiMoreVertical } from "react-icons/fi";
-import { Link } from "react-router-dom";
-import { useParams } from "react-router-dom";
 
-export default function EventCard({ event, openEditModal, deleteEvent }) {
-  const { intrams_id } = useParams();
-
+export default function ParticipantCard({ participant, openEditModal, deleteParticipant }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
-
-  
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -24,42 +18,33 @@ export default function EventCard({ event, openEditModal, deleteEvent }) {
   }, []);
 
   const handleDelete = () => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${event.name}?`);
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${participant.name}?`);
     if (confirmDelete) {
-      deleteEvent(event.id);
+      deleteParticipant(participant.id);
     }
     setMenuOpen(false);
   };
 
   return (
     <div className="w-full h-full box-border bg-white rounded-lg shadow-md border relative overflow-hidden flex flex-col">
-      {/* Header with Link */}
-      <Link to={`${event.id}/bracket`} state={{intrams_id: intrams_id   ,event_id: event.id }} className="w-full">
-        <div className="bg-gray-800 text-white p-2 rounded-t-lg flex flex-col items-center">
-          <span className="text-2xl sm:text-xl text-center font-extrabold">{event.name}</span>
-        </div>
-      </Link>
+      {/* Header */}
+      <div className="bg-green-700 text-white p-2 rounded-t-lg flex flex-col items-center">
+        <span className="text-2xl sm:text-xl text-center font-extrabold">
+          {participant.name}
+        </span>
+      </div>
 
       {/* Content */}
       <div className="p-4">
-        <p className="text-sm sm:text-xs md:text-sm lg:text-sm font-semibold text-gray-800">{event.date}</p>
-        <p
-          className={`text-sm sm:text-xs md:text-sm lg:text-sm font-medium ${
-            event.status === "complete" ? "text-green-600" : "text-yellow-600"
-          }`}
-        >
-          Status: {event.status}
-        </p>
-        <p
-          className={`text-sm sm:text-xs md:text-sm lg:text-sm ${
-            event.location ? "text-gray-600" : "text-red-600 font-medium"
-          }`}
-        >
-          {event.location ? `Location: ${event.location}` : "No location yet"}
+      <span className="text-2xl sm:text-xl text-center font-extrabold">
+          {participant.name}
+        </span>
+        <p className="text-sm font-semibold text-gray-800">
+          Team: {participant.team_name || "N/A"}
         </p>
       </div>
 
-      {/* Three-Dot Button with Dropdown */}
+      {/* Three-Dot Dropdown */}
       <div className="absolute bottom-2 right-2" ref={menuRef}>
         <button
           onClick={() => setMenuOpen((prev) => !prev)}
@@ -73,7 +58,7 @@ export default function EventCard({ event, openEditModal, deleteEvent }) {
             <button
               className="block w-full px-4 py-2 text-left text-sm sm:text-xs hover:bg-green-100"
               onClick={() => {
-                openEditModal(event);
+                openEditModal(participant);
                 setMenuOpen(false);
               }}
             >

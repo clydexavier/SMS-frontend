@@ -32,7 +32,7 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
     <div className="w-full h-full box-border bg-white rounded-lg shadow-md border relative overflow-hidden flex flex-col">
 
     {/* Header with Link */}
-    <Link to={`/${intramural.id}/events`} state={{ id: intramural.id }} className="w-full">
+    <Link to={`/${intramural.id}/events`} state={{ intrams_id: intramural.id }} className="w-full">
       <div className="w-full bg-gray-800 text-white p-2 rounded-t-lg flex flex-col items-center">
         <span className=" text-2xl font-extrabold text-center sm:text-xl text-sm">
           {intramural.name}

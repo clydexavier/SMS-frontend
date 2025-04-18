@@ -72,7 +72,7 @@ export default function TeamModal({
     const teamData = new FormData();
     
     // Add required fields
-    teamData.append('_method', 'PATCH'); // Important for method spoofing
+    
     teamData.append("name", formData.name);
     teamData.append("type", formData.type);
 
@@ -96,6 +96,7 @@ export default function TeamModal({
     }
     // Use the passed in addTeam or updateTeam functions from the parent component
     if (existingTeam) {
+      teamData.append('_method', 'PATCH'); // Important for method spoofing
       updateTeam(existingTeam.id, teamData);
 
     } else {

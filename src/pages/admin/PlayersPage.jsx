@@ -26,8 +26,8 @@ export default function PlayersPage() {
 
   const filterOptions = [
     { label: "All", value: "All" },
-    { label: "Approved", value: "Approved" },
-    { label: "Pending", value: "Pending" },
+    { label: "Approved", value: "1" },
+    { label: "Pending", value: "0" },
   ];
 
   const openModal = () => {
@@ -52,7 +52,7 @@ export default function PlayersPage() {
       const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players`, {
         params: {
           page,
-          sport: activeTab,
+          approved: activeTab,
           search,
         },
       });
@@ -122,17 +122,22 @@ export default function PlayersPage() {
     }
   };
 
-  const toggleApproval = async (id, currentStatus) => {
+  
+
+  const toggleApproval = async (id, currentStatus, name) => {
+    const confirmApprove = window.confirm(`Are you sure you want to ${currentStatus? "change to pending the status of ": "approve the status of "} ${name}?`);
+    if (confirmApprove) {
     try {
-      setLoading(true);
-      await axiosClient.patch(`/intramurals/${intrams_id}/varsity_players/${id}/approve`, {
-        approved: !currentStatus,
-      });
-      await fetchPlayers();
-    } catch (err) {
-      setError("Failed to update approval status");
-    } finally {
-      setLoading(false);
+        setLoading(true);
+        await axiosClient.patch(`/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}/edit`, {
+            approved: !currentStatus? 1: 0,
+        });
+        await fetchPlayers();
+        } catch (err) {
+        setError("Failed to update approval status");
+        } finally {
+        setLoading(false);
+        }
     }
   };
 
@@ -246,7 +251,7 @@ export default function PlayersPage() {
                       <input
                         type="checkbox"
                         checked={player.approved}
-                        onChange={() => toggleApproval(player.id, player.approved)}
+                        onChange={() => toggleApproval(player.id, player.approved, player.name)}
                         className="w-4 h-4 text-green-600 border-gray-300 rounded"
                       />
                     </td>

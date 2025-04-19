@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosClient from "../../axiosClient";
 import Filter from "../../components/Filter";
-import VarsityPlayerModal from "../../components/admin/VarsityPlayerModal";
+import PlayerModal from "../../components/admin/PlayerModal";
 import PaginationControls from "../../components/PaginationControls";
 
 export default function PlayersPage() {
-  const { intrams_id } = useParams();
+  const { intrams_id , event_id, participant_id} = useParams();
 
   const [players, setPlayers] = useState([]);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -49,7 +49,7 @@ export default function PlayersPage() {
   const fetchPlayers = async (page = 1) => {
     try {
       setLoading(true);
-      const { data } = await axiosClient.get(`/intramurals/${intrams_id}/varsity_players`, {
+      const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players`, {
         params: {
           page,
           sport: activeTab,
@@ -79,7 +79,8 @@ export default function PlayersPage() {
   const addPlayer = async (newPlayer) => {
     try {
       setLoading(true);
-      await axiosClient.post(`/intramurals/${intrams_id}/varsity_players/create`, newPlayer);
+      console.log(newPlayer);
+      await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/create`, newPlayer);
       await fetchPlayers();
       closeModal();
     } catch (err) {
@@ -92,7 +93,11 @@ export default function PlayersPage() {
   const updatePlayer = async (id, updatedData) => {
     try {
       setLoading(true);
-      await axiosClient.patch(`/intramurals/${intrams_id}/varsity_players/${id}/edit`, updatedData);
+      await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}/edit?`, updatedData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       await fetchPlayers();
       closeModal();
     } catch (err) {
@@ -107,10 +112,10 @@ export default function PlayersPage() {
     if (confirmDelete) {
       try {
         setLoading(true);
-        await axiosClient.delete(`/intramurals/${intrams_id}/varsity_players/${id}`);
+        await axiosClient.delete(`/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}`);
         await fetchPlayers();
       } catch (err) {
-        setError("Failed to delete player");
+        setError(err.response?.data?.message || "Failed to delete player");
       } finally {
         setLoading(false);
       }
@@ -254,7 +259,7 @@ export default function PlayersPage() {
         )}
       </div>
 
-      <VarsityPlayerModal
+      <PlayerModal
         isModalOpen={isModalOpen}
         closeModal={closeModal}
         addPlayer={addPlayer}

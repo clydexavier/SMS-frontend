@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { IoMdClose } from "react-icons/io";
 import { FaTimesCircle } from "react-icons/fa";
 import { FaFilePdf, FaFileWord, FaFileAlt, FaFile } from "react-icons/fa";
@@ -18,6 +18,8 @@ export default function DocumentModal({
     file: null,
     previewFile: "",
   });
+
+  const fileInputRef = useRef(null);
 
   const [uploaded, setUploaded] = useState(false);
   const [removeFile, setRemoveFile] = useState(false);
@@ -76,6 +78,10 @@ export default function DocumentModal({
     }));
     setUploaded(false);
     setRemoveFile(true);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   };
 
   const handleSubmit = (e) => {
@@ -240,6 +246,8 @@ export default function DocumentModal({
                         className="hidden"
                         onChange={handleFileChange}
                         disabled={isLoading}
+                        ref={fileInputRef} // ← Here!
+
                       />
                     </label>
                   </div>

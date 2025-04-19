@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { IoMdClose } from "react-icons/io";
 import { FaTimesCircle } from "react-icons/fa";
 
@@ -18,6 +18,7 @@ export default function TeamModal({
     previewLogo: "" 
   });
 
+  const fileInputRef = useRef(null);
   const [uploaded, setUploaded] = useState(false);
   const [removeLogo, setRemoveLogo] = useState(false);
 
@@ -63,6 +64,11 @@ export default function TeamModal({
     }));
     setUploaded(false);
     setRemoveLogo(true);
+    
+    // Clear the actual input value
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   };
 
   const handleSubmit = (e) => {
@@ -146,6 +152,7 @@ export default function TeamModal({
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                   placeholder="Enter team name" 
                   maxLength="50" // Matches your validation max:50
+
                 />
               </div>
               <div className="col-span-2">
@@ -193,6 +200,8 @@ export default function TeamModal({
                       className="hidden" 
                       onChange={handleFileChange}
                       disabled={isLoading} 
+                      ref={fileInputRef} // ← Here!
+
                     />
                   </label>
                 </div>

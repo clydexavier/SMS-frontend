@@ -48,7 +48,7 @@ export default function IntramuralPage() {
           <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
         </div>
 
-        <div className="flex-auto overflow-y-auto p-6 text-sm sm:text-xs md:text-sm lg:text-sm bg-gradient-to-r from-[#1E4D2B] to-[#2A6D3A] ">
+        <div className="flex-auto overflow-y-auto p-6 text-sm sm:text-xs md:text-sm lg:text-sm bg-white-200 ">
           <Outlet />
         </div>
       </main>

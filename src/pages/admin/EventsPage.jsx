@@ -25,7 +25,7 @@ export default function EventsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 
-  const [pendingPage, setPendingPage] = useState(1); // <- Track user intent
+  const [pendingPage, setPendingPage] = useState(1);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 12,
@@ -56,9 +56,9 @@ export default function EventsPage() {
         `/intramurals/${intrams_id}/events`,
         {
           params: {
-            page: page,
+            page,
             status: activeTab,
-            search: search,
+            search,
           },
         }
       );
@@ -130,9 +130,7 @@ export default function EventsPage() {
   };
 
   useEffect(() => {
-    if (pendingPage === null && search === "" && activeTab === "all") return;
-    setLoading(true); // ← Ensure the skeleton shows during fetch
-
+    setLoading(true);
     const debounce = setTimeout(() => {
       const pageToFetch = pendingPage ?? pagination.currentPage;
       if (intrams_id) {
@@ -144,59 +142,63 @@ export default function EventsPage() {
   }, [search, activeTab, pendingPage, intrams_id]);
 
   const SkeletonLoader = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {[...Array(8)].map((_, index) => (
         <div
           key={index}
-          className="w-full h-40 p-4 bg-gray-300 animate-pulse rounded-md"
+          className="w-full h-40 p-4 bg-[#E6F2E8]/50 animate-pulse rounded-lg shadow-sm"
         >
-          <div className="w-3/4 h-4 bg-gray-400 mb-3 rounded" />
-          <div className="w-1/2 h-4 bg-gray-400 mb-2 rounded" />
-          <div className="w-full h-2 bg-gray-400 rounded" />
-          <div className="w-5/6 h-2 bg-gray-400 mt-2 rounded" />
+          <div className="w-3/4 h-4 bg-[#E6F2E8]/70 mb-3 rounded" />
+          <div className="w-1/2 h-4 bg-[#E6F2E8]/70 mb-2 rounded" />
+          <div className="w-full h-2 bg-[#E6F2E8]/70 rounded" />
+          <div className="w-5/6 h-2 bg-[#E6F2E8]/70 mt-2 rounded" />
         </div>
       ))}
     </div>
   );
 
   return (
-    <div className="flex flex-col w-full h-full text-sm sm:text-xs md:text-sm lg:text-sm">
-      <div>
-        <h2 className="text-xl sm:text-lg md:text-xl font-semibold mb-2 text-[#006600]">
-          Events
-        </h2>
-      </div>
-
-      <div className="w-full bg-gray-100 pt-4 pb-4 px-4 mb-4">
-        <div className="flex justify-end">
-          <button
-            type="button"
-            className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg text-sm px-5 py-2.5 mb-2"
-            onClick={openModal}
-            disabled={loading}
-          >
-            Add Event
-          </button>
+    <div className="flex flex-col w-full h-full">
+      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
+        <div>
+          {error && (
+            <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
+              {error}
+            </div>
+          )}
         </div>
+        <button
+          type="button"
+          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
+          onClick={openModal}
+          disabled={loading}
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Add Event
+        </button>
       </div>
 
-      <div className="flex-1 p-6 bg-gray-100 text-gray-900">
-        <Filter
-          activeTab={activeTab}
-          setActiveTab={(value) => {
-            setPagination((prev) => ({ ...prev, currentPage: 1 }));
-            setPendingPage(1);
-            setActiveTab(value);
-          }}
-          search={search}
-          setSearch={(value) => {
-            setPagination((prev) => ({ ...prev, currentPage: 1 }));
-            setPendingPage(1);
-            setSearch(value);
-          }}
-          placeholder="Search event"
-          filterOptions={filterOptions}
-        />
+      <div className="flex-1 p-6 bg-[#F7FAF7]">
+        <div className="mb-6">
+          <Filter
+            activeTab={activeTab}
+            setActiveTab={(value) => {
+              setPagination((prev) => ({ ...prev, currentPage: 1 }));
+              setPendingPage(1);
+              setActiveTab(value);
+            }}
+            search={search}
+            setSearch={(value) => {
+              setPagination((prev) => ({ ...prev, currentPage: 1 }));
+              setPendingPage(1);
+              setSearch(value);
+            }}
+            placeholder="Search event"
+            filterOptions={filterOptions}
+          />
+        </div>
 
         {loading ? (
           <SkeletonLoader />
@@ -206,12 +208,9 @@ export default function EventsPage() {
           </div>
         ) : (
           <div className="w-full mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="w-full h-40 p-4 rounded-md"
-                >
+                <div key={event.id} className="w-full h-40 p-4 rounded-lg shadow-sm">
                   <EventCard
                     event={event}
                     openEditModal={openEditModal}

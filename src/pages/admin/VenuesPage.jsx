@@ -133,63 +133,82 @@ export default function VenuesPage() {
   }, [search, activeTab, pagination.currentPage, intrams_id]);
   
 
-  const SkeletonLoader = () => (
-    <div className="animate-pulse overflow-x-auto">
-      <div className="shadow-md rounded-lg">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>{[1, 2, 3, 4].map((i) => <th key={i} className="px-6 py-3"><div className="h-4 bg-gray-200 rounded w-20"></div></th>)}</tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {[...Array(5)].map((_, row) => (
-              <tr key={row}>{[1, 2, 3, 4].map((col) => <td key={col} className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-20"></div></td>)}</tr>
-            ))}
-          </tbody>
-        </table>
+  const SkeletonLoader = () => {
+    return (
+      <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={i}
+            className="animate-pulse bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <div className="h-4 bg-[#e0f2f1] rounded w-1/4" />
+              <div className="h-4 bg-[#e0f2f1] rounded w-12" />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="h-4 bg-[#e0f2f1] rounded col-span-1" />
+              <div className="h-4 bg-[#e0f2f1] rounded col-span-1" />
+              <div className="h-4 bg-[#e0f2f1] rounded col-span-1" />
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-  );
+    );
+  };
+  
 
   return (
-    <div className="flex flex-col w-full h-full text-sm">
-      <div>
-        <h2 className="text-xl font-semibold mb-2 text-[#006600]">Venues</h2>
-      </div>
-      <div className="w-full bg-gray-100 pt-4 pb-4 px-4 mb-4">
-        <div className="flex justify-end">
-          <button
-            type="button"
-            className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg text-sm px-5 py-2.5 mb-2"
-            onClick={openModal}
-            disabled={loading}
+    <div className="flex flex-col w-full h-full">
+      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
+        <div>
+          {error && (
+            <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
+              {error}
+            </div>
+          )}
+        </div>
+        <button
+          type="button"
+          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
+          onClick={openModal}
+          disabled={loading}
+        >
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            Add Venue
-          </button>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            ></path>
+          </svg>
+          Add Venue
+        </button>
       </div>
-
-      {error && (
-        <div className="bg-red-100 text-red-700 p-3 mb-4 rounded">
-          {error}
+  
+      <div className="flex-1 p-6 bg-[#F7FAF7]">
+        <div className="mb-6">
+          <Filter
+            activeTab={activeTab}
+            setActiveTab={(value) => {
+              setPagination((prev) => ({ ...prev, currentPage: 1 }));
+              setActiveTab(value);
+            }}
+            search={search}
+            setSearch={(value) => {
+              setPagination((prev) => ({ ...prev, currentPage: 1 }));
+              setSearch(value);
+            }}
+            placeholder="Search venue name"
+            filterOptions={filterOptions}
+          />
         </div>
-      )}
-
-      <div className="flex-1 p-2 sm:p-4 md:p-6 bg-gray-100 text-gray-900 rounded-lg">
-        <Filter
-          activeTab={activeTab}
-          setActiveTab={(value) => {
-            setPagination((prev) => ({ ...prev, currentPage: 1 }));
-            setActiveTab(value);
-          }}
-          search={search}
-          setSearch={(value) => {
-            setPagination((prev) => ({ ...prev, currentPage: 1 }));
-            setSearch(value);
-          }}
-          placeholder="Search venue name"
-          filterOptions={filterOptions}
-        />
-
+  
         {loading ? (
           <SkeletonLoader />
         ) : venues.length === 0 ? (
@@ -201,31 +220,52 @@ export default function VenuesPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {venues.map((venue) => (
                   <tr key={venue.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-900">{venue.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{venue.location}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{venue.type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button className="text-indigo-600 hover:text-indigo-900 mr-4" onClick={() => openEditModal(venue)}>Edit</button>
-                      <button className="text-red-600 hover:text-red-900" onClick={() => deleteVenue(venue.id, venue.name)}>Delete</button>
+                    <td className="px-6 py-4 whitespace-nowrap">{venue.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{venue.location}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{venue.type}</td>
+                    <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                      <button
+                        onClick={() => openEditModal(venue)}
+                        className="text-blue-600 hover:underline text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteVenue(venue.id, venue.name)}
+                        className="text-red-600 hover:underline text-sm"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <PaginationControls pagination={pagination} handlePageChange={handlePageChange} />
+            <PaginationControls
+              pagination={pagination}
+              handlePageChange={handlePageChange}
+            />
           </div>
         )}
       </div>
-
+  
       <VenueModal
         isModalOpen={isModalOpen}
         closeModal={closeModal}

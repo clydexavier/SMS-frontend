@@ -29,15 +29,13 @@ export default function AdminPage() {
       </noscript>
 
       {/* Header */}
-      <header className="h-16 bg-green-900 text-white flex items-center justify-between px-6 shadow-md">
+      <header className="h-16 bg-[#2A6D3A] text-white flex items-center justify-between px-6 shadow-md">
         <Link
           to="/admin/intramurals"
           className="hover:text-gray-200 transition-colors text-sm sm:text-xs md:text-sm lg:text-sm"
         >
-          Home
         </Link>
         <div className="font-semibold sm:text-sm md:text-md lg:text-lg">
-          Admin Page
         </div>
         <div></div>
       </header>
@@ -54,7 +52,7 @@ export default function AdminPage() {
           <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
         </div>
 
-        <div className="flex-auto overflow-y-auto p-6 bg-green-200 text-sm sm:text-xs md:text-sm lg:text-sm">
+        <div className="flex-auto overflow-y-auto p-6 bg-white-200 text-sm sm:text-xs md:text-sm lg:text-sm">
           <Outlet />
         </div>
       </main>

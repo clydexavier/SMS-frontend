@@ -210,7 +210,7 @@ export default function EventsPage() {
               {events.map((event) => (
                 <div
                   key={event.id}
-                  className="w-full h-40 p-4 bg-blue-200 outline outline-1 outline-black rounded-md"
+                  className="w-full h-40 p-4 rounded-md"
                 >
                   <EventCard
                     event={event}

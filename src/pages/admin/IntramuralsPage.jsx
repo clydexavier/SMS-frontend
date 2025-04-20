@@ -177,7 +177,7 @@ export default function IntramuralsPage() {
   return (
     <div className="flex flex-col w-full h-full text-sm sm:text-xs md:text-sm lg:text-sm">
       <div>
-        <h2 className="text-xl sm:text-lg md:text-xl font-semibold mb-2 text-[#006600]">
+        <h2 className="text-[#E6F2E8] text-xl sm:text-lg md:text-xl font-semibold mb-2 ">
           Intramurals
         </h2>
       </div>
@@ -186,7 +186,7 @@ export default function IntramuralsPage() {
         <div className="flex justify-end">
           <button
             type="button"
-            className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg text-sm sm:text-xs md:text-sm lg:text-sm px-5 py-2.5 mb-2"
+            className="cursor-pointer focus:outline-none text-black bg-[#F3B54A] hover:bg-yellow-500 rounded-lg text-sm sm:text-xs md:text-sm lg:text-sm px-5 py-2.5 mb-2"
             onClick={openModal}
           >
             Add intramural
@@ -194,7 +194,7 @@ export default function IntramuralsPage() {
         </div>
       </div>
 
-      <div className="flex-1 p-6 bg-blue-100 text-gray-900">
+      <div className="flex-1 p-6 bg-gray-100 text-gray-900">
         <Filter
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -216,7 +216,7 @@ export default function IntramuralsPage() {
               {intramurals.map((intramural) => (
                 <div
                   key={intramural.id}
-                  className="w-full h-40 p-4 bg-red-200 outline outline-1 outline-black rounded-md"
+                  className="w-full h-40 p-4  rounded-md"
                 >
                   <IntramuralCard
                     intramural={intramural}

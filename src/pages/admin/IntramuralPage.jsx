@@ -33,10 +33,9 @@ export default function IntramuralPage() {
           to="/admin/intramurals"
           className="hover:text-gray-200 transition-colors text-sm sm:text-xs md:text-sm lg:text-sm"
         >
-          Home
+          
         </Link>
         <div className="font-semibold sm:text-sm md:text-md lg:text-lg">
-          Intramural Page
         </div>
         <div></div>
       </header>
@@ -48,7 +47,7 @@ export default function IntramuralPage() {
           <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
         </div>
 
-        <div className="flex-auto overflow-y-auto p-6 bg-green-100 text-sm sm:text-xs md:text-sm lg:text-sm">
+        <div className="flex-auto overflow-y-auto p-6 text-sm sm:text-xs md:text-sm lg:text-sm bg-gradient-to-r from-[#1E4D2B] to-[#2A6D3A] ">
           <Outlet />
         </div>
       </main>

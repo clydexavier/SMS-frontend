@@ -27,7 +27,7 @@ export default function IntramuralPage() {
         </strong>
       </noscript>
 
-      {/* Header */}
+      {/* Header 
       <header className="h-16 bg-green-900 text-white flex items-center justify-between px-6 shadow-md">
         <Link
           to="/admin/intramurals"
@@ -39,6 +39,7 @@ export default function IntramuralPage() {
         </div>
         <div></div>
       </header>
+      */}
 
       {/* Main Content */}
       <main className="flex flex-1 w-full overflow-auto">

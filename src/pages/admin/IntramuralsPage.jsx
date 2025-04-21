@@ -4,11 +4,11 @@ import IntramuralCard from "../../components/IntramuralCard";
 import Filter from "../../components/Filter";
 import IntramuralModal from "../../components/admin/IntramuralModal";
 import PaginationControls from "../../components/PaginationControls";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams} from "react-router-dom";
 
 export default function IntramuralsPage() {
   const location = useLocation();
-  const intramural_id = location.state?.intramural_id;
+  const {id} = useParams();
 
   const filterOptions = [
     { label: "All", value: "all" },
@@ -95,6 +95,8 @@ export default function IntramuralsPage() {
   const updateIntramural = async (id, updatedData) => {
     try {
       setLoading(true);
+      console.log("Updating intramural with ID:", id);
+      console.log("Updated data:", updatedData);
       await axiosClient.patch(`/intramurals/${id}/edit`, updatedData);
       await fetchIntramurals();
       closeModal();

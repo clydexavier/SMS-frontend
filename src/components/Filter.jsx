@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { FaChevronDown, FaFilter } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
+import { FiFilter } from "react-icons/fi";
 
 export default function Filter({ activeTab, setActiveTab, search, setSearch, placeholder, filterOptions }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,25 +23,25 @@ export default function Filter({ activeTab, setActiveTab, search, setSearch, pla
       <div className="relative inline-block text-left" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex w-full justify-start items-center gap-2 px-4 py-2 text-sm sm:text-xs md:text-sm lg:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 focus:outline-none whitespace-nowrap"
+          className="inline-flex w-full justify-start items-center gap-2 px-4 py-2 text-sm font-medium text-[#2A6D3A] bg-white border border-[#6BBF59]/30 rounded-lg shadow-sm hover:bg-[#F7FAF7] focus:outline-none focus:ring-2 focus:ring-[#6BBF59]/50 whitespace-nowrap transition-all duration-200"
         >
-          <FaFilter className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-          <span className="text-sm sm:text-xs md:text-sm lg:text-sm">
+          <FiFilter className="w-4 h-4 text-[#6BBF59]" />
+          <span>
             {filterOptions.find((opt) => opt.value === activeTab)?.label}
           </span>
-          <FaChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+          <FaChevronDown className="w-3 h-3 text-[#6BBF59] ml-1" />
         </button>
 
         {isOpen && (
-          <div className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+          <div className="absolute left-0 top-full mt-1 w-48 bg-white border border-[#E6F2E8] rounded-lg shadow-lg z-50 overflow-hidden">
             {filterOptions.map((option) => (
               <button
                 key={option.value}
                 className={`${
                   activeTab === option.value
-                    ? "bg-green-100 text-green-800"
-                    : "text-gray-700"
-                } flex w-full items-center px-4 py-2 text-sm sm:text-xs md:text-sm lg:text-sm hover:bg-green-50`}
+                    ? "bg-[#E6F2E8] text-[#2A6D3A] font-medium"
+                    : "text-gray-700 hover:bg-[#F7FAF7]"
+                } flex w-full items-center px-4 py-3 text-sm transition-colors duration-150`}
                 onClick={() => {
                   setActiveTab(option.value);
                   setIsOpen(false);
@@ -57,11 +58,10 @@ export default function Filter({ activeTab, setActiveTab, search, setSearch, pla
       <input
         type="text"
         placeholder={placeholder || "Search ..."}
-        className="w-full sm:w-auto flex-1 p-2 text-sm sm:text-xs md:text-sm lg:text-sm border rounded bg-white text-gray-700 border-gray-400"
+        className="w-full sm:w-auto flex-1 px-4 py-2 text-sm border rounded-lg bg-white text-gray-700 border-[#6BBF59]/30 focus:outline-none focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-transparent transition-all duration-200 placeholder-gray-400"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
     </div>
-
   );
 }

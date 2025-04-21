@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FiMoreVertical } from "react-icons/fi";
+import { FiMoreVertical, FiCalendar, FiMapPin, FiCheckCircle, FiClock, FiAlertCircle } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
@@ -28,69 +28,118 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
     setMenuOpen(false);
   };
 
+  // Format date nicely
+  const formatDate = (dateString) => {
+    if (!dateString) return "TBD";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  // Get status icon and color
+  const getStatusDetails = (status) => {
+    switch(status) {
+      case "completed":
+        return { 
+          icon: <FiCheckCircle className="w-4 h-4" />,
+          bgColor: "bg-green-100",
+          textColor: "text-green-800",
+          borderColor: "border-green-200"
+        };
+      case "in progress":
+        return { 
+          icon: <FiClock className="w-4 h-4" />,
+          bgColor: "bg-blue-100",
+          textColor: "text-blue-800",
+          borderColor: "border-blue-200"
+        };
+      case "pending":
+      default:
+        return { 
+          icon: <FiAlertCircle className="w-4 h-4" />,
+          bgColor: "bg-amber-100",
+          textColor: "text-amber-800",
+          borderColor: "border-amber-200"
+        };
+    }
+  };
+
+  const statusDetails = getStatusDetails(intramural.status);
+
   return (
-    <div className="w-full h-full box-border bg-white rounded-lg shadow-md border relative overflow-hidden flex flex-col">
-
-    {/* Header with Link */}
-    <Link to={`/${intramural.id}/events`} state={{ intrams_id: intramural.id }} className="w-full">
-      <div className="w-full bg-gray-800 text-white p-2 rounded-t-lg flex flex-col items-center">
-        <span className=" text-2xl font-extrabold text-center sm:text-xl text-sm">
-          {intramural.name}
-        </span>
+    <div className="w-full h-full box-border bg-white rounded-lg shadow-md border border-[#E6F2E8] hover:shadow-lg transition-all duration-300 relative overflow-hidden flex flex-col">
+      {/* Status Badge */}
+      <div className={`absolute top-3 right-3 ${statusDetails.bgColor} ${statusDetails.textColor} ${statusDetails.borderColor} text-xs font-medium px-2.5 py-0.5 rounded-full border flex items-center gap-1`}>
+        {statusDetails.icon}
+        <span className="capitalize">{intramural.status}</span>
       </div>
-    </Link>
 
-    {/* Content */}
-    <div className="h-full w-full p-4">
-      <p className="text-sm sm:text-xs md:text-sm lg:text-sm font-semibold text-gray-800">{intramural.start_date}</p>
-      <p
-        className={`text-sm sm: md:text-sm lg:text-sm font-medium ${
-          intramural.status === "complete" ? "text-green-600" : "text-yellow-600"
-        }`}
-      >
-        Status: {intramural.status}
-      </p>
-      <p
-        className={`text-sm ${
-          intramural.location ? "text-gray-600" : "text-red-600 font-medium"
-        }`}
-      >
-        {intramural.location ? `Location: ${intramural.location}` : "No location yet"}
-      </p>
-    </div>
-
-    {/* Three-Dot Button with Dropdown */}
-    <div className="absolute bottom-2 right-2" ref={menuRef}>
-      <button
-        onClick={() => setMenuOpen((prev) => !prev)}
-        className="p-2 rounded-full hover:bg-gray-200"
-      >
-        <FiMoreVertical className="text-gray-600 text-[20px] sm:text-[15px]" />
-      </button>
-
-      {/* Dropdown Menu */}
-      {menuOpen && (
-        <div className="absolute right-0 bottom-8 w-40 bg-white border rounded-md shadow-lg z-50">
-          <button 
-            className="block w-full px-4 py-2 text-left text-sm  sm:  hover:bg-green-100" 
-            onClick={() => {
-              openEditModal(intramural);
-              setMenuOpen(false);
-            }}
-          >
-            Update
-          </button>
-          <button 
-            className="block w-full px-4 py-2 text-left  text-sm sm:  text-red-600 hover:bg-red-100" 
-            onClick={handleDelete}
-          >
-            Delete
-          </button>
+      {/* Header with Link */}
+      <Link to={`/${intramural.id}/events`} state={{ intrams_id: intramural.id }} className="w-full group">
+        <div className="w-full bg-gradient-to-r from-[#2A6D3A] to-[#6BBF59] text-white p-4 rounded-t-lg flex flex-col items-start group-hover:from-[#1E4D2B] group-hover:to-[#5CAF4A] transition-all duration-300">
+          <span className="text-lg font-bold text-left truncate w-full pr-8">
+            {intramural.name}
+          </span>
         </div>
-      )}
-    </div>
-  </div>
+      </Link>
 
+      {/* Content */}
+      <div className="flex-1 w-full p-4 pt-3 flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm text-gray-700">
+          <FiCalendar className="text-[#6BBF59]" />
+          <span>{formatDate(intramural.start_date)}{intramural.end_date ? ` - ${formatDate(intramural.end_date)}` : ""}</span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm text-gray-700">
+          <FiMapPin className="text-[#6BBF59]" />
+          <span className="truncate">
+            {intramural.location ? intramural.location : "No location yet"}
+          </span>
+        </div>
+      </div>
+
+      {/* Action Button */}
+      <div className="border-t border-[#E6F2E8] p-2 flex justify-end" ref={menuRef}>
+        <button
+          onClick={() => setMenuOpen((prev) => !prev)}
+          className="p-2 rounded-full hover:bg-[#F7FAF7] text-[#2A6D3A] transition-colors duration-200"
+          aria-label="More options"
+        >
+          <FiMoreVertical className="w-5 h-5" />
+        </button>
+
+        {/* Dropdown Menu */}
+        {menuOpen && (
+          <div className="absolute right-2 bottom-12 w-40 bg-white border border-[#E6F2E8] rounded-lg shadow-lg z-50 overflow-hidden">
+            <button 
+              className="block w-full px-4 py-2.5 text-left text-sm text-[#2A6D3A] hover:bg-[#F7FAF7] transition-colors duration-200 flex items-center gap-2" 
+              onClick={() => {
+                openEditModal(intramural);
+                console.log(intramural);
+                setMenuOpen(false);
+              }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Update
+            </button>
+            <button 
+              className="block w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center gap-2" 
+              onClick={handleDelete}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

@@ -6,7 +6,7 @@ export default function VenueModal({
   closeModal, 
   addVenue, 
   updateVenue, 
-  existingVenue
+  existingVenue 
 }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -16,7 +16,11 @@ export default function VenueModal({
 
   useEffect(() => {
     if (existingVenue) {
-      setFormData(existingVenue);
+      setFormData({
+        name: existingVenue.name || "",
+        location: existingVenue.location || "",
+        type: existingVenue.type || "",
+      });
     } else {
       setFormData({ name: "", location: "", type: "" });
     }
@@ -24,7 +28,7 @@ export default function VenueModal({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
@@ -34,92 +38,103 @@ export default function VenueModal({
     } else {
       addVenue(formData);
     }
-    closeModal();
   };
 
   return (
     isModalOpen && (
-      <div className="fixed inset-0 flex items-center justify-center backdrop-blur-xs">
+      <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
         <div className="relative p-4 w-full max-w-md">
-          <div className="relative bg-white rounded-lg shadow-lg dark:bg-gray-700">
+          <div className="relative bg-white rounded-lg shadow-xl">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200 dark:border-gray-600">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="flex items-center justify-between p-4 border-b rounded-t border-[#E6F2E8]">
+              <h3 className="text-lg font-semibold text-[#2A6D3A]">
                 {existingVenue ? "Update Venue" : "Add New Venue"}
               </h3>
               <button
                 type="button"
                 onClick={closeModal}
-                className="cursor-pointer text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                className="cursor-pointer text-[#2A6D3A]/70 bg-transparent hover:bg-[#F7FAF7] hover:text-[#2A6D3A] rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center transition-colors duration-200"
               >
-                <IoMdClose size={25} />
+                <IoMdClose size={22} />
                 <span className="sr-only">Close modal</span>
               </button>
             </div>
-    
+
             {/* Form */}
             <form className="p-4 md:p-5" onSubmit={handleSubmit}>
               <div className="grid gap-4 mb-4 grid-cols-2">
-                {/* Name */}
+                {/* Venue Name */}
                 <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
                     Venue Name
                   </label>
                   <input
                     type="text"
                     name="name"
+                    id="name"
+                    autoComplete="off"
                     value={formData.name}
                     onChange={handleChange}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
                     placeholder="Enter venue name"
                     required
                   />
                 </div>
-    
+
                 {/* Location */}
                 <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label htmlFor="location" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
                     Location
                   </label>
                   <input
                     type="text"
                     name="location"
+                    id="location"
+                    autoComplete="off"
                     value={formData.location}
                     onChange={handleChange}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                    placeholder="Enter location"
+                    className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="Enter venue location"
                     required
                   />
                 </div>
-    
+
                 {/* Type */}
                 <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
                     Type
                   </label>
                   <select
                     name="type"
+                    id="type"
                     value={formData.type}
                     onChange={handleChange}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                    className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
                     required
                   >
-                    <option value="" disabled>
-                        Select Type
-                    </option>
+                    <option value="" disabled>Select type</option>
                     <option value="Indoor">Indoor</option>
                     <option value="Outdoor">Outdoor</option>
                   </select>
                 </div>
               </div>
-    
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900"
-              >
-                {existingVenue ? "Update Venue" : "Add New Venue"}
-              </button>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end mt-4 space-x-3">
+                <button 
+                  type="button" 
+                  onClick={closeModal}
+                  className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200 focus:ring-2 focus:ring-[#6BBF59]/50"
+                >
+                  {existingVenue ? "Update Venue" : "Add New Venue"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

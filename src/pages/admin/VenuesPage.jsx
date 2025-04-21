@@ -216,40 +216,49 @@ export default function VenuesPage() {
             No venues found. Click "Add Venue" to create one.
           </div>
         ) : (
-          <div className="overflow-x-auto bg-white shadow-md rounded-lg mt-4">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+        <div className="overflow-x-auto bg-white shadow-md rounded-xl mt-4 border border-[#E6F2E8]">
+          <table className="min-w-full text-sm text-left text-gray-700">
+              <thead className="text-xs uppercase bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Name</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Location</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Type</th>
+                  <th className="px-6 py-3 font-medium tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {venues.map((venue) => (
-                  <tr key={venue.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{venue.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{venue.location}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{venue.type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap space-x-2">
+              <tbody>
+                {venues.map((venue, idx) => (
+                  <tr
+                    key={venue.id}
+                    className={`border-b border-[#E6F2E8] hover:bg-[#F7FAF7] transition-colors duration-200 ${
+                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    }`}
+                  >
+                    <td className="px-6 py-4 font-medium text-gray-900">{venue.name}</td>
+                    <td className="px-6 py-4">{venue.location}</td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                          venue.type === "Indoor"
+                            ? "bg-green-100 text-green-700 border-green-200"
+                            : venue.type === "Outdoor"
+                            ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                            : "bg-gray-100 text-gray-600 border-gray-200"
+                        }`}
+                      >
+                        {venue.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-2">
                       <button
                         onClick={() => openEditModal(venue)}
-                        className="text-blue-600 hover:underline text-sm"
+                        className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => deleteVenue(venue.id, venue.name)}
-                        className="text-red-600 hover:underline text-sm"
+                        className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
                       >
                         Delete
                       </button>

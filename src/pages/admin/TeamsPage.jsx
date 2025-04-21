@@ -36,6 +36,7 @@ export default function TeamsPage() {
   };
 
   const openEditModal = (team) => {
+    console.log("Logo team:", team.team_logo_path);
     setSelectedTeam(team);
     setIsModalOpen(true);
   };

@@ -29,20 +29,6 @@ export default function ParticipantPage() {
             </strong>
           </noscript>
     
-          {/* Header */}
-          <header className="h-16 bg-green-900 text-white flex items-center justify-between px-6 shadow-md">
-            <Link
-              to="/admin/intramurals"
-              className="hover:text-gray-200 transition-colors text-sm sm:text-xs md:text-sm lg:text-sm"
-            >
-              Home
-            </Link>
-            <div className="font-semibold sm:text-sm md:text-md lg:text-lg">
-              Participant Page
-            </div>
-            <div></div>
-          </header>
-    
           {/* Main Content */}
           <main className="flex flex-1 w-full overflow-auto">
             {/* Sidebar (hidden on mobile) */}
@@ -50,7 +36,7 @@ export default function ParticipantPage() {
               <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
             </div>
     
-            <div className="flex-auto overflow-y-auto p-6 bg-green-100 text-sm sm:text-xs md:text-sm lg:text-sm">
+            <div className="flex-auto overflow-y-auto p-6 bg-white-100 text-sm sm:text-xs md:text-sm lg:text-sm">
               <Outlet />
             </div>
           </main>

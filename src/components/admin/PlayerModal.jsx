@@ -23,29 +23,37 @@ export default function PlayerModal({
       parents_consent: "",
       cor: "",
     },
-    removed: {
-      medical_certificate: false,
-      parents_consent: false,
-      cor: false,
-    },
   };
 
+  const [formData, setFormData] = useState(initialState);
+  
   const fileInputRefs = {
     medical_certificate: useRef(null),
     parents_consent: useRef(null),
     cor: useRef(null),
-  };
+  };  
+  const [uploadedFiles, setUploadedFiles] = useState({
+    medical_certificate: false,
+    parents_consent: false,
+    cor: false,
+  });
 
-  const [formData, setFormData] = useState(initialState);
+  const [removeFiles, setRemoveFiles] = useState({
+    medical_certificate: false,
+    parents_consent: false,
+    cor: false,
+  });
 
   useEffect(() => {
     if (existingPlayer) {
+      console.log(existingPlayer.medical_certificate);
+      console.log(existingPlayer.parents_consent);
+      console.log(existingPlayer.cor);
       const previews = {
-        medical_certificate: existingPlayer.medical_certificate_url || "",
-        parents_consent: existingPlayer.parents_consent_url || "",
-        cor: existingPlayer.cor_url || "",
+        medical_certificate: existingPlayer.medical_certificate || "",
+        parents_consent: existingPlayer.parents_consent || "",
+        cor: existingPlayer.cor || "",
       };
-
       setFormData({
         name: existingPlayer.name || "",
         id_number: existingPlayer.id_number || "",
@@ -53,14 +61,31 @@ export default function PlayerModal({
         parents_consent: null,
         cor: null,
         previews,
-        removed: {
-          medical_certificate: false,
-          parents_consent: false,
-          cor: false,
-        },
+      });
+      
+      // Reset all upload and remove states
+      setUploadedFiles({
+        medical_certificate: false,
+        parents_consent: false,
+        cor: false,
+      });
+      setRemoveFiles({
+        medical_certificate: false,
+        parents_consent: false,
+        cor: false,
       });
     } else {
       setFormData(initialState);
+      setUploadedFiles({
+        medical_certificate: false,
+        parents_consent: false,
+        cor: false,
+      });
+      setRemoveFiles({
+        medical_certificate: false,
+        parents_consent: false,
+        cor: false,
+      });
     }
   }, [existingPlayer, isModalOpen]);
 
@@ -68,9 +93,9 @@ export default function PlayerModal({
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleFileUpload = (e, field) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const uploadFile = (files, field) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
     setFormData((prev) => ({
       ...prev,
       [field]: file,
@@ -78,11 +103,16 @@ export default function PlayerModal({
         ...prev.previews,
         [field]: URL.createObjectURL(file),
       },
-      removed: {
-        ...prev.removed,
-        [field]: false,
-      },
     }));
+    setUploadedFiles(prev => ({ ...prev, [field]: true }));
+    setRemoveFiles(prev => ({ ...prev, [field]: false }));
+  };
+
+  const handleFileChange = (e, field) => uploadFile(e.target.files, field);
+  
+  const handleDrop = (e, field) => {
+    e.preventDefault();
+    uploadFile(e.dataTransfer.files, field);
   };
 
   const handleRemoveFile = (field) => {
@@ -93,13 +123,11 @@ export default function PlayerModal({
         ...prev.previews,
         [field]: "",
       },
-      removed: {
-        ...prev.removed,
-        [field]: true,
-      },
     }));
+    setUploadedFiles(prev => ({ ...prev, [field]: false }));
+    setRemoveFiles(prev => ({ ...prev, [field]: true }));
     if (fileInputRefs[field]?.current) {
-        fileInputRefs[field].current.value = null;
+      fileInputRefs[field].current.value = null;
     }
   };
 
@@ -114,18 +142,13 @@ export default function PlayerModal({
       case "txt":
         return <FaFileAlt size={40} className="text-gray-500" />;
       default:
-        return <FaFile size={40} className="text-gray-400" />;
+        return <FaFile size={40} className="text-[#2A6D3A]" />;
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const playerData = new FormData();
-
-    if (existingPlayer) {
-      playerData.append("_method", "PATCH");
-    }
-
     playerData.append("name", formData.name);
     playerData.append("id_number", formData.id_number);
 
@@ -133,100 +156,70 @@ export default function PlayerModal({
       if (formData[field]) {
         playerData.append(field, formData[field]);
       }
-      if (formData.removed[field]) {
+      if (removeFiles[field]) {
         playerData.append(`remove_${field}`, "1");
       }
     });
-    for (let [key, value] of playerData.entries()) {
-        console.log(`${key}:`, value);
-      }
 
     if (existingPlayer) {
-        playerData.append('_method', 'PATCH'); // Important for method spoofing
-        updatePlayer(existingPlayer.id, playerData);
+      playerData.append("_method", "PATCH");
+      updatePlayer(existingPlayer.id, playerData);
     } else {
       addPlayer(playerData);
     }
-
-    closeModal();
   };
 
   const renderFileUpload = (label, field) => {
-    const preview = formData.previews[field];
-    const file = formData[field];
-    const shouldPreview = preview && !formData.removed[field];
-  
+    const showPreview = (uploadedFiles[field] || (existingPlayer && existingPlayer[`${field}`] && !removeFiles[field])) && formData.previews[field];
+    
     return (
       <div className="col-span-2">
-        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+        <label htmlFor={field} className="block mb-2 text-sm font-medium text-[#2A6D3A]">
           {label}
         </label>
-  
-        {/* Show preview if file exists and is not removed */}
-        {shouldPreview ? (
-          <div className="p-2 mt-3">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Current File:</p>
-            <div className="relative p-4 border rounded bg-gray-50 dark:bg-gray-600 flex items-center space-x-3">
-              {getFileIcon(preview)}
-              <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                  {file?.name || preview.split("/").pop()}
+
+        {showPreview ? (
+          <div className="relative p-4 border rounded bg-gray-50 flex items-center space-x-3">
+            <div className=" bg-[#F7FAF7] border-[#6BBF59]/30 p-3 flex items-center space-x-3 min-w-0 flex-1">
+              {getFileIcon(formData.previews[field])}
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-sm font-medium text-gray-800 truncate">
+                  {formData[field]?.name || formData.previews[field].split("/").pop()}
                 </span>
-                {file && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                {formData[field] && (
+                  <span className="text-xs text-gray-500">
+                    {(formData[field].size / 1024 / 1024).toFixed(2)} MB
                   </span>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={() => handleRemoveFile(field)}
-                disabled={isLoading}
-                className="absolute top-1 right-1 text-red-500 hover:text-red-700 bg-white rounded-full"
-              >
-                <FaTimesCircle size={20} />
-              </button>
             </div>
+            <button
+              type="button"
+              onClick={() => handleRemoveFile(field)}
+              className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-white rounded-full"
+            >
+              <FaTimesCircle size={20} />
+            </button>
           </div>
         ) : (
-          // Only show drop field when no preview exists or file is removed
-          <div className="flex items-center justify-center w-full">
-            <label
-              htmlFor={`upload-${field}`}
-              className={`flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 ${
-                isLoading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
-                <svg
-                  className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                  aria-hidden="true"
-                  fill="none"
-                  viewBox="0 0 20 16"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                  />
-                </svg>
-                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                  Click to upload or drag and drop
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PDF, DOCX, TXT, etc. (MAX. 5MB)
-                </p>
-              </div>
-              <input
-                id={`upload-${field}`}
-                type="file"
-                onChange={(e) => handleFileUpload(e, field)}
-                className="hidden"
-                disabled={isLoading}
-                ref={fileInputRefs[field]}
-              />
+          <div
+            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 border-[#6BBF59]/30"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, field)}
+          >
+            <input
+              id={field}
+              type="file"
+              onChange={(e) => handleFileChange(e, field)}
+              ref={fileInputRefs[field]}
+              className="hidden"
+            />
+            <label htmlFor={field} className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+              <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
+              <span className="text-xs text-gray-400">PDF, DOCX, TXT, etc.</span>
             </label>
           </div>
         )}
@@ -236,101 +229,123 @@ export default function PlayerModal({
   
   return (
     isModalOpen && (
-      <div className="fixed inset-0 flex items-center justify-center backdrop-blur-xs z-50">
-        <div className="relative p-4 w-full max-w-md max-h-[90vh] overflow-y-auto">
-         <div className="relative bg-white rounded-lg shadow-lg dark:bg-gray-700">
-            <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+        <div className="relative p-4 w-full max-w-md">
+          <div className="relative bg-white rounded-lg shadow-xl">
+            <div className="flex items-center justify-between p-4 border-b rounded-t border-[#E6F2E8]">
+              <h3 className="text-lg font-semibold text-[#2A6D3A]">
                 {existingPlayer ? "Update Player" : "Add New Player"}
               </h3>
               <button
                 type="button"
                 onClick={closeModal}
-                disabled={isLoading}
-                className="text-gray-400 hover:text-gray-900 rounded-lg text-sm w-8 h-8 dark:hover:text-white"
+                className="text-[#2A6D3A]/70 hover:bg-[#F7FAF7] rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition-colors duration-200"
               >
-                <IoMdClose size={25} />
+                <IoMdClose size={22} />
               </button>
             </div>
 
             {error && (
-              <div className="p-4 bg-red-100 text-red-700 text-sm">{error}</div>
+              <div className="px-4 pt-4 text-sm text-red-600 bg-red-50 rounded">
+                {error}
+              </div>
             )}
 
-            <form className="p-4" onSubmit={handleSubmit}>
-              <div className="grid gap-4 mb-4 grid-cols-2">
-                <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                  />
+            <form className="p-4 md:p-5" onSubmit={handleSubmit} encType="multipart/form-data">
+              {isLoading ? (
+                <div className="grid gap-4 mb-4 grid-cols-2 animate-pulse">
+                  <div className="col-span-2 h-10 bg-gray-200 rounded" />
+                  <div className="col-span-2 h-10 bg-gray-200 rounded" />
+                  <div className="col-span-2 h-32 bg-gray-200 rounded" />
+                  <div className="col-span-2 h-32 bg-gray-200 rounded" />
+                  <div className="col-span-2 h-32 bg-gray-200 rounded" />
                 </div>
+              ) : (
+                <div className="grid gap-4 mb-4 grid-cols-2">
+                  <div className="col-span-2">
+                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      autoComplete="off"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
+                      placeholder="Enter player name"
+                      required
+                    />
+                  </div>
 
-                <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    ID Number
-                  </label>
-                  <input
-                    type="text"
-                    name="id_number"
-                    value={formData.id_number}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                  />
+                  <div className="col-span-2">
+                    <label htmlFor="id_number" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      ID Number
+                    </label>
+                    <input
+                      type="text"
+                      name="id_number"
+                      id="id_number"
+                      autoComplete="off"
+                      value={formData.id_number}
+                      onChange={handleChange}
+                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
+                      placeholder="Enter ID number"
+                      required
+                    />
+                  </div>
+
+                  {renderFileUpload("Medical Certificate", "medical_certificate")}
+                  {renderFileUpload("Parent's Consent", "parents_consent")}
+                  {renderFileUpload("Certificate of Registration (COR)", "cor")}
                 </div>
+              )}
 
-                {renderFileUpload("Medical Certificate", "medical_certificate")}
-                {renderFileUpload("Parent's Consent", "parents_consent")}
-                {renderFileUpload("Certificate of Registration (COR)", "cor")}
+              <div className="flex justify-end mt-4 space-x-3">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-200 focus:ring-2 focus:ring-[#6BBF59]/50"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center">
+                      <svg
+                        className="animate-spin mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                      {existingPlayer ? "Updating..." : "Adding..."}
+                    </span>
+                  ) : existingPlayer ? (
+                    "Update Player"
+                  ) : (
+                    "Add New Player"
+                  )}
+                </button>
               </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`w-full text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 ${
-                  isLoading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                {isLoading ? (
-                  <span className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin mr-2 h-4 w-4 text-black"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      />
-                    </svg>
-                    {existingPlayer ? "Updating..." : "Adding..."}
-                  </span>
-                ) : existingPlayer ? (
-                  "Update Player"
-                ) : (
-                  "Add New Player"
-                )}
-              </button>
             </form>
           </div>
         </div>

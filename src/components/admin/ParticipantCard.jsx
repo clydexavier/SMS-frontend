@@ -27,6 +27,15 @@ export default function ParticipantCard({ participant, openEditModal, deletePart
 
   return (
     <div className="w-full h-full box-border bg-white rounded-lg shadow-md border border-[#E6F2E8] hover:shadow-lg transition-all duration-300 relative overflow-hidden flex flex-col">
+      {/* Status Badge */}
+      <div className={`absolute top-2 right-2 z-10 px-2 py-1 rounded-full text-xs font-medium ${
+        participant.finalized === "yes" 
+        ? "bg-green-100 text-green-800" 
+        : "bg-yellow-100 text-yellow-800"
+      }`}>
+        {participant.finalized === "yes" ? "Approved" : "Pending"}
+      </div>
+
       {/* Team Logo Header */}
       <Link
         to={`/${intrams_id}/events/${event_id}/participants/${participant.id}/players`}
@@ -38,23 +47,20 @@ export default function ParticipantCard({ participant, openEditModal, deletePart
           alt="Team Logo"
           className="w-16 h-16 object-cover rounded-full border-2 border-white shadow-md"
           onError={(e) => {
-            //console.log(participant.team_logo);
             e.target.onerror = null;
             e.target.src = "/placeholder-logo.png";
           }}
         />
-
         </div>
       </Link>
 
       {/* Content */}
-      
-        <span className="text-lg font-bold text-gray-800 text-green-700 transition-colors duration-200 text-center truncate">
-          {participant.name}
-        </span>
-        <p className="text-sm text-gray-600 text-center">
-          Team: {participant.team_name || "N/A"}
-        </p>
+      <span className="text-lg font-bold text-gray-800 text-green-700 transition-colors duration-200 text-center truncate">
+        {participant.name}
+      </span>
+      <p className="text-sm text-gray-600 text-center">
+        Team: {participant.team_name || "N/A"}
+      </p>
 
       {/* Action Button */}
       <div className="border-t border-[#E6F2E8] p-2 flex justify-end" ref={menuRef}>

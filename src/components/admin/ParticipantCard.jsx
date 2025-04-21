@@ -1,24 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiMoreVertical } from "react-icons/fi";
-import { Link } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 export default function ParticipantCard({ participant, openEditModal, deleteParticipant }) {
-  
-    const { intrams_id, event_id } = useParams();
-    const [menuOpen, setMenuOpen] = useState(false);
+  const { intrams_id, event_id } = useParams();
+  const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
         setMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleDelete = () => {
@@ -30,39 +26,50 @@ export default function ParticipantCard({ participant, openEditModal, deletePart
   };
 
   return (
-    <div className="w-full h-full box-border bg-white rounded-lg shadow-md border relative overflow-hidden flex flex-col">
-      {/* Header */}
-      <Link to={`/${intrams_id}/events/${event_id}/participants/${participant.id}/players`} className="w-full" >
-        <div className="bg-green-700 text-white p-2 rounded-t-lg flex flex-col items-center">
-            <span className="text-2xl sm:text-xl text-center font-extrabold">
-            {participant.name}
-            </span>
+    <div className="w-full h-full box-border bg-white rounded-lg shadow-md border border-[#E6F2E8] hover:shadow-lg transition-all duration-300 relative overflow-hidden flex flex-col">
+      {/* Team Logo Header */}
+      <Link
+        to={`/${intrams_id}/events/${event_id}/participants/${participant.id}/players`}
+        className="flex-1 w-full p-4 pt-3 flex flex-col gap-1 group"
+      >
+        <div className="bg-gradient-to-r from-[#2A6D3A] to-[#6BBF59] p-4 rounded-t-lg flex items-center justify-center">
+        <img
+          src={participant.team_logo}
+          alt="Team Logo"
+          className="w-16 h-16 object-cover rounded-full border-2 border-white shadow-md"
+          onError={(e) => {
+            //console.log(participant.team_logo);
+            e.target.onerror = null;
+            e.target.src = "/placeholder-logo.png";
+          }}
+        />
+
         </div>
       </Link>
 
       {/* Content */}
-      <div className="p-4">
-      <span className="text-2xl sm:text-xl text-center font-extrabold">
+      
+        <span className="text-lg font-bold text-gray-800 text-green-700 transition-colors duration-200 text-center truncate">
           {participant.name}
         </span>
-        <p className="text-sm font-semibold text-gray-800">
+        <p className="text-sm text-gray-600 text-center">
           Team: {participant.team_name || "N/A"}
         </p>
-      </div>
 
-      {/* Three-Dot Dropdown */}
-      <div className="absolute bottom-2 right-2" ref={menuRef}>
+      {/* Action Button */}
+      <div className="border-t border-[#E6F2E8] p-2 flex justify-end" ref={menuRef}>
         <button
           onClick={() => setMenuOpen((prev) => !prev)}
-          className="p-2 rounded-full hover:bg-gray-200"
+          className="p-2 rounded-full hover:bg-[#F7FAF7] text-[#2A6D3A] transition-colors duration-200"
         >
-          <FiMoreVertical className="text-gray-600 text-[20px] sm:text-[15px]" />
+          <FiMoreVertical className="w-5 h-5" />
         </button>
 
+        {/* Dropdown Menu */}
         {menuOpen && (
-          <div className="absolute right-0 bottom-8 w-40 bg-white border rounded-md shadow-lg z-50">
+          <div className="absolute right-2 bottom-12 w-40 bg-white border border-[#E6F2E8] rounded-lg shadow-lg z-50 overflow-hidden">
             <button
-              className="block w-full px-4 py-2 text-left text-sm sm:text-xs hover:bg-green-100"
+              className="block w-full px-4 py-2.5 text-left text-sm text-[#2A6D3A] hover:bg-[#F7FAF7] transition-colors duration-200"
               onClick={() => {
                 openEditModal(participant);
                 setMenuOpen(false);
@@ -71,7 +78,7 @@ export default function ParticipantCard({ participant, openEditModal, deletePart
               Update
             </button>
             <button
-              className="block w-full px-4 py-2 text-left text-sm sm:text-xs text-red-600 hover:bg-red-100"
+              className="block w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
               onClick={handleDelete}
             >
               Delete

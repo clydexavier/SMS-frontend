@@ -9,23 +9,26 @@ export default function BracketPage() {
   };
 
   return (
-    <div className="flex flex-col w-full h-full text-sm">
-      {/* Section Title */}
-      <div>
-        <h2 className="text-xl font-semibold mb-2 text-[#006600]">Bracket</h2>
+    <div className="flex flex-col w-full h-full">
+      {/* Header */}
+      <div className="bg-[#F7FAF7] px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Bracket</h2>
       </div>
 
       {/* Bracket Container */}
-      <div className="flex-1 p-2 sm:p-4 md:p-6 bg-gray-100 text-gray-900 rounded-lg">
-        <div className="overflow-x-auto bg-white shadow-md rounded-lg mt-4 min-h-[500px] relative">
-          {/* Loading Message */}
+      <div className="flex-1 p-6 bg-[#F7FAF7]">
+        <div className="relative overflow-x-auto bg-white shadow-md rounded-xl border border-[#E6F2E8] min-h-[500px]">
+          {/* Loading Overlay */}
           {!isLoaded && (
-            <div className="absolute inset-0 flex justify-center items-center z-10 bg-white bg-opacity-80 rounded-lg">
-              <p className="text-lg font-medium text-gray-700">Loading Bracket...</p>
+            <div className="absolute inset-0 flex justify-center items-center z-10 bg-white bg-opacity-80 rounded-xl">
+              <div className="text-center space-y-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#6BBF59] mx-auto"></div>
+                <p className="text-gray-600 text-sm font-medium">Loading bracket...</p>
+              </div>
             </div>
           )}
 
-          {/* Responsive Iframe with Scroll */}
+          {/* Iframe */}
           <div className="w-full min-w-[800px]">
             <iframe
               src="https://challonge.com/wtjitg08/module"
@@ -33,7 +36,8 @@ export default function BracketPage() {
               height="500"
               allowtransparency="true"
               onLoad={handleLoad}
-              className={`${isLoaded ? "block" : "hidden"} rounded-md w-full`}
+              className={`rounded-xl w-full border-none ${isLoaded ? "block" : "hidden"}`}
+              title="Tournament Bracket"
             ></iframe>
           </div>
         </div>

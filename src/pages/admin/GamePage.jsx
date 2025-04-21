@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import PaginationControls from '../../components/PaginationControls';
+import ScoreModal from '../../components/admin/ScoreModal';
 
 const bracketData = {
   rounds: [
@@ -91,42 +93,56 @@ const bracketData = {
 
 // Simulated player data - in a real app, you'd fetch this
 const playerData = {
-  260320316: "Player A",
-  260320317: "Player B",
-  260320318: "Player C",
-  260320319: "Player D",
+  260320316: "Team A",
+  260320317: "Team B",
+  260320318: "Team C",
+  260320319: "Team D",
 };
 
 export default function GamePage() {
-  // Extract matches and sort by suggested play order
-  const matches = bracketData.rounds
-    .map(item => ({
-      id: item.match.id,
-      round: item.match.round > 0 
-        ? `Round ${item.match.round}` 
-        : item.match.round === -1 
-          ? "Losers 1" 
-          : "Losers 2",
-      player1Id: item.match.player1_id,
-      player2Id: item.match.player2_id,
-      player1: item.match.player1_id ? playerData[item.match.player1_id] || "TBD" : "TBD",
-      player2: item.match.player2_id ? playerData[item.match.player2_id] || "TBD" : "TBD",
-      state: item.match.state,
-      playOrder: item.match.suggested_play_order
-    }))
-    .sort((a, b) => a.playOrder - b.playOrder);
-
-  // State for the score reporting modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [selectedWinner, setSelectedWinner] = useState(null);
-  
-  // State for multiple sets of scores
-  const [scoreSets, setScoreSets] = useState([
-    { player1Score: "", player2Score: "" }
-  ]);
+  const [scoreSets, setScoreSets] = useState([{ player1Score: "", player2Score: "" }]);
 
-  // Handle opening the score reporting modal
+  const allMatches = bracketData.rounds
+    .map(({ match }) => ({
+      id: match.id,
+      round:
+        match.round > 0
+          ? `Round ${match.round}`
+          : match.round === -1
+          ? "Losers 1"
+          : "Losers 2",
+      player1Id: match.player1_id,
+      player2Id: match.player2_id,
+      player1: playerData[match.player1_id] || "TBD",
+      player2: playerData[match.player2_id] || "TBD",
+      state: match.state,
+      playOrder: match.suggested_play_order,
+    }))
+    .sort((a, b) => a.playOrder - b.playOrder);
+
+  // Pagination
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    perPage: 4,
+    total: allMatches.length,
+    lastPage: Math.ceil(allMatches.length / 4),
+  });
+
+  const paginatedMatches = allMatches.slice(
+    (pagination.currentPage - 1) * pagination.perPage,
+    pagination.currentPage * pagination.perPage
+  );
+
+  const handlePageChange = (page) => {
+    setPagination((prev) => ({
+      ...prev,
+      currentPage: page,
+    }));
+  };
+
   const openScoreModal = (match) => {
     setSelectedMatch(match);
     setScoreSets([{ player1Score: "", player2Score: "" }]);
@@ -134,209 +150,75 @@ export default function GamePage() {
     setIsModalOpen(true);
   };
 
-  // Handle closing the modal
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedMatch(null);
   };
 
-  // Handle submitting scores
   const submitScores = () => {
-    // In a real app, you would send this data to your server
-    console.log("Submitting scores:", {
-      matchId: selectedMatch.id,
-      scoreSets,
-      winner: selectedWinner
-    });
-    
-    // Close the modal after submission
+    console.log({ matchId: selectedMatch.id, scoreSets, winner: selectedWinner });
     closeModal();
   };
 
-  // Add a new set of scores
-  const addSet = () => {
-    setScoreSets([...scoreSets, { player1Score: "", player2Score: "" }]);
-  };
-
-  // Remove the last set of scores
-  const removeSet = () => {
-    if (scoreSets.length > 1) {
-      setScoreSets(scoreSets.slice(0, -1));
-    }
-  };
-
-  // Update score for a specific set
-  const updateScore = (setIndex, player, value) => {
-    const newScoreSets = [...scoreSets];
-    newScoreSets[setIndex][`player${player}Score`] = value;
-    setScoreSets(newScoreSets);
+  const addSet = () => setScoreSets([...scoreSets, { player1Score: "", player2Score: "" }]);
+  const removeSet = () => scoreSets.length > 1 && setScoreSets(scoreSets.slice(0, -1));
+  const updateScore = (index, player, value) => {
+    const updated = [...scoreSets];
+    updated[index][`player${player}Score`] = value;
+    setScoreSets(updated);
   };
 
   return (
-    <div className="p-6 bg-gray-100 text-gray-900">
-      <h2 className="text-xl font-semibold mb-4 text-green-700">Tournament Bracket</h2>
-      
-      {/* Matches Table View */}
-      <div className="overflow-x-auto bg-white shadow-md rounded-lg mb-6">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-800 text-white">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase">Play Order</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase">Round</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase">Match #</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase">Player1</th>
-              <th className="px-6 py-3 text-center text-xs font-medium uppercase">vs.</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase">Player2</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {matches.map((match) => (
-              <tr key={match.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{match.playOrder}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {match.round}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{match.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{match.player1}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">vs.</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{match.player2}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <button 
-                    className="text-orange-500 hover:text-orange-700"
-                    onClick={() => openScoreModal(match)}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="flex flex-col w-full h-full">
+      <div className="bg-[#F7FAF7] px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Bracket Matches</h2>
       </div>
 
-      {/* Score Reporting Modal */}
-      {isModalOpen && selectedMatch && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-gray-800 text-white rounded-lg w-full max-w-md mx-4">
-            <div className="flex justify-between items-center p-4 border-b border-gray-700">
-              <div className="flex space-x-6">
-                <button className="text-gray-400 hover:text-white">Match details</button>
-                <button className="text-white border-b-2 border-orange-500 pb-1">Report scores</button>
+      <div className="flex-1 p-6 bg-[#F7FAF7]">
+        <div className="grid gap-4">
+          {paginatedMatches.map((match) => (
+            <div
+              key={match.id}
+              className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm p-4 flex flex-col sm:flex-row justify-between items-center gap-4 hover:bg-[#F7FAF7] transition"
+            >
+              <div className="text-sm text-gray-500 font-medium">
+                #{match.playOrder} • {match.round}
               </div>
-              <button 
-                onClick={closeModal}
-                className="text-gray-400 hover:text-white"
+              <div className="flex items-center gap-2 font-medium text-base text-gray-800">
+                <span>{match.player1}</span>
+                <span className="text-gray-400">vs</span>
+                <span>{match.player2}</span>
+              </div>
+              <button
+                onClick={() => openScoreModal(match)}
+                className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                Report Score
               </button>
+
             </div>
-
-            <div className="p-4">
-              <div className="flex justify-between mb-4">
-                {scoreSets.length > 1 && (
-                  <button 
-                    onClick={removeSet}
-                    className="text-orange-500 hover:text-orange-400"
-                  >
-                    REMOVE A SET
-                  </button>
-                )}
-                {scoreSets.length === 1 && <div></div>}
-                <button 
-                  onClick={addSet}
-                  className="text-orange-500 hover:text-orange-400"
-                >
-                  ADD A SET
-                </button>
-              </div>
-
-              <div className="bg-gray-900 rounded-lg">
-                <div className="flex justify-between bg-gray-800 px-6 py-3">
-                  <div className="text-sm font-medium">Participant</div>
-                  <div className="text-sm font-medium">Score</div>
-                  {scoreSets.length > 1 && (
-                    <div className="text-sm font-medium">Set {scoreSets.length}</div>
-                  )}
-                </div>
-
-                <div className="flex justify-between px-6 py-4 items-center">
-                  <div>{selectedMatch.player1}</div>
-                  <input
-                    type="number"
-                    value={scoreSets[0].player1Score}
-                    onChange={(e) => updateScore(0, 1, e.target.value)}
-                    className="bg-gray-700 text-white w-20 p-2 rounded"
-                    placeholder="Score"
-                  />
-                  {scoreSets.length > 1 && (
-                    <input
-                      type="number"
-                      value={scoreSets[1].player1Score}
-                      onChange={(e) => updateScore(1, 1, e.target.value)}
-                      className="bg-gray-700 text-white w-20 p-2 rounded"
-                      placeholder="Score"
-                    />
-                  )}
-                </div>
-
-                <div className="flex justify-between px-6 py-4 items-center">
-                  <div>{selectedMatch.player2}</div>
-                  <input
-                    type="number"
-                    value={scoreSets[0].player2Score}
-                    onChange={(e) => updateScore(0, 2, e.target.value)}
-                    className="bg-gray-700 text-white w-20 p-2 rounded"
-                    placeholder="Score"
-                  />
-                  {scoreSets.length > 1 && (
-                    <input
-                      type="number"
-                      value={scoreSets[1].player2Score}
-                      onChange={(e) => updateScore(1, 2, e.target.value)}
-                      className="bg-gray-700 text-white w-20 p-2 rounded"
-                      placeholder="Score"
-                    />
-                  )}
-                </div>
-              </div>
-
-              <div className="text-center my-8">
-                <h3 className="text-2xl font-bold mb-4">Verify the winner</h3>
-                <div className="flex justify-center">
-                  <div className="bg-gray-700 rounded-full flex overflow-hidden">
-                    <button
-                      className={`px-8 py-2 ${selectedWinner === selectedMatch.player1Id ? 'bg-gray-600' : ''}`}
-                      onClick={() => setSelectedWinner(selectedMatch.player1Id)}
-                    >
-                      {selectedMatch.player1}
-                    </button>
-                    <button
-                      className={`px-8 py-2 ${selectedWinner === selectedMatch.player2Id ? 'bg-gray-600' : ''}`}
-                      onClick={() => setSelectedWinner(selectedMatch.player2Id)}
-                    >
-                      {selectedMatch.player2}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-center mb-6">
-                <button
-                  onClick={submitScores}
-                  className="bg-gradient-to-r from-orange-500 to-orange-400 text-white font-bold py-3 px-8 rounded-full"
-                >
-                  SUBMIT SCORES
-                </button>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
+
+        <div className="mt-6">
+          <PaginationControls pagination={pagination} handlePageChange={handlePageChange} />
+        </div>
+      </div>
+
+      {/* Score Modal */}
+      {isModalOpen && selectedMatch && (
+        <ScoreModal
+        isOpen={isModalOpen}
+        selectedMatch={selectedMatch}
+        onClose={closeModal}
+        scoreSets={scoreSets}
+        updateScore={updateScore}
+        addSet={addSet}
+        removeSet={removeSet}
+        selectedWinner={selectedWinner}
+        setSelectedWinner={setSelectedWinner}
+        submitScores={submitScores}
+      />
       )}
     </div>
   );

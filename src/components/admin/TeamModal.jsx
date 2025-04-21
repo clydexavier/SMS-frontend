@@ -11,11 +11,11 @@ export default function TeamModal({
   isLoading,
   error,
 }) {
-  const [formData, setFormData] = useState({ 
-    name: "", 
+  const [formData, setFormData] = useState({
+    name: "",
     type: "",
-    team_logo_path: null, 
-    previewLogo: "" 
+    team_logo_path: null,
+    previewLogo: "",
   });
 
   const fileInputRef = useRef(null);
@@ -26,12 +26,12 @@ export default function TeamModal({
     if (existingTeam) {
       setFormData({
         name: existingTeam.name || "",
-        type: existingTeam.type,
+        type: existingTeam.type || "",
         team_logo_path: null,
-        previewLogo: existingTeam.team_logo_path || "", // Change to team_logo_path
+        previewLogo: existingTeam.team_logo_path || "",
       });
     } else {
-      setFormData({ name: "", type: "" ,team_logo_path: null, previewLogo: "" });
+      setFormData({ name: "", type: "", team_logo_path: null, previewLogo: "" });
     }
     setUploaded(false);
     setRemoveLogo(false);
@@ -44,28 +44,25 @@ export default function TeamModal({
   const uploadFile = (files) => {
     if (!files || files.length === 0) return;
     const file = files[0];
-    setFormData((prevData) => ({ 
-      ...prevData, 
-      team_logo_path: file, 
-      previewLogo: URL.createObjectURL(file) 
+    setFormData((prevData) => ({
+      ...prevData,
+      team_logo_path: file,
+      previewLogo: URL.createObjectURL(file),
     }));
     setUploaded(true);
     setRemoveLogo(false);
   };
 
   const handleFileChange = (e) => uploadFile(e.target.files);
-  const handleDrop = (e) => { e.preventDefault(); uploadFile(e.dataTransfer.files); };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    uploadFile(e.dataTransfer.files);
+  };
 
   const handleRemoveLogo = () => {
-    setFormData((prevData) => ({ 
-      ...prevData, 
-      team_logo_path: null, 
-      previewLogo: "" 
-    }));
+    setFormData((prev) => ({ ...prev, team_logo_path: null, previewLogo: "" }));
     setUploaded(false);
     setRemoveLogo(true);
-    
-    // Clear the actual input value
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
     }
@@ -73,185 +70,160 @@ export default function TeamModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Create a FormData object for Laravel file upload
     const teamData = new FormData();
-    
-    // Add required fields
-    
     teamData.append("name", formData.name);
     teamData.append("type", formData.type);
+    if (formData.team_logo_path) teamData.append("team_logo_path", formData.team_logo_path);
+    if (removeLogo) teamData.append("remove_logo", "1");
 
-
-    if(formData.id) {
-      teamData.append("id", formData.id);
-    }
-
-    // Add file if present
-    if (formData.team_logo_path) {
-      teamData.append("team_logo_path", formData.team_logo_path);
-    }
-    
-    // Add a flag to indicate if the logo should be removed
-    if (removeLogo) {
-      teamData.append("remove_logo", "1");
-    }
-    
-    for (let [key, value] of teamData.entries()) {
-      console.log(`${key}:`, value);
-    }
-    // Use the passed in addTeam or updateTeam functions from the parent component
     if (existingTeam) {
-      teamData.append('_method', 'PATCH'); // Important for method spoofing
+      teamData.append("_method", "PATCH");
       updateTeam(existingTeam.id, teamData);
-
     } else {
       addTeam(teamData);
     }
   };
 
-  // Determine if we should show the logo preview
   const showPreview = (uploaded || (existingTeam?.team_logo_path && !removeLogo)) && formData.previewLogo;
 
   return (
     isModalOpen && (
-      <div className="fixed inset-0 flex items-center justify-center backdrop-blur-xs">
+      <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
         <div className="relative p-4 w-full max-w-md">
-          <div className="relative bg-white rounded-lg shadow-lg dark:bg-gray-700">
-            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200 dark:border-gray-600">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="relative bg-white rounded-lg shadow-xl">
+            <div className="flex items-center justify-between p-4 border-b rounded-t border-[#E6F2E8]">
+              <h3 className="text-lg font-semibold text-[#2A6D3A]">
                 {existingTeam ? "Update Team" : "Add New Team"}
               </h3>
-              <button 
-                type="button" 
-                onClick={closeModal} 
-                disabled={isLoading}
-                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 dark:hover:bg-gray-600 dark:hover:text-white"
+              <button
+                type="button"
+                onClick={closeModal}
+                className="text-[#2A6D3A]/70 hover:bg-[#F7FAF7] rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition-colors duration-200"
               >
-                <IoMdClose size={25} />
+                <IoMdClose size={22} />
               </button>
             </div>
 
             {error && (
-              <div className="p-4 md:p-5 bg-red-100 text-red-700 text-sm">
+              <div className="px-4 pt-4 text-sm text-red-600 bg-red-50 rounded">
                 {error}
               </div>
             )}
 
-          <form className="p-4 md:p-5" onSubmit={handleSubmit} encType="multipart/form-data">
-            <div className="grid gap-4 mb-4 grid-cols-2">
-              <div className="col-span-2">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Team Name</label>
-                <input 
-                  type="text" 
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleChange} 
-                  required 
-                  disabled={isLoading}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                  placeholder="Enter team name" 
-                  maxLength="50" // Matches your validation max:50
-
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Team Type</label>
-                <select
-                    name="type"
-                    value={formData.type}
-                    onChange={handleChange}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                    required
-                  >
-                    <option value="" disabled>
-                        Select Type
-                    </option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                  </select>
-              </div>
-              <div className="col-span-2">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Team Logo</label>
-                
-                <div className="flex items-center justify-center w-full">
-                  <label 
-                    htmlFor="dropzone-file" 
-                    className={`flex flex-col items-center justify-center w-full h-[50%] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
-                    onDragOver={(e) => e.preventDefault()} 
-                    onDrop={isLoading ? null : handleDrop}
-                  >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
-                      <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        {uploaded ? formData.team_logo_path.name : (showPreview ? "Replace logo" : "Click to upload or drag and drop")}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 2MB)</p>
-                    </div>
-                    <input 
-                      id="dropzone-file" 
-                      type="file" 
-                      name="team_logo_path" 
-                      accept=".jpeg,.jpg,.png,.gif,.svg" // Match Laravel validation
-                      className="hidden" 
-                      onChange={handleFileChange}
-                      disabled={isLoading} 
-                      ref={fileInputRef} // ← Here!
-
-                    />
-                  </label>
-                </div>
-                
-                {/* Show image preview */}
-                {showPreview && (
-                  <div className="mt-3 relative">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Current Logo:</p>
-                    <div className="relative inline-block">
-                      <img 
-                        src={formData.previewLogo} 
-                        alt="Logo preview" 
-                        className="max-h-32 object-contain border rounded"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/default-logo.png";
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleRemoveLogo}
-                        disabled={isLoading}
-                        className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-white rounded-full"
-                        title="Remove logo"
-                      >
-                        <FaTimesCircle size={20} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
+            <form className="p-4 md:p-5" onSubmit={handleSubmit} encType="multipart/form-data">
               {isLoading ? (
-                <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {existingTeam ? "Updating..." : "Adding..."}
-                </span>
+                <div className="grid gap-4 mb-4 grid-cols-2 animate-pulse">
+                  <div className="col-span-2 h-10 bg-gray-200 rounded" />
+                  <div className="col-span-2 h-10 bg-gray-200 rounded" />
+                  <div className="col-span-2 h-36 bg-gray-200 rounded" />
+                </div>
               ) : (
-                existingTeam ? "Update Team" : "Add New Team"
+                <div className="grid gap-4 mb-4 grid-cols-2">
+                  <div className="col-span-2">
+                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      Team Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      autoComplete="off"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
+                      placeholder="Enter team name"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      Team Type
+                    </label>
+                    <select
+                      name="type"
+                      id="type"
+                      value={formData.type}
+                      onChange={handleChange}
+                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
+                      required
+                    >
+                      <option value="" disabled>Select Type</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                    </select>
+                  </div>
+
+                  <div className="col-span-2">
+                    <label htmlFor="team_logo_path" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      Team Logo
+                    </label>
+
+                    {showPreview ? (
+                      <div className="relative inline-block">
+                        <img
+                          src={formData.previewLogo}
+                          alt="Logo preview"
+                          className="max-h-32 object-contain border rounded"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/default-logo.png";
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveLogo}
+                          className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-white rounded-full"
+                        >
+                          <FaTimesCircle size={20} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 border-[#6BBF59]/30`}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={handleDrop}
+                      >
+                        <input
+                          id="team_logo_path"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          ref={fileInputRef}
+                          className="hidden"
+                        />
+                        <label htmlFor="team_logo_path" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+                          <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                          </svg>
+                          <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
+                          <span className="text-xs text-gray-400">SVG, PNG, JPG or GIF</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
-            </button>
-          </form>
+
+              <div className="flex justify-end mt-4 space-x-3">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-200 focus:ring-2 focus:ring-[#6BBF59]/50"
+                >
+                  {existingTeam ? "Update Team" : "Add New Team"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

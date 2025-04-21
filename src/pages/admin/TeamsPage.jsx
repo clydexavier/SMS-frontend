@@ -1,3 +1,4 @@
+// TeamsPage.jsx
 import React, { useState, useEffect } from "react";
 import Filter from "../../components/Filter";
 import TeamModal from "../../components/admin/TeamModal";
@@ -7,7 +8,6 @@ import axiosClient from "../../axiosClient";
 
 export default function TeamsPage() {
   const { intrams_id } = useParams();
-
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,9 +89,7 @@ export default function TeamsPage() {
     try {
       setLoading(true);
       await axiosClient.post(`/intramurals/${intrams_id}/overall_teams/${id}/edit`, updatedData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       await fetchTeams();
       closeModal();
@@ -151,49 +149,39 @@ export default function TeamsPage() {
 
   return (
     <div className="flex flex-col w-full h-full">
-      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
-        <div>
-          {error && (
-            <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
-              {error}
-            </div>
-          )}
-        </div>
-        <button
-          type="button"
-          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
-          onClick={openModal}
-          disabled={loading}
-        >
-          <svg
-            className="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex items-center">
+        {error && (
+          <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
+            {error}
+          </div>
+        )}
+        <div className="ml-auto">
+          <button
+            type="button"
+            className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
+            onClick={openModal}
+            disabled={loading}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            ></path>
-          </svg>
-          Add Team
-        </button>
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Team
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 p-6 bg-[#F7FAF7] overflow-auto">
+
+      <div className="flex-1 p-6 bg-[#F7FAF7]">
         <Filter
           activeTab={activeTab}
-          setActiveTab={(value) => {
+          setActiveTab={(val) => {
             setPagination((prev) => ({ ...prev, currentPage: 1 }));
-            setActiveTab(value);
+            setActiveTab(val);
           }}
           search={search}
-          setSearch={(value) => {
+          setSearch={(val) => {
             setPagination((prev) => ({ ...prev, currentPage: 1 }));
-            setSearch(value);
+            setSearch(val);
           }}
           placeholder="Search team name"
           filterOptions={filterOptions}
@@ -206,20 +194,25 @@ export default function TeamsPage() {
             No teams found. Click "Add Team" to create one.
           </div>
         ) : (
-          <div className="overflow-x-auto mt-4">
-            <table className="min-w-full bg-white divide-y divide-gray-200 shadow rounded-lg">
-              <thead className="bg-gray-100">
+          <div className="overflow-x-auto bg-white shadow-md rounded-xl mt-4 border border-[#E6F2E8]">
+            <table className="min-w-full text-sm text-left text-gray-700">
+              <thead className="text-xs uppercase bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Logo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Logo</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Name</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Type</th>
+                  <th className="px-6 py-3 font-medium tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {teams.map((team) => (
-                  <tr key={team.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+              <tbody>
+                {teams.map((team, idx) => (
+                  <tr
+                    key={team.id}
+                    className={`border-b border-[#E6F2E8] hover:bg-[#F7FAF7] transition-colors duration-200 ${
+                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    }`}
+                  >
+                    <td className="px-6 py-4">
                       <img
                         src={team.team_logo_path}
                         alt={team.name}
@@ -230,20 +223,18 @@ export default function TeamsPage() {
                         }}
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">{team.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{team.type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap space-x-4">
+                    <td className="px-6 py-4 font-medium text-gray-900">{team.name}</td>
+                    <td className="px-6 py-4">{team.type}</td>
+                    <td className="px-6 py-4 text-right space-x-2">
                       <button
-                        className="text-blue-600 hover:underline text-sm"
                         onClick={() => openEditModal(team)}
-                        disabled={loading}
+                        className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
                       >
                         Edit
                       </button>
                       <button
-                        className="text-red-600 hover:underline text-sm"
                         onClick={() => deleteTeam(team.id, team.name)}
-                        disabled={loading}
+                        className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
                       >
                         Delete
                       </button>

@@ -102,6 +102,7 @@ export default function EventsPage() {
   const updateEvent = async (id, updatedData) => {
     try {
       setLoading(true);
+      console.log("Updating event with ID:", id, "and data:", updatedData);
       await axiosClient.patch(
         `/intramurals/${intrams_id}/events/${id}/edit`,
         updatedData
@@ -210,7 +211,7 @@ export default function EventsPage() {
           <div className="w-full mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {events.map((event) => (
-                <div key={event.id} className="w-full h-40 p-4 rounded-lg shadow-sm">
+                <div key={event.id} className="w-full h-auto">
                   <EventCard
                     event={event}
                     openEditModal={openEditModal}

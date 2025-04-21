@@ -35,6 +35,7 @@ export default function EventModal({
         gold: existingEvent.gold || "",
         silver: existingEvent.silver || "",
         bronze: existingEvent.bronze || "",
+        venue: existingEvent.venue || "",
         status: existingEvent.status || "pending",
       });
     } else {
@@ -47,6 +48,7 @@ export default function EventModal({
         gold: "",
         silver: "",
         bronze: "",
+        venue: "",
         status: "pending",
       });
     }
@@ -57,59 +59,50 @@ export default function EventModal({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleNumberInput = (e) => {
-    if (e.key === "." || e.key === ",") e.preventDefault();
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     existingEvent ? updateEvent(existingEvent.id, formData) : addEvent(formData);
-    closeModal();
   };
 
   return (
     isModalOpen && (
-      <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-xs">
-        <div className="relative p-4 w-full max-w-md max-h-[90vh] overflow-y-auto">
-          <div className="relative bg-white rounded-lg shadow-lg dark:bg-gray-700">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 md:p-5 border-b border-gray-200 dark:border-gray-600">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+        <div className="relative p-4 w-full max-w-md">
+          <div className="relative bg-white rounded-lg shadow-xl">
+            <div className="flex items-center justify-between p-4 border-b border-[#E6F2E8]">
+              <h3 className="text-lg font-semibold text-[#2A6D3A]">
                 {existingEvent ? "Update Event" : "Add New Event"}
               </h3>
               <button
                 type="button"
                 onClick={closeModal}
-                className="cursor-pointer text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                className="text-[#2A6D3A]/70 hover:bg-[#F7FAF7] hover:text-[#2A6D3A] rounded-lg text-sm w-8 h-8 flex justify-center items-center"
               >
-                <IoMdClose size={25} />
-                <span className="sr-only">Close modal</span>
+                <IoMdClose size={22} />
               </button>
             </div>
 
-            {/* Form */}
             <form className="p-4 md:p-5" onSubmit={handleSubmit}>
               <div className="grid gap-4 mb-4 grid-cols-2">
-                {[
-                  { label: "Name", name: "name", type: "text", placeholder: "Type event name" },
-                ].map((input) => (
-                  <div className="col-span-2" key={input.name}>
-                    <label className="block mb-2 text-sm sm:text-xs font-medium text-gray-900 dark:text-white">
-                      {input.label}
-                    </label>
-                    <input
-                      type={input.type}
-                      name={input.name}
-                      value={formData[input.name]}
-                      onChange={handleChange}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                      placeholder={input.placeholder}
-                      required
-                    />
-                  </div>
-                ))}
+                {/* Name */}
+                <div className="col-span-2">
+                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Name
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    autoComplete="off"
+                    required
+                    className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
+                    placeholder="Enter event name"
+                  />
+                </div>
 
-                {/* Select Fields */}
+                {/* Select fields */}
                 {[
                   {
                     label: "Tournament Type",
@@ -124,7 +117,7 @@ export default function EventModal({
                     label: "Category",
                     name: "category",
                     options: [
-                      { value: "", label: "Select event category", disabled: true },
+                      { value: "", label: "Select category", disabled: true },
                       { value: "men", label: "Men" },
                       { value: "women", label: "Women" },
                       { value: "mixed", label: "Mixed" },
@@ -134,25 +127,26 @@ export default function EventModal({
                     label: "Type",
                     name: "type",
                     options: [
-                      { value: "", label: "Select event type", disabled: true },
+                      { value: "", label: "Select type", disabled: true },
                       { value: "sports", label: "Sports" },
                       { value: "music", label: "Music" },
                       { value: "dance", label: "Dance" },
                     ],
                   },
-                ].map((select) => (
-                  <div className="col-span-2" key={select.name}>
-                    <label className="block mb-2 text-sm sm:text-xs font-medium text-gray-900 dark:text-white">
-                      {select.label}
+                ].map(({ label, name, options }) => (
+                  <div className="col-span-2" key={name}>
+                    <label htmlFor={name} className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      {label}
                     </label>
                     <select
-                      name={select.name}
-                      value={formData[select.name]}
+                      id={name}
+                      name={name}
+                      value={formData[name]}
                       onChange={handleChange}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                       required
+                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
                     >
-                      {select.options.map((opt, idx) => (
+                      {options.map((opt, idx) => (
                         <option key={idx} value={opt.value} disabled={opt.disabled}>
                           {opt.label}
                         </option>
@@ -161,35 +155,44 @@ export default function EventModal({
                   </div>
                 ))}
 
-                {/* Medal Counts */}
+                {/* Medal Fields */}
                 {["gold", "silver", "bronze"].map((medal) => (
                   <div className="col-span-2" key={medal}>
-                    <label className="block mb-2 text-sm sm:text-xs font-medium text-gray-900 dark:text-white">
+                    <label htmlFor={medal} className="block mb-2 text-sm font-medium text-[#2A6D3A]">
                       {medal.charAt(0).toUpperCase() + medal.slice(1)}
                     </label>
                     <input
-                      type="number"
+                      id={medal}
                       name={medal}
+                      type="number"
+                      min="0"
                       value={formData[medal]}
                       onChange={handleChange}
-                      onKeyDown={handleNumberInput}
-                      min={1}
-                      pattern="[0-9]*"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm sm:text-xs rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                      placeholder={`Enter number of ${medal}s`}
+                      autoComplete="off"
                       required
+                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
+                      placeholder={`Enter number of ${medal}`}
                     />
                   </div>
                 ))}
               </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                className="cursor-pointer focus:outline-none text-black bg-yellow-400 hover:bg-yellow-500 font-medium rounded-lg text-sm sm:text-xs px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900"
-              >
-                {existingEvent ? "Update Event" : "Add New Event"}
-              </button>
+              {/* Buttons */}
+              <div className="flex justify-end mt-4 space-x-3">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5"
+                >
+                  {existingEvent ? "Update Event" : "Add New Event"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

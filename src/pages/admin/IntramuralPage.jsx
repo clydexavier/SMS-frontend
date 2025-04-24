@@ -11,10 +11,9 @@ const isize = 20;
 const menuItems = [
   { icon: <GrTrophy size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
   { icon: <IoMedalOutline size={isize} color="black" />, label: 'Events', route: 'events' },
-  { icon: <GrLocation size={isize} color="black" />, label: 'Venues', route: 'venues' },
   { icon: <MdOutlinePeopleAlt size={isize} color="black" />, label: 'Teams', route: 'teams' },
   { icon: <MdOutlinePersonAddAlt size={isize} color="black" />, label: 'Varsity Players', route: 'vplayers' },
-  { icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
+  //{ icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
   { icon: <GrHistory size={isize} color="black" />, label: 'Log', route: 'logs' },
 ];
 

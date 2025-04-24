@@ -9,23 +9,26 @@ import { LiaSitemapSolid } from "react-icons/lia";
 import { MdOutlineScoreboard } from "react-icons/md";
 import { TbUsersGroup } from "react-icons/tb";
 
-
-
-
-
 export default function EventPage() {
   const location = useLocation();
-  const { intrams_id,event_id } = useParams();
+  const { intrams_id, event_id } = useParams();
   
   const isize = 20;
   const menuItems = [
     { icon: <GrTrophy size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
-    { icon: <IoMedalOutline size={isize} color="black" />, label: 'Events', route: `/${intrams_id}/events` },
-    { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
-    { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
-    { icon: <TbUsersGroup size={isize} color="black" />, label: 'Participants', route: 'participants' },
+    { 
+      icon: <IoMedalOutline size={isize} color="black" />, 
+      label: 'Events', 
+      route: `/${intrams_id}/events`,
+      submenu: [
+        { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
+        { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
+        { icon: <TbUsersGroup size={isize} color="black" />, label: 'Participants', route: 'participants' },
+      ]
+    },
     { icon: <GrHistory size={isize} color="black" />, label: 'Log', route: 'logs' },
   ];
+  
   return (
     <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">
       <noscript>

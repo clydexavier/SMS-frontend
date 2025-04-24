@@ -146,7 +146,7 @@ export default function TeamModal({
                       value={formData.type}
                       onChange={handleChange}
                       className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
-                      required
+                      
                     >
                       <option value="" disabled>Select Type</option>
                       <option value="A">A</option>

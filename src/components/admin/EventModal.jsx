@@ -24,6 +24,20 @@ export default function EventModal({
     status: "pending",
   });
 
+  const  clearForm = () => {
+    setFormData({
+      name: "",
+      tournament_type: "",
+      category: "",
+      intrams_id: null,
+      type: "",
+      gold: "",
+      silver: "",
+      bronze: "",
+      venue: "",
+      status: "pending",
+    }); 
+  }
   useEffect(() => {
     if (existingEvent) {
       setFormData({
@@ -62,6 +76,7 @@ export default function EventModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     existingEvent ? updateEvent(existingEvent.id, formData) : addEvent(formData);
+    clearForm();
   };
 
   return (
@@ -118,8 +133,8 @@ export default function EventModal({
                     name: "category",
                     options: [
                       { value: "", label: "Select category", disabled: true },
-                      { value: "men", label: "Men" },
-                      { value: "women", label: "Women" },
+                      { value: "male", label: "Male" },
+                      { value: "female", label: "Female" },
                       { value: "mixed", label: "Mixed" },
                     ],
                   },
@@ -156,25 +171,33 @@ export default function EventModal({
                 ))}
 
                 {/* Medal Fields */}
-                {["gold", "silver", "bronze"].map((medal) => (
-                  <div className="col-span-2" key={medal}>
-                    <label htmlFor={medal} className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                      {medal.charAt(0).toUpperCase() + medal.slice(1)}
-                    </label>
-                    <input
-                      id={medal}
-                      name={medal}
-                      type="number"
-                      min="0"
-                      value={formData[medal]}
-                      onChange={handleChange}
-                      autoComplete="off"
-                      required
-                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
-                      placeholder={`Enter number of ${medal}`}
-                    />
-                  </div>
-                ))}
+                {/* Medal Count (applies to gold, silver, bronze) */}
+                <div className="col-span-2">
+                  <label htmlFor="medalCount" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Medal Count (will apply to gold, silver, and bronze)
+                  </label>
+                  <input
+                    id="medalCount"
+                    name="medalCount"
+                    type="number"
+                    min="0"
+                    value={formData.gold} // any of the three will reflect the value
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        gold: value,
+                        silver: value,
+                        bronze: value,
+                      }));
+                    }}
+                    autoComplete="off"
+                    required
+                    className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
+                    placeholder="Enter number of medals"
+                  />
+                </div>
+
               </div>
 
               {/* Buttons */}

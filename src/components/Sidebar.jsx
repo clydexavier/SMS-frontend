@@ -38,7 +38,7 @@ export default function Sidebar({ menuItems }) {
       {/* Header */}
       <div className="px-4 py-6 flex justify-between items-center border-b border-[#3A8049]/30">
         <div className="flex items-center">
-          <img src={logo} alt="Logo" className={`${open ? 'w-10' : 'w-8'} rounded-full transition-all duration-300`} />
+          <img src={logo} alt="Logo" className={`${open ? 'w-10' : 'w-0'} rounded-full transition-all duration-300`} />
           {open && <span className="ml-3 text-[#E6F2E8] font-medium">Intramurals</span>}
         </div>
         <MdMenuOpen

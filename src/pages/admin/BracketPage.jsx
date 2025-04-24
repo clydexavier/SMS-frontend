@@ -31,7 +31,7 @@ export default function BracketPage() {
           {/* Iframe */}
           <div className="w-full min-w-[800px]">
             <iframe
-              src="https://challonge.com/wtjitg08/module"
+              src="https://challonge.com/ug0sozg9/module"
               width="100%"
               height="500"
               allowtransparency="true"

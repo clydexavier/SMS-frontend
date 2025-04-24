@@ -141,6 +141,7 @@ export default function IntramuralModal({
                                             endDate={formData.end_date}
                                             className={datePickerStyles}
                                             placeholderText="Select start date"
+                                            autoComplete="off"
                                             required
                                         />
                                     </div>
@@ -158,6 +159,7 @@ export default function IntramuralModal({
                                             minDate={formData.start_date}
                                             className={datePickerStyles}
                                             placeholderText="Select end date"
+                                            autoComplete="off"
                                             required
                                         />
                                     </div>

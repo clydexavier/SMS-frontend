@@ -1,30 +1,23 @@
+// PlayersPage.jsx
 import React, { useState, useEffect } from "react";
-import axiosClient from "../../axiosClient";
-import ParticipantCard from "../../components/admin/ParticipantCard";
-import ParticipantModal from "../../components/admin/ParticipantModal";
-import Filter from "../../components/Filter";
-import PaginationControls from "../../components/PaginationControls";
 import { useParams } from "react-router-dom";
+import axiosClient from "../../axiosClient";
+import Filter from "../../components/Filter";
+import PlayerModal from "../../components/admin/PlayerModal";
+import PaginationControls from "../../components/PaginationControls";
 
-export default function ParticipantsPage() {
+export default function PlayersPage() {
   const { intrams_id, event_id } = useParams();
 
-  const filterOptions = [
-    { label: "All", value: "All" },
-    { label: "Finalized", value: "yes" },
-    { label: "Pending", value: "no" },
-  ];
-
-  const [teams, setTeams] = useState([]);
-  const [participants, setParticipants] = useState([]);
-  const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [players, setPlayers] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
-  const [pendingPage, setPendingPage] = useState(1);
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 12,
@@ -32,36 +25,40 @@ export default function ParticipantsPage() {
     lastPage: 1,
   });
 
+  const filterOptions = [
+    { label: "All", value: "All" },
+    { label: "Approved", value: "1" },
+    { label: "Pending", value: "0" },
+  ];
+
   const openModal = () => {
-    setSelectedParticipant(null);
+    setSelectedPlayer(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (player) => {
+    console.log("COR player:", player.cor);
+    setSelectedPlayer(player);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedParticipant(null);
+    setSelectedPlayer(null);
     setError(null);
   };
 
-  const openEditModal = (participant) => {
-    setSelectedParticipant(participant);
-    setIsModalOpen(true);
-  };
-
-  const fetchParticipants = async (page = 1) => {
+  const fetchPlayers = async (page = 1) => {
     try {
       setLoading(true);
       const { data } = await axiosClient.get(
-        `intramurals/${intrams_id}/events/${event_id}/participants`,
+        `/intramurals/${intrams_id}/events/${event_id}/players`,
         {
-          params: {
-            page,
-            finalized: activeTab,
-            search,
-          },
+          params: { page, approved: activeTab, search },
         }
       );
-      setParticipants(data.data);
+
+      setPlayers(data.data);
       setPagination({
         currentPage: data.meta.current_page,
         perPage: data.meta.per_page,
@@ -69,119 +66,150 @@ export default function ParticipantsPage() {
         lastPage: data.meta.last_page,
       });
     } catch (err) {
-      setError("Failed to fetch participants");
-      console.error(err);
+      console.error("Error fetching players:", err);
+      setError("Failed to fetch players");
     } finally {
       setLoading(false);
-      setPendingPage(null);
     }
   };
 
   const handlePageChange = (page) => {
-    setPendingPage(page);
+    setPagination((prev) => ({ ...prev, currentPage: page }));
   };
 
-  const addParticipant = async (newData) => {
+  const addPlayer = async (newPlayer) => {
     try {
+      setLoading(true);
       await axiosClient.post(
-        `intramurals/${intrams_id}/events/${event_id}/participants/create`,
-        newData
+        `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/create`,
+        newPlayer
       );
-      await fetchParticipants(pagination.currentPage);
+      await fetchPlayers();
       closeModal();
     } catch (err) {
-      console.error(err);
-      setError("Failed to create participant");
+      setError("Failed to create player");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const updateParticipant = async (id, updatedData) => {
+  const updatePlayer = async (id, updatedData) => {
     try {
-      await axiosClient.patch(
-        `intramurals/${intrams_id}/events/${event_id}/participants/${id}/edit`,
-        updatedData
+      setLoading(true);
+      await axiosClient.post(
+        `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}/edit`,
+        updatedData,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
-      await fetchParticipants(pagination.currentPage);
+      await fetchPlayers();
       closeModal();
     } catch (err) {
-      console.error(err);
-      setError("Failed to update participant");
+      setError("Failed to update player");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deleteParticipant = async (id) => {
-    try {
-      await axiosClient.delete(
-        `intramurals/${intrams_id}/events/${event_id}/participants/${id}`
-      );
-      await fetchParticipants(pagination.currentPage);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to delete participant");
+  const deletePlayer = async (id, name) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
+    if (confirmDelete) {
+      try {
+        setLoading(true);
+        await axiosClient.delete(
+          `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}`
+        );
+        await fetchPlayers();
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to delete player");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const fetchTeamNames = async () => {
-    try {
-      const { data } = await axiosClient.get(
-        `/intramurals/${intrams_id}/events/${event_id}/team_names`
-      );
-      setTeams(data);
-    } catch (err) {
-      console.error("Error fetching team names:", err);
+  const toggleApproval = async (id, currentStatus, name) => {
+    const confirm = window.confirm(
+      `Are you sure you want to ${currentStatus ? "mark as pending" : "approve"} ${name}?`
+    );
+    if (confirm) {
+      try {
+        setLoading(true);
+        await axiosClient.patch(
+          `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}/edit`,
+          { approved: currentStatus ? 0 : 1 }
+        );
+        await fetchPlayers();
+      } catch (err) {
+        setError("Failed to update approval status");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    if (isModalOpen) fetchTeamNames();
-  }, [isModalOpen]);
-
-  useEffect(() => {
-    if (!event_id || (pendingPage === null && search === "" && activeTab === "All")) return;
-
-    const debounce = setTimeout(() => {
-      fetchParticipants(pendingPage ?? pagination.currentPage);
-    }, 500);
-
-    return () => clearTimeout(debounce);
-  }, [search, activeTab, pendingPage, event_id]);
+    const delayDebounce = setTimeout(() => {
+      if (intrams_id) {
+        fetchPlayers(pagination.currentPage);
+      }
+    }, 1000);
+    return () => clearTimeout(delayDebounce);
+  }, [search, activeTab, pagination.currentPage, intrams_id]);
 
   const SkeletonLoader = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {[...Array(8)].map((_, index) => (
-        <div
-          key={index}
-          className="w-full h-40 p-4 bg-[#E6F2E8]/50 animate-pulse rounded-lg shadow-sm"
-        >
-          <div className="w-3/4 h-4 bg-[#E6F2E8]/70 mb-3 rounded" />
-          <div className="w-1/2 h-4 bg-[#E6F2E8]/70 mb-2 rounded" />
-          <div className="w-full h-2 bg-[#E6F2E8]/70 rounded" />
-          <div className="w-5/6 h-2 bg-[#E6F2E8]/70 mt-2 rounded" />
-        </div>
-      ))}
+    <div className="animate-pulse overflow-x-auto">
+      <div className="shadow-md rounded-xl border border-[#E6F2E8]">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-[#F7FAF7]">
+            <tr>
+              {[...Array(7)].map((_, i) => (
+                <th key={i} className="px-6 py-3">
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {[...Array(5)].map((_, row) => (
+              <tr key={row}>
+                {[...Array(7)].map((_, col) => (
+                  <td key={col} className="px-6 py-4">
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 
+  const renderDownloadLink = (url) =>
+    url ? (
+      <a
+        href={url}
+        className="text-[#2A6D3A] hover:text-[#6BBF59] hover:underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View
+      </a>
+    ) : (
+      <span className="text-gray-400">N/A</span>
+    );
+
   return (
     <div className="flex flex-col w-full h-full">
-      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
-        <div>
-          {error && (
-            <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
-              {error}
-            </div>
-          )}
-        </div>
+      <div className="bg-[#F7FAF7] px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Players</h2>
         <button
           type="button"
-          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
           onClick={openModal}
           disabled={loading}
+          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium transition-all"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Participant
+          Add Player
         </button>
       </div>
 
@@ -191,57 +219,108 @@ export default function ParticipantsPage() {
             activeTab={activeTab}
             setActiveTab={(value) => {
               setPagination((prev) => ({ ...prev, currentPage: 1 }));
-              setPendingPage(1);
               setActiveTab(value);
             }}
             search={search}
             setSearch={(value) => {
               setPagination((prev) => ({ ...prev, currentPage: 1 }));
-              setPendingPage(1);
               setSearch(value);
             }}
-            placeholder="Search participant"
+            placeholder="Search player name"
             filterOptions={filterOptions}
           />
         </div>
 
+        {error && <div className="text-red-600 bg-red-50 p-3 rounded mb-4">{error}</div>}
+
         {loading ? (
           <SkeletonLoader />
-        ) : participants.length === 0 ? (
+        ) : players.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            No participants found. Click "Add Participant" to create one.
+            No players found. Click "Add Player" to create one.
           </div>
         ) : (
-          <div className="w-full mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {participants.map((participant) => (
-                <div key={participant.id} className="w-full h-auto">
-                  <ParticipantCard
-                    participant={participant}
-                    openEditModal={openEditModal}
-                    deleteParticipant={deleteParticipant}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <PaginationControls
-              pagination={pagination}
-              handlePageChange={handlePageChange}
-            />
+          <div className="overflow-x-auto bg-white shadow-md rounded-xl border border-[#E6F2E8]">
+            <table className="min-w-full text-sm text-left text-gray-700">
+              <thead className="bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8]">
+                <tr>
+                  <th className="px-6 py-3 font-medium tracking-wider">Name</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">ID Number</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Medical Cert</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Parent's Consent</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">COR</th>
+                  <th className="px-6 py-3 font-medium tracking-wider">Status</th>
+                  <th className="px-6 py-3 font-medium tracking-wider text-right">Actions</th>
+                  <th className="px-6 py-3 font-medium tracking-wider text-right">Approval</th>
+                </tr>
+              </thead>
+              <tbody>
+                {players.map((player, idx) => (
+                  <tr
+                    key={player.id}
+                    className={`border-b border-[#E6F2E8] hover:bg-[#F7FAF7] transition duration-200 ${
+                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    }`}
+                  >
+                    <td className="px-6 py-4">{player.name}</td>
+                    <td className="px-6 py-4">{player.id_number}</td>
+                    <td className="px-6 py-4">{renderDownloadLink(player.medical_certificate)}</td>
+                    <td className="px-6 py-4">{renderDownloadLink(player.parents_consent)}</td>
+                    <td className="px-6 py-4">{renderDownloadLink(player.cor)}</td>
+                    <td className="px-6 py-4">
+                      <div 
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                          player.approved 
+                            ? "bg-green-100 text-green-800" 
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {player.approved ? "Approved" : "Pending"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-2">
+                      <button
+                        onClick={() => openEditModal(player)}
+                        className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deletePlayer(player.id, player.name)}
+                        className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-2"> 
+                    <button
+                        onClick={() => toggleApproval(player.id, player.approved, player.name)}
+                        className={`${
+                          player.approved
+                            ? "text-yellow-600 border-yellow-200 hover:bg-yellow-50"
+                            : "text-green-600 border-green-200 hover:bg-green-50"
+                        } bg-white border font-medium rounded-lg text-xs px-4 py-2 transition-colors`}
+                      >
+                        {player.approved ? "Mark Pending" : "Approve"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <PaginationControls pagination={pagination} handlePageChange={handlePageChange} />
           </div>
         )}
       </div>
 
-      <ParticipantModal
+      <PlayerModal
         isModalOpen={isModalOpen}
         closeModal={closeModal}
-        addParticipant={addParticipant}
-        updateParticipant={updateParticipant}
-        existingParticipant={selectedParticipant}
+        addPlayer={addPlayer}
+        updatePlayer={updatePlayer}
+        existingPlayer={selectedPlayer}
         isLoading={loading}
         error={error}
-        teams={teams}
       />
     </div>
   );

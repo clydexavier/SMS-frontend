@@ -1,34 +1,54 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useParams } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
+import axiosClient from '../../axiosClient';
 
 import { GrTrophy, GrHistory} from "react-icons/gr";
-import { FaSitemap, FaGamepad, FaUsers, FaHistory, FaTrophy, FaCalendarAlt } from "react-icons/fa";
 import { IoDocumentsOutline, IoMedalOutline } from "react-icons/io5";
 import { LiaSitemapSolid } from "react-icons/lia";
 import { MdOutlineScoreboard } from "react-icons/md";
 import { TbUsersGroup } from "react-icons/tb";
 
 export default function EventPage() {
-  const location = useLocation();
+  const [event, setEvent] = useState("");
+
   const { intrams_id, event_id } = useParams();
-  
   const isize = 20;
   const menuItems = [
     { icon: <GrTrophy size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
     { 
       icon: <IoMedalOutline size={isize} color="black" />, 
-      label: 'Events', 
+      label: `${event}`, 
       route: `/${intrams_id}/events`,
       submenu: [
+        { icon: <TbUsersGroup size={isize} color="black" />, label: 'Players', route: 'players' },
         { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
         { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
-        { icon: <TbUsersGroup size={isize} color="black" />, label: 'Participants', route: 'participants' },
+        { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },
+
       ]
     },
     { icon: <GrHistory size={isize} color="black" />, label: 'Log', route: 'logs' },
   ];
-  
+
+
+  const fetchEvent = async () => {
+    try {
+      //setLoading(true);
+      const { data } = await axiosClient.get(
+        `/intramurals/${intrams_id}/events/${event_id}`,
+      );
+      setEvent(data);
+      console.log(data);
+    } catch (err) {
+      console.error("Error fetching event name:", err);
+    } finally {
+      //setLoading(false);
+    }
+  };
+  useEffect(() => {
+      fetchEvent();
+  }, [event_id]);  
   return (
     <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">
       <noscript>

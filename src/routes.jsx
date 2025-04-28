@@ -83,7 +83,7 @@ const routes = [
         children: [
           { path: "bracket", element: <BracketPage /> },
           { path: "games", element: <GamePage /> },
-          { path: "participants", element: <ParticipantsPage /> },
+          { path: "players", element: <PlayersPage /> },
           { path: "logs", element: <VarsityPlayersPage /> },
         ],
       },

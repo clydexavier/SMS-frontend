@@ -11,10 +11,12 @@ export default function PlayerModal({
   existingPlayer,
   isLoading,
   error,
+  teams
 }) {
   const initialState = {
     name: "",
     id_number: "",
+    team_id: "",
     medical_certificate: null,
     parents_consent: null,
     cor: null,
@@ -57,6 +59,7 @@ export default function PlayerModal({
       setFormData({
         name: existingPlayer.name || "",
         id_number: existingPlayer.id_number || "",
+        team_id: existingPlayer.team_id || "",
         medical_certificate: null,
         parents_consent: null,
         cor: null,
@@ -89,9 +92,24 @@ export default function PlayerModal({
     }
   }, [existingPlayer, isModalOpen]);
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const formatIDNumber = (value) => {
+    const digits = value.replace(/\D/g, "");
+    const part1 = digits.slice(0, 2);
+    const part2 = digits.slice(2, 3);
+    const part3 = digits.slice(3, 8);
+    let formatted = part1;
+    if (part2) formatted += `-${part2}`;
+    if (part3) formatted += `-${part3}`;
+    return formatted;
   };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    const newValue = name === "id_number" ? formatIDNumber(value) : value;
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
+  };
+
+ 
 
   const uploadFile = (files, field) => {
     if (!files || files.length === 0) return;
@@ -151,6 +169,7 @@ export default function PlayerModal({
     const playerData = new FormData();
     playerData.append("name", formData.name);
     playerData.append("id_number", formData.id_number);
+    playerData.append("team_id", formData.team_id);
 
     ["medical_certificate", "parents_consent", "cor"].forEach((field) => {
       if (formData[field]) {
@@ -294,6 +313,30 @@ export default function PlayerModal({
                       placeholder="Enter ID number"
                       required
                     />
+                  </div>
+
+                  {/* Team Select */}
+                  <div className="col-span-2">
+                    <label htmlFor="team_id" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      Select Team
+                    </label>
+                    <select
+                      name="team_id"
+                      id="team_id"
+                      value={formData.team_id}
+                      onChange={handleChange}
+                      required
+                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    >
+                      <option value="" disabled>
+                        Select a team
+                      </option>
+                      {(teams || []).map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {renderFileUpload("Medical Certificate", "medical_certificate")}

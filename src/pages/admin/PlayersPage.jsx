@@ -7,7 +7,7 @@ import PlayerModal from "../../components/admin/PlayerModal";
 import PaginationControls from "../../components/PaginationControls";
 
 export default function PlayersPage() {
-  const { intrams_id, event_id, participant_id } = useParams();
+  const { intrams_id, event_id } = useParams();
 
   const [players, setPlayers] = useState([]);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -18,6 +18,9 @@ export default function PlayersPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
 
+  const [teams, setTeams] = useState([]);
+
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 12,
@@ -25,11 +28,10 @@ export default function PlayersPage() {
     lastPage: 1,
   });
 
-  const filterOptions = [
+  const [filterOptions, setFilterOptions] = useState([
     { label: "All", value: "All" },
-    { label: "Approved", value: "1" },
-    { label: "Pending", value: "0" },
-  ];
+  ]);
+  
 
   const openModal = () => {
     setSelectedPlayer(null);
@@ -48,30 +50,7 @@ export default function PlayersPage() {
     setError(null);
   };
 
-  const fetchPlayers = async (page = 1) => {
-    try {
-      setLoading(true);
-      const { data } = await axiosClient.get(
-        `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players`,
-        {
-          params: { page, approved: activeTab, search },
-        }
-      );
-
-      setPlayers(data.data);
-      setPagination({
-        currentPage: data.meta.current_page,
-        perPage: data.meta.per_page,
-        total: data.meta.total,
-        lastPage: data.meta.last_page,
-      });
-    } catch (err) {
-      console.error("Error fetching players:", err);
-      setError("Failed to fetch players");
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const handlePageChange = (page) => {
     setPagination((prev) => ({ ...prev, currentPage: page }));
@@ -80,8 +59,12 @@ export default function PlayersPage() {
   const addPlayer = async (newPlayer) => {
     try {
       setLoading(true);
+      for (let [key, value] of newPlayer.entries()) {
+        console.log(key, value);
+      }
+      
       await axiosClient.post(
-        `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/create`,
+        `/intramurals/${intrams_id}/events/${event_id}/players/create`,
         newPlayer
       );
       await fetchPlayers();
@@ -97,7 +80,7 @@ export default function PlayersPage() {
     try {
       setLoading(true);
       await axiosClient.post(
-        `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}/edit`,
+        `/intramurals/${intrams_id}/events/${event_id}/players/${id}/edit`,
         updatedData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -116,7 +99,7 @@ export default function PlayersPage() {
       try {
         setLoading(true);
         await axiosClient.delete(
-          `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}`
+          `/intramurals/${intrams_id}/events/${event_id}/players/${id}`
         );
         await fetchPlayers();
       } catch (err) {
@@ -135,7 +118,7 @@ export default function PlayersPage() {
       try {
         setLoading(true);
         await axiosClient.patch(
-          `/intramurals/${intrams_id}/events/${event_id}/participants/${participant_id}/players/${id}/edit`,
+          `/intramurals/${intrams_id}/events/${event_id}/players/${id}/edit`,
           { approved: currentStatus ? 0 : 1 }
         );
         await fetchPlayers();
@@ -147,10 +130,75 @@ export default function PlayersPage() {
     }
   };
 
+  const fetchPlayers = async (page = 1) => {
+    try {
+      setLoading(true);
+      const { data } = await axiosClient.get(
+        `/intramurals/${intrams_id}/events/${event_id}/players`,
+        {
+          params: { page, activeTab, search },
+        }
+      );
+
+      setPlayers(data.data);
+      setPagination({
+        currentPage: data.meta.current_page,
+        perPage: data.meta.per_page,
+        total: data.meta.total,
+        lastPage: data.meta.last_page,
+      });
+    } catch (err) {
+      console.error("Error fetching players:", err);
+      setError("Failed to fetch players");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchFilterOptions = async () => {
+    try {
+      const {data} = await axiosClient.get(
+        `/intramurals/${intrams_id}/events/${event_id}/team_names`
+      );
+      const dynamicOptions = data.map((team) => ({
+        label: team.name,
+        value: team.id.toString(), // or just team.id if you want it as number
+      }));
+      await setFilterOptions([{ label: "All", value: "All" }, ...dynamicOptions]);
+    }
+    catch (err) {
+      console.error("Error fetching filter options:", err);
+    }
+  };
+
+  const fetchTeamNames = async () => {
+    try {
+      console.log(intrams_id, event_id);
+      const { data } = await axiosClient.get(
+        `/intramurals/${intrams_id}/events/${event_id}/team_names`
+      );
+      console.log(intrams_id, event_id);
+      await setTeams(data);
+
+    } catch (err) {
+      console.error("Error fetching team names:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFilterOptions();
+  }, [intrams_id])
+
+  useEffect(() => {
+    if (isModalOpen) fetchTeamNames();
+  }, [isModalOpen]);
+
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       if (intrams_id) {
         fetchPlayers(pagination.currentPage);
+
+        //fetchTeamNames();
       }
     }, 1000);
     return () => clearTimeout(delayDebounce);
@@ -321,6 +369,7 @@ export default function PlayersPage() {
         existingPlayer={selectedPlayer}
         isLoading={loading}
         error={error}
+        teams={teams}
       />
     </div>
   );

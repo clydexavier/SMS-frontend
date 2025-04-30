@@ -292,6 +292,7 @@ export default function PlayersPage() {
             <table className="min-w-full text-sm text-left text-gray-700">
               <thead className="bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8]">
                 <tr>
+                  <th className="px-6 py-3 font-medium tracking-wider">Picture</th>
                   <th className="px-6 py-3 font-medium tracking-wider">Name</th>
                   <th className="px-6 py-3 font-medium tracking-wider">ID Number</th>
                   <th className="px-6 py-3 font-medium tracking-wider">Medical Cert</th>
@@ -310,6 +311,18 @@ export default function PlayersPage() {
                       idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
+                    <td className="px-6 py-4">
+                      {player.picture ? (
+                        <img
+                          src={player.picture}
+                          alt={`${player.name}'s photo`}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-gray-400">No Image</span>
+                      )}
+                    </td>
+
                     <td className="px-6 py-4">{player.name}</td>
                     <td className="px-6 py-4">{player.id_number}</td>
                     <td className="px-6 py-4">{renderDownloadLink(player.medical_certificate)}</td>

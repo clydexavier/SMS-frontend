@@ -11,16 +11,18 @@ export default function PlayerModal({
   existingPlayer,
   isLoading,
   error,
-  teams
+  teams,
 }) {
   const initialState = {
     name: "",
     id_number: "",
     team_id: "",
+    picture: null,
     medical_certificate: null,
     parents_consent: null,
     cor: null,
     previews: {
+      picture: "",
       medical_certificate: "",
       parents_consent: "",
       cor: "",
@@ -28,19 +30,23 @@ export default function PlayerModal({
   };
 
   const [formData, setFormData] = useState(initialState);
-  
+
   const fileInputRefs = {
+    picture: useRef(null),
     medical_certificate: useRef(null),
     parents_consent: useRef(null),
     cor: useRef(null),
-  };  
+  };
+
   const [uploadedFiles, setUploadedFiles] = useState({
+    picture: false,
     medical_certificate: false,
     parents_consent: false,
     cor: false,
   });
 
   const [removeFiles, setRemoveFiles] = useState({
+    picture: false,
     medical_certificate: false,
     parents_consent: false,
     cor: false,
@@ -48,10 +54,8 @@ export default function PlayerModal({
 
   useEffect(() => {
     if (existingPlayer) {
-      console.log(existingPlayer.medical_certificate);
-      console.log(existingPlayer.parents_consent);
-      console.log(existingPlayer.cor);
       const previews = {
+        picture: existingPlayer.picture || "",
         medical_certificate: existingPlayer.medical_certificate || "",
         parents_consent: existingPlayer.parents_consent || "",
         cor: existingPlayer.cor || "",
@@ -60,19 +64,21 @@ export default function PlayerModal({
         name: existingPlayer.name || "",
         id_number: existingPlayer.id_number || "",
         team_id: existingPlayer.team_id || "",
+        picture: null,
         medical_certificate: null,
         parents_consent: null,
         cor: null,
         previews,
       });
-      
-      // Reset all upload and remove states
+
       setUploadedFiles({
+        picture: false,
         medical_certificate: false,
         parents_consent: false,
         cor: false,
       });
       setRemoveFiles({
+        picture: false,
         medical_certificate: false,
         parents_consent: false,
         cor: false,
@@ -80,11 +86,13 @@ export default function PlayerModal({
     } else {
       setFormData(initialState);
       setUploadedFiles({
+        picture: false,
         medical_certificate: false,
         parents_consent: false,
         cor: false,
       });
       setRemoveFiles({
+        picture: false,
         medical_certificate: false,
         parents_consent: false,
         cor: false,
@@ -109,8 +117,6 @@ export default function PlayerModal({
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
- 
-
   const uploadFile = (files, field) => {
     if (!files || files.length === 0) return;
     const file = files[0];
@@ -122,12 +128,12 @@ export default function PlayerModal({
         [field]: URL.createObjectURL(file),
       },
     }));
-    setUploadedFiles(prev => ({ ...prev, [field]: true }));
-    setRemoveFiles(prev => ({ ...prev, [field]: false }));
+    setUploadedFiles((prev) => ({ ...prev, [field]: true }));
+    setRemoveFiles((prev) => ({ ...prev, [field]: false }));
   };
 
   const handleFileChange = (e, field) => uploadFile(e.target.files, field);
-  
+
   const handleDrop = (e, field) => {
     e.preventDefault();
     uploadFile(e.dataTransfer.files, field);
@@ -142,8 +148,8 @@ export default function PlayerModal({
         [field]: "",
       },
     }));
-    setUploadedFiles(prev => ({ ...prev, [field]: false }));
-    setRemoveFiles(prev => ({ ...prev, [field]: true }));
+    setUploadedFiles((prev) => ({ ...prev, [field]: false }));
+    setRemoveFiles((prev) => ({ ...prev, [field]: true }));
     if (fileInputRefs[field]?.current) {
       fileInputRefs[field].current.value = null;
     }
@@ -171,7 +177,7 @@ export default function PlayerModal({
     playerData.append("id_number", formData.id_number);
     playerData.append("team_id", formData.team_id);
 
-    ["medical_certificate", "parents_consent", "cor"].forEach((field) => {
+    ["picture", "medical_certificate", "parents_consent", "cor"].forEach((field) => {
       if (formData[field]) {
         playerData.append(field, formData[field]);
       }
@@ -189,8 +195,11 @@ export default function PlayerModal({
   };
 
   const renderFileUpload = (label, field) => {
-    const showPreview = (uploadedFiles[field] || (existingPlayer && existingPlayer[`${field}`] && !removeFiles[field])) && formData.previews[field];
-    
+    const showPreview =
+      (uploadedFiles[field] ||
+        (existingPlayer && existingPlayer[`${field}`] && !removeFiles[field])) &&
+      formData.previews[field];
+
     return (
       <div className="col-span-2">
         <label htmlFor={field} className="block mb-2 text-sm font-medium text-[#2A6D3A]">
@@ -199,8 +208,16 @@ export default function PlayerModal({
 
         {showPreview ? (
           <div className="relative p-4 border rounded bg-gray-50 flex items-center space-x-3">
-            <div className=" bg-[#F7FAF7] border-[#6BBF59]/30 p-3 flex items-center space-x-3 min-w-0 flex-1">
-              {getFileIcon(formData.previews[field])}
+            <div className="bg-[#F7FAF7] border-[#6BBF59]/30 p-3 flex items-center space-x-3 min-w-0 flex-1">
+              {field === "picture" ? (
+                <img
+                  src={formData.previews[field]}
+                  alt="Preview"
+                  className="w-16 h-16 rounded object-cover border"
+                />
+              ) : (
+                getFileIcon(formData.previews[field])
+              )}
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-sm font-medium text-gray-800 truncate">
                   {formData[field]?.name || formData.previews[field].split("/").pop()}
@@ -229,6 +246,7 @@ export default function PlayerModal({
             <input
               id={field}
               type="file"
+              accept={field === "picture" ? "image/*" : undefined}
               onChange={(e) => handleFileChange(e, field)}
               ref={fileInputRefs[field]}
               className="hidden"
@@ -238,18 +256,18 @@ export default function PlayerModal({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
               <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
-              <span className="text-xs text-gray-400">PDF, DOCX, TXT, etc.</span>
+              <span className="text-xs text-gray-400">{field === "picture" ? "JPG, PNG, etc." : "PDF, DOCX, TXT, etc."}</span>
             </label>
           </div>
         )}
       </div>
     );
   };
-  
+
   return (
     isModalOpen && (
       <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-        <div className="relative p-4 w-full max-w-md">
+        <div className="relative p-4 w-full max-w-md max-h-[90vh] overflow-y-auto">
           <div className="relative bg-white rounded-lg shadow-xl">
             <div className="flex items-center justify-between p-4 border-b rounded-t border-[#E6F2E8]">
               <h3 className="text-lg font-semibold text-[#2A6D3A]">
@@ -265,19 +283,15 @@ export default function PlayerModal({
             </div>
 
             {error && (
-              <div className="px-4 pt-4 text-sm text-red-600 bg-red-50 rounded">
-                {error}
-              </div>
+              <div className="px-4 pt-4 text-sm text-red-600 bg-red-50 rounded">{error}</div>
             )}
 
             <form className="p-4 md:p-5" onSubmit={handleSubmit} encType="multipart/form-data">
               {isLoading ? (
                 <div className="grid gap-4 mb-4 grid-cols-2 animate-pulse">
-                  <div className="col-span-2 h-10 bg-gray-200 rounded" />
-                  <div className="col-span-2 h-10 bg-gray-200 rounded" />
-                  <div className="col-span-2 h-32 bg-gray-200 rounded" />
-                  <div className="col-span-2 h-32 bg-gray-200 rounded" />
-                  <div className="col-span-2 h-32 bg-gray-200 rounded" />
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="col-span-2 h-10 bg-gray-200 rounded" />
+                  ))}
                 </div>
               ) : (
                 <div className="grid gap-4 mb-4 grid-cols-2">
@@ -315,7 +329,6 @@ export default function PlayerModal({
                     />
                   </div>
 
-                  {/* Team Select */}
                   <div className="col-span-2">
                     <label htmlFor="team_id" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
                       Select Team
@@ -326,7 +339,7 @@ export default function PlayerModal({
                       value={formData.team_id}
                       onChange={handleChange}
                       required
-                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
                     >
                       <option value="" disabled>
                         Select a team
@@ -339,6 +352,7 @@ export default function PlayerModal({
                     </select>
                   </div>
 
+                  {renderFileUpload("Picture", "picture")}
                   {renderFileUpload("Medical Certificate", "medical_certificate")}
                   {renderFileUpload("Parent's Consent", "parents_consent")}
                   {renderFileUpload("Certificate of Registration (COR)", "cor")}
@@ -360,25 +374,9 @@ export default function PlayerModal({
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center">
-                      <svg
-                        className="animate-spin mr-2 h-4 w-4 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
+                      <svg className="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
                       {existingPlayer ? "Updating..." : "Adding..."}
                     </span>

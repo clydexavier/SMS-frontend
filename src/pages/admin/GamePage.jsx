@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosClient from "../../axiosClient";
 import PaginationControls from "../../components/PaginationControls";
-import ScoreModal from "../../components/admin/ScoreModal";
+import MatchScheduleModal from "../../components/admin/MatchScheduleModal";
 
 export default function GamePage() {
   const { intrams_id, event_id } = useParams();
@@ -20,8 +20,6 @@ export default function GamePage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
-  const [selectedWinner, setSelectedWinner] = useState(null);
-  const [scoreSets, setScoreSets] = useState([{ player1Score: "", player2Score: "" }]);
 
   const fetchMatches = async (page = 1) => {
     try {
@@ -57,8 +55,6 @@ export default function GamePage() {
 
   const openScoreModal = (match) => {
     setSelectedMatch(match);
-    setScoreSets([{ player1Score: "", player2Score: "" }]);
-    setSelectedWinner(null);
     setIsModalOpen(true);
   };
 
@@ -67,17 +63,17 @@ export default function GamePage() {
     setSelectedMatch(null);
   };
 
-  const submitScores = () => {
-    console.log({ matchId: selectedMatch.id, scoreSets, winner: selectedWinner });
-    closeModal();
-  };
-
-  const addSet = () => setScoreSets([...scoreSets, { player1Score: "", player2Score: "" }]);
-  const removeSet = () => scoreSets.length > 1 && setScoreSets(scoreSets.slice(0, -1));
-  const updateScore = (index, player, value) => {
-    const updated = [...scoreSets];
-    updated[index][`player${player}Score`] = value;
-    setScoreSets(updated);
+  const submitSchedule = async (scheduleData) => {
+    try {
+      console.log(scheduleData);
+      
+      console.log(scheduleData.time);
+      await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/schedule/create`, scheduleData);
+      alert("Match schedule saved.");
+    } catch (err) {
+      console.error("Failed to submit match schedule", err);
+      alert("Failed to save match schedule.");
+    }
   };
 
   return (
@@ -123,6 +119,7 @@ export default function GamePage() {
                 </div>
               ))}
             </div>
+
             <div className="mt-6">
               <PaginationControls
                 pagination={pagination}
@@ -134,17 +131,11 @@ export default function GamePage() {
       </div>
 
       {isModalOpen && selectedMatch && (
-        <ScoreModal
+        <MatchScheduleModal
           isOpen={isModalOpen}
           selectedMatch={selectedMatch}
           onClose={closeModal}
-          scoreSets={scoreSets}
-          updateScore={updateScore}
-          addSet={addSet}
-          removeSet={removeSet}
-          selectedWinner={selectedWinner}
-          setSelectedWinner={setSelectedWinner}
-          submitScores={submitScores}
+          submitSchedule={submitSchedule}
         />
       )}
     </div>

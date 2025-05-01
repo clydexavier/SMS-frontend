@@ -134,7 +134,7 @@ export default function EventModal({
                     options: [
                       { value: "", label: "Select category", disabled: true },
                       { value: "Male", label: "Male" },
-                      { value: "Male", label: "Female" },
+                      { value: "Female", label: "Female" },
                       { value: "Mixed", label: "Mixed" },
                     ],
                   },

@@ -11,11 +11,11 @@ export default function MatchScheduleModal({
   const [time, setTime] = useState("");
 
   useEffect(() => {
-    if (isOpen) {
-      setDate("");
-      setTime("");
+    if (isOpen && selectedMatch) {
+      setDate(selectedMatch.date || "");
+      setTime(selectedMatch.time || "");
     }
-  }, [isOpen]);
+  }, [isOpen, selectedMatch]);
 
   if (!isOpen || !selectedMatch) return null;
 
@@ -25,16 +25,8 @@ export default function MatchScheduleModal({
       return;
     }
 
-    submitSchedule({
-      match_id: String(selectedMatch.id),
-      challonge_event_id: String(selectedMatch.tournament_id),
-      team1_name: String(selectedMatch.player1_name),
-      team2_name: String(selectedMatch.player2_name),
-      team_1: String(selectedMatch.player1_id),
-      team_2: String(selectedMatch.player2_id),
-      date,
-      time,
-    });
+    submitSchedule(selectedMatch.id, { date, time });
+
 
     onClose();
   };

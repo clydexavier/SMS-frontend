@@ -28,6 +28,8 @@ export default function MatchScheduleModal({
     submitSchedule({
       match_id: String(selectedMatch.id),
       challonge_event_id: String(selectedMatch.tournament_id),
+      team1_name: String(selectedMatch.player1_name),
+      team2_name: String(selectedMatch.player2_name),
       team_1: String(selectedMatch.player1_id),
       team_2: String(selectedMatch.player2_id),
       date,

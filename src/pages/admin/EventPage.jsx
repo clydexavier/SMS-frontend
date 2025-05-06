@@ -8,6 +8,8 @@ import { IoDocumentsOutline, IoMedalOutline } from "react-icons/io5";
 import { LiaSitemapSolid } from "react-icons/lia";
 import { MdOutlineScoreboard } from "react-icons/md";
 import { TbUsersGroup } from "react-icons/tb";
+import { GiPodium } from "react-icons/gi";
+
 
 export default function EventPage() {
   const [event, setEvent] = useState("");
@@ -24,11 +26,13 @@ export default function EventPage() {
         { icon: <TbUsersGroup size={isize} color="black" />, label: 'Players', route: 'players' },
         { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },
         { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
-        { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' }
+        { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
+        { icon: <GiPodium size={isize} color="black" />, label: 'Event Result', route: 'result' },
 
       ]
     },
     { icon: <GrHistory size={isize} color="black" />, label: 'Log', route: 'logs' },
+    
   ];
 
 

@@ -34,6 +34,7 @@ import ParticipantsPage from "./pages/admin/ParticipantsPage";
 import ParticipantPage from "./pages/admin/ParticipantPage";
 import PlayersPage from "./pages/admin/PlayersPage";
 import GalleryPage from "./pages/admin/GalleryPage";
+import ResultPage from "./pages/admin/ResultPage";
 
 const routes = [
   {
@@ -86,7 +87,7 @@ const routes = [
           { path: "games", element: <GamePage /> },
           { path: "players", element: <PlayersPage /> },
           { path: "gallery", element: <GalleryPage /> },
-
+          { path: "result", element: <ResultPage /> },
           { path: "logs", element: <VarsityPlayersPage /> },
         ],
       },

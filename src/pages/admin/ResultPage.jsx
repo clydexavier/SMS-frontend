@@ -125,7 +125,7 @@ const ResultPage = () => {
               />
             )}
           </svg>
-          {podiumData ? "Edit Result" : "Submit Result"}
+          {podiumData ? "Update Result" : "Submit Result"}
         </button>
       </div>
 

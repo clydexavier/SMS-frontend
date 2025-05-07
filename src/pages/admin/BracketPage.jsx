@@ -14,8 +14,9 @@ export default function BracketPage() {
       const res = await axiosClient.get(
         `/intramurals/${intrams_id}/events/${event_id}/bracket`
       );
+      console.log(res.data.status);
       setBracketId(res.data.bracket_id);
-      setEventStatus(res.data.event_status);
+      setEventStatus(res.data.status);
     } catch (err) {
       console.error("Failed to fetch bracket:", err);
       setError("Unable to load bracket.");
@@ -59,7 +60,7 @@ export default function BracketPage() {
       </div>
 
       <div className="flex-1 p-6 bg-[#F7FAF7]">
-        {eventStatus !== "in_progress" ? (
+        {eventStatus !== "in progress" ? (
           <div className="text-center text-gray-500 text-sm mt-20">
             {eventStatus === "pending"
               ? "The bracket has not started yet. Please check back once the event begins."
@@ -73,7 +74,7 @@ export default function BracketPage() {
               height="600"
               frameBorder="0"
               scrolling="auto"
-              allowTransparency="true"
+              allowtransparency="true"
               title="Bracket"
             ></iframe>
           </div>

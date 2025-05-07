@@ -35,6 +35,7 @@ import ParticipantPage from "./pages/admin/ParticipantPage";
 import PlayersPage from "./pages/admin/PlayersPage";
 import GalleryPage from "./pages/admin/GalleryPage";
 import ResultPage from "./pages/admin/ResultPage";
+import TeamSeeder from "./pages/admin/TeamSeeder";
 
 const routes = [
   {
@@ -83,6 +84,7 @@ const routes = [
           </ProtectedRoute>
         ),
         children: [
+          {path: "seeder", element: <TeamSeeder/>},
           { path: "bracket", element: <BracketPage /> },
           { path: "games", element: <GamePage /> },
           { path: "players", element: <PlayersPage /> },

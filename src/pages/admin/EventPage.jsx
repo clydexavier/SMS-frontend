@@ -25,6 +25,8 @@ export default function EventPage() {
       submenu: [
         { icon: <TbUsersGroup size={isize} color="black" />, label: 'Players', route: 'players' },
         { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },
+        { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Team Seeder', route: 'seeder' },
+
         { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
         { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
         { icon: <GiPodium size={isize} color="black" />, label: 'Event Result', route: 'result' },

@@ -38,10 +38,14 @@ export default function BracketPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4 p-6">
-        <div className="h-10 w-1/3 bg-gray-200 rounded-lg" />
-        <div className="h-10 w-32 bg-gray-300 rounded-lg" />
-        <div className="h-[600px] w-full bg-gray-200 rounded-lg" />
+      <div className="flex flex-col w-full h-full">
+        <div className="bg-[#F7FAF7] px-6 py-4 border-b border-gray-200 flex justify-between items-center animate-pulse">
+          <div className="h-6 w-40 bg-gray-200 rounded-lg"></div>
+          <div className="h-9 w-24 bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="flex-1 p-6 bg-[#F7FAF7]">
+          <div className="w-full h-[600px] bg-gray-200 rounded-lg animate-pulse" />
+        </div>
       </div>
     );
   }

@@ -9,25 +9,20 @@ export default function MatchScheduleModal({
 }) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [venue, setVenue] = useState("");
 
   useEffect(() => {
     if (isOpen && selectedMatch) {
-      setDate(selectedMatch.date || "");
-      setTime(selectedMatch.time || "");
+      setDate(selectedMatch.date || null);
+      setTime(selectedMatch.time || null);
+      setVenue(selectedMatch.venue || null);
     }
   }, [isOpen, selectedMatch]);
 
   if (!isOpen || !selectedMatch) return null;
 
   const handleSubmit = () => {
-    if (!date || !time) {
-      alert("Please fill in both date and time.");
-      return;
-    }
-
-    submitSchedule(selectedMatch.id, { date, time });
-
-
+    submitSchedule(selectedMatch.id, { date, time, venue });
     onClose();
   };
 
@@ -47,6 +42,16 @@ export default function MatchScheduleModal({
 
           <div className="p-4 space-y-4">
             <div>
+              <label className="block text-sm font-medium text-gray-700">Venue</label>
+              <input
+                type="text"
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                placeholder="Enter venue name"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700">Date</label>
               <input
                 type="date"
@@ -65,6 +70,8 @@ export default function MatchScheduleModal({
                 onChange={(e) => setTime(e.target.value)}
               />
             </div>
+
+            
 
             <button
               onClick={handleSubmit}

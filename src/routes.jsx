@@ -29,7 +29,8 @@ import IntramuralPage from "./pages/admin/IntramuralPage";
 import EventPage from "./pages/admin/EventPage";
 import BracketPage from "./pages/admin/BracketPage";
 import GamePage from "./pages/admin/GamePage";
-import ParticipantsPage from "./pages/admin/ParticipantsPage";
+import PodiumsPage from "./pages/admin/PodiumsPage";
+import OverallTallyPage from "./pages/admin/OverallTallyPage";
 
 import ParticipantPage from "./pages/admin/ParticipantPage";
 import PlayersPage from "./pages/admin/PlayersPage";
@@ -70,9 +71,10 @@ const routes = [
           { path: "teams", element: <TeamsPage /> },
           { path: "vplayers", element: <VarsityPlayersPage /> },
           { path: "documents", element: <DocumentsPage /> },
+          {path: "podiums", element: <PodiumsPage/>},
+          { path: "tally", element: <OverallTallyPage /> },
+
           { path: "logs", element: <IntramuralLogsPage /> },
-          
-          
           
         ],
       },

@@ -14,6 +14,8 @@ const menuItems = [
   { icon: <MdOutlinePeopleAlt size={isize} color="black" />, label: 'Teams', route: 'teams' },
   { icon: <MdOutlinePersonAddAlt size={isize} color="black" />, label: 'Varsity Players', route: 'vplayers' },
   //{ icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
+  { icon: <GrHistory size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
+  { icon: <GrHistory size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
   { icon: <GrHistory size={isize} color="black" />, label: 'Log', route: 'logs' },
 ];
 
@@ -47,7 +49,7 @@ export default function IntramuralPage() {
           <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
         </div>
 
-        <div className="flex-auto overflow-y-auto p-6 text-sm sm:text-xs md:text-sm lg:text-sm bg-white-200 ">
+        <div className="flex-auto overflow-y-auto p-6 text-sm sm:text-xs md:text-sm lg:text-sm bg-white">
           <Outlet />
         </div>
       </main>

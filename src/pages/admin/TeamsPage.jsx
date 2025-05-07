@@ -1,18 +1,20 @@
-// TeamsPage.jsx
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import axiosClient from "../../axiosClient";
 import Filter from "../../components/Filter";
 import TeamModal from "../../components/admin/TeamModal";
 import PaginationControls from "../../components/PaginationControls";
-import { useParams } from "react-router-dom";
-import axiosClient from "../../axiosClient";
+import { Users, Loader } from "lucide-react";
 
 export default function TeamsPage() {
   const { intrams_id } = useParams();
+
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
 
@@ -36,7 +38,6 @@ export default function TeamsPage() {
   };
 
   const openEditModal = (team) => {
-    console.log("Logo team:", team.team_logo_path);
     setSelectedTeam(team);
     setIsModalOpen(true);
   };
@@ -61,8 +62,8 @@ export default function TeamsPage() {
         lastPage: data.meta.last_page,
       });
     } catch (err) {
-      setError("Failed to fetch teams");
       console.error("Error fetching teams:", err);
+      setError("Failed to fetch teams");
     } finally {
       setLoading(false);
     }
@@ -128,127 +129,147 @@ export default function TeamsPage() {
   }, [search, activeTab, pagination.currentPage, intrams_id]);
 
   const SkeletonLoader = () => (
-    <div className="space-y-4">
-      {[...Array(5)].map((_, i) => (
-        <div
-          key={i}
-          className="animate-pulse bg-white p-4 rounded-lg shadow-sm border border-gray-200"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <div className="h-4 bg-[#e0f2f1] rounded w-1/4" />
-            <div className="h-4 bg-[#e0f2f1] rounded w-12" />
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="h-4 bg-[#e0f2f1] rounded col-span-1" />
-            <div className="h-4 bg-[#e0f2f1] rounded col-span-1" />
-            <div className="h-4 bg-[#e0f2f1] rounded col-span-1" />
-          </div>
-        </div>
-      ))}
+    <div className="animate-pulse overflow-x-auto bg-white p-4 rounded-xl shadow-md border border-[#E6F2E8]">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead>
+          <tr>
+            {[...Array(4)].map((_, i) => (
+              <th key={i} className="px-6 py-3">
+                <div className="h-4 bg-gray-200 rounded w-24"></div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {[...Array(5)].map((_, row) => (
+            <tr key={row}>
+              {[...Array(4)].map((_, col) => (
+                <td key={col} className="px-6 py-4">
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 
   return (
     <div className="flex flex-col w-full h-full">
-      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex items-center">
-      <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Teams Players</h2>
-
-        {error && (
-          <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
-            {error}
+      <div className="space-y-8 w-full h-full flex-1">
+        <div className="flex flex-col w-full h-full bg-gray-75 p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-[#2A6D3A] mb-4 flex items-center">
+              <Users size={20} className="mr-2" /> Teams
+            </h2>
+            <button
+              type="button"
+              className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white p-4 py-3 mb-4 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium"
+              onClick={openModal}
+              disabled={loading}
+            >
+              Add Team
+            </button>
           </div>
-        )}
-        <div className="ml-auto">
-          <button
-            type="button"
-            className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
-            onClick={openModal}
-            disabled={loading}
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Add Team
-          </button>
+          
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col bg-white p-4 rounded-xl shadow-md border border-[#E6F2E8] flex-grow">
+              <Filter
+                activeTab={activeTab}
+                setActiveTab={(value) => {
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                  setActiveTab(value);
+                }}
+                search={search}
+                setSearch={(value) => {
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                  setSearch(value);
+                }}
+                placeholder="Search team name"
+                filterOptions={filterOptions}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
+              {error}
+            </div>
+          )}
+
+          {/* Teams Table / State Handling */}
+          {loading ? (
+            <SkeletonLoader />
+          ) : teams.length === 0 ? (
+            <div className="mt-4 flex-1 bg-white p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+              <Users size={48} className="mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
+              <p className="text-gray-500 mt-1">Click "Add Team" to create one</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden">
+              <div className="overflow-x-auto overflow-y-auto">
+                <table className="min-w-full text-sm text-left text-gray-700">
+                  <thead className="bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8]">
+                    <tr>
+                      <th className="px-6 py-3 font-medium tracking-wider">Logo</th>
+                      <th className="px-6 py-3 font-medium tracking-wider">Name</th>
+                      <th className="px-6 py-3 font-medium tracking-wider">Type</th>
+                      <th className="px-6 py-3 font-medium tracking-wider text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teams.map((team, idx) => (
+                      <tr
+                        key={team.id}
+                        className={`border-b border-[#E6F2E8] hover:bg-[#F7FAF7] transition duration-200 ${
+                          idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        }`}
+                      >
+                        <td className="px-6 py-4">
+                          <img
+                            src={team.team_logo_path}
+                            alt={team.name}
+                            className="w-10 h-10 rounded-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/default-logo.png";
+                            }}
+                          />
+                        </td>
+                        <td className="px-6 py-4">{team.name}</td>
+                        <td className="px-6 py-4">{team.type}</td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                          <button
+                            onClick={() => openEditModal(team)}
+                            className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteTeam(team.id, team.name)}
+                            className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Pagination */}
+              <div className="p-2">
+                <PaginationControls
+                  pagination={pagination}
+                  handlePageChange={handlePageChange}
+                />
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-
-
-      <div className="flex-1 p-6 bg-[#F7FAF7]">
-        <Filter
-          activeTab={activeTab}
-          setActiveTab={(val) => {
-            setPagination((prev) => ({ ...prev, currentPage: 1 }));
-            setActiveTab(val);
-          }}
-          search={search}
-          setSearch={(val) => {
-            setPagination((prev) => ({ ...prev, currentPage: 1 }));
-            setSearch(val);
-          }}
-          placeholder="Search team name"
-          filterOptions={filterOptions}
-        />
-
-        {loading ? (
-          <SkeletonLoader />
-        ) : teams.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No teams found. Click "Add Team" to create one.
-          </div>
-        ) : (
-          <div className="overflow-x-auto bg-white shadow-md rounded-xl mt-4 border border-[#E6F2E8]">
-            <table className="min-w-full text-sm text-left text-gray-700">
-              <thead className="text-xs uppercase bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8]">
-                <tr>
-                  <th className="px-6 py-3 font-medium tracking-wider">Logo</th>
-                  <th className="px-6 py-3 font-medium tracking-wider">Name</th>
-                  <th className="px-6 py-3 font-medium tracking-wider">Type</th>
-                  <th className="px-6 py-3 font-medium tracking-wider text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {teams.map((team, idx) => (
-                  <tr
-                    key={team.id}
-                    className={`border-b border-[#E6F2E8] hover:bg-[#F7FAF7] transition-colors duration-200 ${
-                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    }`}
-                  >
-                    <td className="px-6 py-4">
-                      <img
-                        src={team.team_logo_path}
-                        alt={team.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/default-logo.png";
-                        }}
-                      />
-                    </td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{team.name}</td>
-                    <td className="px-6 py-4">{team.type}</td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      <button
-                        onClick={() => openEditModal(team)}
-                        className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteTeam(team.id, team.name)}
-                        className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <PaginationControls pagination={pagination} handlePageChange={handlePageChange} />
-          </div>
-        )}
       </div>
 
       <TeamModal

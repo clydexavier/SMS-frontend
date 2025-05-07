@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
+import { Loader } from "lucide-react";
 
 export default function VarsityPlayerModal({
   isModalOpen,
@@ -7,6 +8,8 @@ export default function VarsityPlayerModal({
   addPlayer,
   updatePlayer,
   existingPlayer,
+  isLoading,
+  error,
 }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -46,105 +49,123 @@ export default function VarsityPlayerModal({
     existingPlayer
       ? updatePlayer(existingPlayer.id, formData)
       : addPlayer(formData);
-    closeModal();
   };
 
+  const sportOptions = ["Basketball", "Volleyball", "Football"];
+
+  if (!isModalOpen) return null;
+
   return (
-    isModalOpen && (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-        <div className="relative p-4 w-full max-w-md">
-          <div className="relative bg-white rounded-lg shadow-xl">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b rounded-t border-[#E6F2E8]">
-              <h3 className="text-lg font-semibold text-[#2A6D3A]">
-                {existingPlayer ? "Update Player" : "Add New Varsity Player"}
-              </h3>
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+      <div className="relative w-full max-w-md mx-auto">
+        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-5 border-b border-[#E6F2E8] bg-[#F7FAF7]">
+            <h3 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+              {existingPlayer ? "Update Player" : "Add New Varsity Player"}
+            </h3>
+            <button
+              type="button"
+              onClick={closeModal}
+              className="cursor-pointer text-[#2A6D3A]/70 hover:bg-[#F7FAF7] hover:text-[#2A6D3A] rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition-colors duration-200"
+              aria-label="Close modal"
+            >
+              <IoMdClose size={22} />
+            </button>
+          </div>
+
+          {/* Form */}
+          <form className="p-5" onSubmit={handleSubmit}>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {/* Name */}
+              <div>
+                <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  autoComplete="off"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  placeholder="Enter player name"
+                  required
+                />
+              </div>
+
+              {/* ID Number */}
+              <div>
+                <label htmlFor="id_number" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                  ID Number
+                </label>
+                <input
+                  type="text"
+                  name="id_number"
+                  id="id_number"
+                  value={formData.id_number}
+                  onChange={handleChange}
+                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  placeholder="XX-X-XXXXX"
+                  required
+                />
+              </div>
+
+              {/* Sport - Now a select dropdown */}
+              <div>
+                <label htmlFor="sport" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                  Sport
+                </label>
+                <input
+                  type="text"
+                  name="sport"
+                  id="sport"
+                  autoComplete="off"
+                  value={formData.sport}
+                  onChange={handleChange}
+                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  placeholder="Enter player sport"
+                  required
+                />
+              </div>
+              
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end mt-6 space-x-3">
               <button
                 type="button"
                 onClick={closeModal}
-                className="cursor-pointer text-[#2A6D3A]/70 hover:bg-[#F7FAF7] hover:text-[#2A6D3A] rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition-colors duration-200"
+                className="text-[#2A6D3A] bg-white border border-[#E6F2E8] hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200"
+                disabled={isLoading}
               >
-                <IoMdClose size={22} />
-                <span className="sr-only">Close modal</span>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200 flex items-center"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader size={16} className="mr-2 animate-spin" />
+                    {existingPlayer ? "Updating..." : "Adding..."}
+                  </>
+                ) : (
+                  existingPlayer ? "Update Player" : "Add Player"
+                )}
               </button>
             </div>
-
-            {/* Form */}
-            <form className="p-4 md:p-5" onSubmit={handleSubmit}>
-              <div className="grid gap-4 mb-4 grid-cols-2">
-                {/* Name */}
-                <div className="col-span-2">
-                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    autoComplete="off"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                    placeholder="Enter player name"
-                    required
-                  />
-                </div>
-
-                {/* ID Number */}
-                <div className="col-span-2">
-                  <label htmlFor="id_number" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    ID Number
-                  </label>
-                  <input
-                    type="text"
-                    name="id_number"
-                    id="id_number"
-                    value={formData.id_number}
-                    onChange={handleChange}
-                    className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                    placeholder="Enter ID number"
-                    required
-                  />
-                </div>
-
-                {/* Sport */}
-                <div className="col-span-2">
-                  <label htmlFor="sport" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Sport
-                  </label>
-                  <input
-                    type="text"
-                    name="sport"
-                    id="sport"
-                    value={formData.sport}
-                    onChange={handleChange}
-                    className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                    placeholder="Enter sport"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end mt-4 space-x-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200"
-                >
-                  {existingPlayer ? "Update Player" : "Add New Player"}
-                </button>
-              </div>
-            </form>
-          </div>
+          </form>
         </div>
       </div>
-    )
+    </div>
   );
 }

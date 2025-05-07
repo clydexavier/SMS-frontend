@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { IoMdClose } from "react-icons/io";
 import { FaTimesCircle } from "react-icons/fa";
+import { Loader } from "lucide-react";
 
 export default function TeamModal({
   isModalOpen,
@@ -86,147 +87,154 @@ export default function TeamModal({
 
   const showPreview = (uploaded || (existingTeam?.team_logo_path && !removeLogo)) && formData.previewLogo;
 
-  return (
-    isModalOpen && (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-        <div className="relative p-4 w-full max-w-md">
-          <div className="relative bg-white rounded-lg shadow-xl">
-            <div className="flex items-center justify-between p-4 border-b rounded-t border-[#E6F2E8]">
-              <h3 className="text-lg font-semibold text-[#2A6D3A]">
-                {existingTeam ? "Update Team" : "Add New Team"}
-              </h3>
-              <button
-                type="button"
-                onClick={closeModal}
-                className="text-[#2A6D3A]/70 hover:bg-[#F7FAF7] rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition-colors duration-200"
-              >
-                <IoMdClose size={22} />
-              </button>
-            </div>
+  if (!isModalOpen) return null;
 
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+      <div className="relative w-full max-w-md mx-auto">
+        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-5 border-b border-[#E6F2E8] bg-[#F7FAF7]">
+            <h3 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+              {existingTeam ? "Update Team" : "Add New Team"}
+            </h3>
+            <button
+              type="button"
+              onClick={closeModal}
+              className="cursor-pointer text-[#2A6D3A]/70 hover:bg-[#F7FAF7] hover:text-[#2A6D3A] rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition-colors duration-200"
+              aria-label="Close modal"
+            >
+              <IoMdClose size={22} />
+            </button>
+          </div>
+
+          {/* Form */}
+          <form className="p-5" onSubmit={handleSubmit} encType="multipart/form-data">
             {error && (
-              <div className="px-4 pt-4 text-sm text-red-600 bg-red-50 rounded">
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
-            <form className="p-4 md:p-5" onSubmit={handleSubmit} encType="multipart/form-data">
-              {isLoading ? (
-                <div className="grid gap-4 mb-4 grid-cols-2 animate-pulse">
-                  <div className="col-span-2 h-10 bg-gray-200 rounded" />
-                  <div className="col-span-2 h-10 bg-gray-200 rounded" />
-                  <div className="col-span-2 h-36 bg-gray-200 rounded" />
-                </div>
-              ) : (
-                <div className="grid gap-4 mb-4 grid-cols-2">
-                  <div className="col-span-2">
-                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                      Team Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      id="name"
-                      autoComplete="off"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
-                      placeholder="Enter team name"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                      Team Type
-                    </label>
-                    <select
-                      name="type"
-                      id="type"
-                      value={formData.type}
-                      onChange={handleChange}
-                      className="bg-white border border-[#6BBF59]/30 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-[#6BBF59]/50 focus:border-[#6BBF59] block w-full p-2.5"
-                      
-                    >
-                      <option value="" disabled>Select Type</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
-                    </select>
-                  </div>
-
-                  <div className="col-span-2">
-                    <label htmlFor="team_logo_path" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                      Team Logo
-                    </label>
-
-                    {showPreview ? (
-                      <div className="relative inline-block">
-                        <img
-                          src={formData.previewLogo}
-                          alt="Logo preview"
-                          className="max-h-32 object-contain border rounded"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/default-logo.png";
-                          }}
-                        />
-                        <button
-                          type="button"
-                          onClick={handleRemoveLogo}
-                          className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-white rounded-full"
-                        >
-                          <FaTimesCircle size={20} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 border-[#6BBF59]/30`}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={handleDrop}
-                      >
-                        <input
-                          id="team_logo_path"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          ref={fileInputRef}
-                          className="hidden"
-                        />
-                        <label htmlFor="team_logo_path" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
-                          <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                          </svg>
-                          <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
-                          <span className="text-xs text-gray-400">SVG, PNG, JPG or GIF</span>
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end mt-4 space-x-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-200 focus:ring-2 focus:ring-[#6BBF59]/50"
-                >
-                  {existingTeam ? "Update Team" : "Add New Team"}
-                </button>
+            <div className="space-y-4">
+              {/* Team Name */}
+              <div>
+                <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                  Team Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  autoComplete="off"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  placeholder="Enter team name"
+                  required
+                />
               </div>
-            </form>
-          </div>
+
+              {/* Team Type */}
+              <div>
+                <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                  Team Type
+                </label>
+                <select
+                  name="type"
+                  id="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  required
+                >
+                  <option value="" disabled>Select Type</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                </select>
+              </div>
+
+              {/* Team Logo */}
+              <div>
+                <label htmlFor="team_logo_path" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                  Team Logo
+                </label>
+
+                {showPreview ? (
+                  <div className="relative inline-block">
+                    <img
+                      src={formData.previewLogo}
+                      alt="Logo preview"
+                      className="max-h-32 object-contain border rounded"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/default-logo.png";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-white rounded-full"
+                    >
+                      <FaTimesCircle size={20} />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 border-[#E6F2E8]"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      id="team_logo_path"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      ref={fileInputRef}
+                      className="hidden"
+                    />
+                    <label htmlFor="team_logo_path" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+                      <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
+                      <span className="text-xs text-gray-400">SVG, PNG, JPG or GIF</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end mt-6 space-x-3">
+              <button
+                type="button"
+                onClick={closeModal}
+                className="text-[#2A6D3A] bg-white border border-[#E6F2E8] hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200"
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200 flex items-center"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader size={16} className="mr-2 animate-spin" />
+                    {existingTeam ? "Updating..." : "Adding..."}
+                  </>
+                ) : (
+                  existingTeam ? "Update Team" : "Add Team"
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    )
+    </div>
   );
 }

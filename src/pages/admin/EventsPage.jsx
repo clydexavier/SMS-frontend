@@ -5,6 +5,7 @@ import EventModal from "../../components/admin/EventModal";
 import Filter from "../../components/Filter";
 import PaginationControls from "../../components/PaginationControls";
 import { useParams } from "react-router-dom";
+import { CalendarClock, Loader } from "lucide-react";
 
 export default function EventsPage() {
   const { intrams_id } = useParams();
@@ -155,74 +156,59 @@ export default function EventsPage() {
     }
   };
 
-  const SkeletonLoader = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {[...Array(8)].map((_, index) => (
-        <div
-          key={index}
-          className="w-full h-40 p-4 bg-[#E6F2E8]/50 animate-pulse rounded-lg shadow-sm"
-        >
-          <div className="w-3/4 h-4 bg-[#E6F2E8]/70 mb-3 rounded" />
-          <div className="w-1/2 h-4 bg-[#E6F2E8]/70 mb-2 rounded" />
-          <div className="w-full h-2 bg-[#E6F2E8]/70 rounded" />
-          <div className="w-5/6 h-2 bg-[#E6F2E8]/70 mt-2 rounded" />
-        </div>
-      ))}
-    </div>
-  );
-
   return (
-    <div className="flex flex-col w-full h-full border-round">
-      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
-        
-        <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Events</h2>
-        <div>
+    <div className="flex flex-col w-full h-full">
+      <div className="space-y-8 w-full h-full flex-1">
+        <div className="flex flex-col w-full h-full bg-gray-75 p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+              <CalendarClock size={20} className="mr-2" /> Events
+            </h2>
+            <button
+              type="button"
+              className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
+              onClick={openModal}
+              disabled={loading}
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Event
+            </button>
+          </div>
+
           {error && (
-            <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
+            <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
               {error}
             </div>
           )}
-        </div>
-        <button
-          type="button"
-          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
-          onClick={openModal}
-          disabled={loading}
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Add Event
-        </button>
-      </div>
 
-      <div className="flex flex-col flex-1 p-6 bg-[#F7FAF7]">
-        <div className="mb-6">
-          <Filter
-            activeTab={activeTab}
-            setActiveTab={(value) => handleFilterChange(value, 'tab')}
-            search={search}
-            setSearch={(value) => handleFilterChange(value, 'search')}
-            placeholder="Search event"
-            filterOptions={filterOptions}
-          />
-        </div>
-
-        {loading ? (
-          <SkeletonLoader />
-        ) : events.length === 0 ? (
-          <div className="relative flex-col w-full h-full text-center bg-white rounded-lg shadow-sm border border-gray-100">
-            <svg className="mx-auto mt-4 h-12 w-12 text-[#2A6D3A]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <p className="mt-4 text-[#2A6D3A]/70 font-medium">No events found</p>
-            <p className="text-gray-500 text-sm mt-1">Click "Add Event" to create one</p>
+          <div className="bg-white p-4 rounded-xl shadow-md border border-[#E6F2E8]">
+            <Filter
+              activeTab={activeTab}
+              setActiveTab={(value) => handleFilterChange(value, 'tab')}
+              search={search}
+              setSearch={(value) => handleFilterChange(value, 'search')}
+              placeholder="Search event"
+              filterOptions={filterOptions}
+            />
           </div>
-        ) : (
-          <div className="w-full mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+          {/* Events List / State Handling */}
+          {loading ? (
+            <div className="flex justify-center items-center py-16">
+              <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+            </div>
+          ) : events.length === 0 ? (
+            <div className="mt-8 flex-1 bg-white p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+              <CalendarClock size={48} className="mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium text-gray-600">No events found</h3>
+              <p className="text-gray-500 mt-1">Click "Add Event" to create one</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
               {events.map((event) => (
-                <div key={event.id} className="w-full h-auto">
+                <div key={event.id} className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm">
                   <EventCard
                     event={event}
                     openEditModal={openEditModal}
@@ -231,15 +217,18 @@ export default function EventsPage() {
                 </div>
               ))}
             </div>
+          )}
 
-            <div className="mt-8">
+          {/* Pagination */}
+          {!loading && events.length > 0 && (
+            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-6">
               <PaginationControls
                 pagination={pagination}
                 handlePageChange={handlePageChange}
               />
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <EventModal

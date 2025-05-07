@@ -21,11 +21,11 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shouldRefetch, setShouldRefetch] = useState(false);
 
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 
-  const [pendingPage, setPendingPage] = useState(1);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 12,
@@ -49,39 +49,14 @@ export default function EventsPage() {
     setIsModalOpen(true);
   };
 
-  const fetchEvents = async (page = 1) => {
-    try {
-      setLoading(true);
-      const { data } = await axiosClient.get(
-        `/intramurals/${intrams_id}/events`,
-        {
-          params: {
-            page,
-            status: activeTab,
-            search,
-          },
-        }
-      );
-      setEvents(data.data);
-      setPagination({
-        currentPage: data.meta.current_page,
-        perPage: data.meta.per_page,
-        total: data.meta.total,
-        lastPage: data.meta.last_page,
-      });
-    } catch (err) {
-      setError("Failed to fetch events");
-      console.error("Error fetching events:", err);
-    } finally {
-      setLoading(false);
-      setPendingPage(null);
-    }
-  };
-
   const handlePageChange = (page) => {
-    setPendingPage(page);
+    setPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }));
   };
 
+  // Instead of calling fetchEvents directly, we trigger a refetch
   const addEvent = async (newEvent) => {
     try {
       setLoading(true);
@@ -89,12 +64,11 @@ export default function EventsPage() {
         `/intramurals/${intrams_id}/events/create`,
         newEvent
       );
-      await fetchEvents(pagination.currentPage);
+      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
       closeModal();
     } catch (err) {
       setError("Failed to create event");
       console.error("Error creating event:", err);
-    } finally {
       setLoading(false);
     }
   };
@@ -107,12 +81,11 @@ export default function EventsPage() {
         `/intramurals/${intrams_id}/events/${id}/edit`,
         updatedData
       );
-      await fetchEvents(pagination.currentPage);
+      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
       closeModal();
     } catch (err) {
       setError("Failed to update event");
       console.error("Error updating event:", err);
-    } finally {
       setLoading(false);
     }
   };
@@ -121,26 +94,66 @@ export default function EventsPage() {
     try {
       setLoading(true);
       await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
-      await fetchEvents(pagination.currentPage);
+      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
     } catch (err) {
       setError("Failed to delete event");
       console.error("Error deleting event:", err);
-    } finally {
       setLoading(false);
     }
   };
 
+  // Single source of truth for data fetching
   useEffect(() => {
-    setLoading(true);
-    const debounce = setTimeout(() => {
-      const pageToFetch = pendingPage ?? pagination.currentPage;
-      if (intrams_id) {
-        fetchEvents(pageToFetch);
+    if (!intrams_id) return;
+    
+    const fetchData = async () => {
+      setLoading(true);
+      
+      try {
+        const { data } = await axiosClient.get(
+          `/intramurals/${intrams_id}/events`, 
+          {
+            params: {
+              page: pagination.currentPage,
+              status: activeTab,
+              search: search,
+            },
+          }
+        );
+        
+        setEvents(data.data);
+        setPagination({
+          currentPage: data.meta.current_page,
+          perPage: data.meta.per_page,
+          total: data.meta.total,
+          lastPage: data.meta.last_page,
+        });
+      } catch (err) {
+        setError("Failed to fetch events");
+        console.error("Error fetching events:", err);
+      } finally {
+        setLoading(false);
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(debounce);
-  }, [search, activeTab, pendingPage, intrams_id]);
+    // Debounce search input
+    const debounceTimer = setTimeout(() => {
+      fetchData();
+    }, 500);
+    
+    return () => clearTimeout(debounceTimer);
+  }, [search, activeTab, pagination.currentPage, intrams_id, shouldRefetch]);
+
+  const handleFilterChange = (value, type) => {
+    // Reset pagination to first page when filters change
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    
+    if (type === 'tab') {
+      setActiveTab(value);
+    } else if (type === 'search') {
+      setSearch(value);
+    }
+  };
 
   const SkeletonLoader = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -159,8 +172,10 @@ export default function EventsPage() {
   );
 
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col w-full h-full border-round">
       <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
+        
+        <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Events</h2>
         <div>
           {error && (
             <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
@@ -181,21 +196,13 @@ export default function EventsPage() {
         </button>
       </div>
 
-      <div className="flex-1 p-6 bg-[#F7FAF7]">
+      <div className="flex flex-col flex-1 p-6 bg-[#F7FAF7]">
         <div className="mb-6">
           <Filter
             activeTab={activeTab}
-            setActiveTab={(value) => {
-              setPagination((prev) => ({ ...prev, currentPage: 1 }));
-              setPendingPage(1);
-              setActiveTab(value);
-            }}
+            setActiveTab={(value) => handleFilterChange(value, 'tab')}
             search={search}
-            setSearch={(value) => {
-              setPagination((prev) => ({ ...prev, currentPage: 1 }));
-              setPendingPage(1);
-              setSearch(value);
-            }}
+            setSearch={(value) => handleFilterChange(value, 'search')}
             placeholder="Search event"
             filterOptions={filterOptions}
           />
@@ -204,8 +211,12 @@ export default function EventsPage() {
         {loading ? (
           <SkeletonLoader />
         ) : events.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No events found. Click "Add Event" to create one.
+          <div className="relative flex-col w-full h-full text-center bg-white rounded-lg shadow-sm border border-gray-100">
+            <svg className="mx-auto mt-4 h-12 w-12 text-[#2A6D3A]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p className="mt-4 text-[#2A6D3A]/70 font-medium">No events found</p>
+            <p className="text-gray-500 text-sm mt-1">Click "Add Event" to create one</p>
           </div>
         ) : (
           <div className="w-full mt-4">
@@ -221,10 +232,12 @@ export default function EventsPage() {
               ))}
             </div>
 
-            <PaginationControls
-              pagination={pagination}
-              handlePageChange={handlePageChange}
-            />
+            <div className="mt-8">
+              <PaginationControls
+                pagination={pagination}
+                handlePageChange={handlePageChange}
+              />
+            </div>
           </div>
         )}
       </div>

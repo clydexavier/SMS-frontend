@@ -253,10 +253,13 @@ export default function PlayersPage() {
         <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Players</h2>
         <button
           type="button"
+          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
           onClick={openModal}
           disabled={loading}
-          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium transition-all"
         >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
           Add Player
         </button>
       </div>

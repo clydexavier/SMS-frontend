@@ -4,11 +4,11 @@ import IntramuralCard from "../../components/IntramuralCard";
 import Filter from "../../components/Filter";
 import IntramuralModal from "../../components/admin/IntramuralModal";
 import PaginationControls from "../../components/PaginationControls";
-import { useLocation, useParams} from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 export default function IntramuralsPage() {
   const location = useLocation();
-  const {id} = useParams();
+  const { id } = useParams();
 
   const filterOptions = [
     { label: "All", value: "all" },
@@ -25,9 +25,9 @@ export default function IntramuralsPage() {
 
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
+  const [shouldRefetch, setShouldRefetch] = useState(false);
 
-  //page states
-  const [pendingPage, setPendingPage] = useState(1);
+  // Pagination states
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 12,
@@ -39,55 +39,28 @@ export default function IntramuralsPage() {
     setSelectedIntramural(null);
     setIsModalOpen(true);
   };
+  
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedIntramural(null);
     setError(null);
   };
+  
   const openEditModal = (intramural) => {
     setSelectedIntramural(intramural);
     setIsModalOpen(true);
   };
 
-  const fetchIntramurals = async () => {
-    try {
-      setLoading(true);
-      const { data } = await axiosClient.get("/intramurals", {
-        params: {
-          page: pagination.currentPage,
-          status: activeTab,
-          search: search,
-        },
-      });
-      setIntramurals(data.data);
-      setPagination({
-        currentPage: data.meta.current_page,
-        perPage: data.meta.per_page,
-        total: data.meta.total,
-        lastPage: data.meta.last_page,
-      });
-    } catch (err) {
-      setError("Failed to fetch intramurals");
-      console.error("Error fetching intramurals:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePageChange = (page) => {
-    setPendingPage(page); 
-  };
-
+  // Instead of calling fetchIntramurals directly, we trigger a refetch
   const addIntramural = async (newIntramural) => {
     try {
       setLoading(true);
       await axiosClient.post("/intramurals/create", newIntramural);
-      await fetchIntramurals();
+      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
       closeModal();
     } catch (err) {
       setError("Failed to create intramural");
       console.error("Error creating intramural:", err);
-    } finally {
       setLoading(false);
     }
   };
@@ -98,12 +71,11 @@ export default function IntramuralsPage() {
       console.log("Updating intramural with ID:", id);
       console.log("Updated data:", updatedData);
       await axiosClient.patch(`/intramurals/${id}/edit`, updatedData);
-      await fetchIntramurals();
+      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
       closeModal();
     } catch (err) {
       setError("Failed to update intramural");
       console.error("Error updating intramural:", err);
-    } finally {
       setLoading(false);
     }
   };
@@ -112,51 +84,57 @@ export default function IntramuralsPage() {
     try {
       setLoading(true);
       await axiosClient.delete(`/intramurals/${id}`);
-      await fetchIntramurals();
+      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
     } catch (err) {
       setError("Failed to delete intramural");
       console.error("Error deleting intramural:", err);
-    } finally {
       setLoading(false);
     }
   };
 
+  const handlePageChange = (page) => {
+    setPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }));
+  };
+
+  // Single source of truth for data fetching
   useEffect(() => {
-    setLoading(true); 
-  
-    const debounce = setTimeout(() => {
-      const pageToFetch = pendingPage ?? pagination.currentPage;
-  
-      axiosClient
-        .get("/intramurals", {
+    const fetchData = async () => {
+      setLoading(true);
+      
+      try {
+        const { data } = await axiosClient.get("/intramurals", {
           params: {
-            page: pageToFetch,
+            page: pagination.currentPage,
             status: activeTab,
             search: search,
           },
-        })
-        .then(({ data }) => {
-          setIntramurals(data.data);
-          setPagination({
-            currentPage: data.meta.current_page,
-            perPage: data.meta.per_page,
-            total: data.meta.total,
-            lastPage: data.meta.last_page,
-          });
-        })
-        .catch((err) => {
-          setError("Failed to fetch intramurals");
-          console.error("Error fetching intramurals:", err);
-        })
-        .finally(() => {
-          setLoading(false);
-          setPendingPage(null);
         });
+        
+        setIntramurals(data.data);
+        setPagination({
+          currentPage: data.meta.current_page,
+          perPage: data.meta.per_page,
+          total: data.meta.total,
+          lastPage: data.meta.last_page,
+        });
+      } catch (err) {
+        setError("Failed to fetch intramurals");
+        console.error("Error fetching intramurals:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Debounce search input
+    const debounceTimer = setTimeout(() => {
+      fetchData();
     }, 500);
-  
-    return () => clearTimeout(debounce);
-  }, [search, activeTab, pendingPage]);
-  
+
+    return () => clearTimeout(debounceTimer);
+  }, [search, activeTab, pagination.currentPage, shouldRefetch]);
 
   const SkeletonLoader = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -175,11 +153,13 @@ export default function IntramuralsPage() {
   );
 
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="rounded-lg shadow-sm border border-gray-100 flex flex-col w-full h-full ">
       {/* Header with gradient background <div className="bg-gradient-to-r from-[#1E4D2B] to-[#2A6D3A] px-6 py-4 shadow-md">   </div>*/}
     
       {/* Add Intramural Button Section */}
       <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
+        <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Intramurals</h2>
+
         <div>
           {error && (
             <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
@@ -200,7 +180,7 @@ export default function IntramuralsPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-6 bg-[#F7FAF7]">
+      <div className="flex flex-col flex-1 p-6 bg-[#F7FAF7]">
         {/* Filter Component */}
         <div className="mb-6">
           <Filter

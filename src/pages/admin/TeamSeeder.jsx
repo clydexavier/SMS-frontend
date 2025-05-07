@@ -187,7 +187,7 @@ export default function TeamSeeder() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
           </svg>
           <h3 className="text-lg font-medium text-gray-600">No teams available for seeding</h3>
-          <p className="text-sm text-gray-500 mt-2">Please add teams to this event first.</p>
+          <p className="text-sm text-gray-500 mt-2">Please add teams to the whole intramural first.</p>
         </div>
       );
     }

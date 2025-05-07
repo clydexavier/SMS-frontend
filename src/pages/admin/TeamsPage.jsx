@@ -151,6 +151,8 @@ export default function TeamsPage() {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex items-center">
+      <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Teams Players</h2>
+
         {error && (
           <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
             {error}

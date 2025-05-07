@@ -7,47 +7,63 @@ import { useParams } from "react-router-dom";
 const ResultPage = () => {
   const { intrams_id, event_id } = useParams();
   const [podiumData, setPodiumData] = useState(null);
+  const [eventStatus, setEventStatus] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchPodiumData = async () => {
     try {
       setLoading(true);
-      const response = await axiosClient.get(
-        `/intramurals/${intrams_id}/events/${event_id}/podium`
+      console.log("Fetching event data...");
+  
+      // First, fetch the event status
+      const eventRes = await axiosClient.get(
+        `intramurals/${intrams_id}/events/${event_id}/status`
       );
-      console.log(response.data);
-      setPodiumData(response.data);
+      console.log("Event status response:", eventRes.data);
+      setEventStatus(eventRes.data); // Extract status from response data
+  
+      // Only fetch podium data if status is "completed" or "in progress"
+      if (eventRes.data === "completed" || eventRes.data === "in progress") {
+        const podiumRes = await axiosClient.get(
+          `/intramurals/${intrams_id}/events/${event_id}/podium`
+        );
+        console.log("Podium data:", podiumRes.data);
+        setPodiumData(podiumRes.data);
+      } else {
+        setPodiumData(null); // Clear podium data if not completed or in progress
+      }
     } catch (err) {
-      console.error("Error fetching podium data:", err);
+      console.error("Error fetching data:", err);
       setError("Failed to fetch tournament results.");
     } finally {
       setLoading(false);
     }
   };
-
+  
+  // Use effect hook to fetch data when component mounts
   useEffect(() => {
     fetchPodiumData();
-  }, [event_id, intrams_id]);
+  }, [intrams_id, event_id]); // Re-fetch when these params change
 
   const handleSubmitResults = async (resultsData) => {
     try {
       setLoading(true);
-      console.log(resultsData);
+      console.log("Submitting results:", resultsData);
       const url = `/intramurals/${intrams_id}/events/${event_id}/podium/${podiumData ? "update" : "create"}`;
       const method = podiumData ? axiosClient.patch : axiosClient.post;
-  
+
       await method(url, resultsData);
-  
+
       setSubmitStatus({
         type: "success",
         message: podiumData
           ? "Event results updated successfully!"
           : "Event results submitted successfully!",
       });
-  
+
       setTimeout(() => setSubmitStatus(null), 5000);
       fetchPodiumData();
       return true;
@@ -62,7 +78,6 @@ const ResultPage = () => {
       setLoading(false);
     }
   };
-  
 
   const SkeletonLoader = () => (
     <div className="w-full h-64 p-4 bg-[#E6F2E8]/50 animate-pulse rounded-lg shadow-sm">
@@ -76,6 +91,12 @@ const ResultPage = () => {
       </div>
     </div>
   );
+
+  // Determine if we should show the action button based on status
+  const showActionButton = eventStatus === "completed" || eventStatus === "in progress";
+  
+  // Debug info
+  console.log("Current event status:", eventStatus);
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -97,51 +118,54 @@ const ResultPage = () => {
           )}
         </div>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
-          disabled={loading}
-        >
-          <svg
-            className="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+        {showActionButton && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
+            disabled={loading}
           >
-            {podiumData ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            )}
-          </svg>
-          {podiumData ? "Update Result" : "Submit Result"}
-        </button>
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {podiumData ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              )}
+            </svg>
+            {podiumData ? "Update Result" : "Submit Result"}
+          </button>
+        )}
       </div>
 
       <div className="flex-auto overflow-y-auto p-6 bg-[#F7FAF7]">
         {loading ? (
           <SkeletonLoader />
         ) : podiumData ? (
-          <div className="bg-white rounded-lg shadow-sm p-6 max-w-full overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm p-6 flex flex-col w-full h-full overflow-hidden">
             <div className="w-full">
               <EventPodium podiumData={podiumData} />
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm">
-            No results submitted yet. Click "Submit Result" to add event
-            results.
+          <div className="text-center py-8 text-gray-500 bg-white-200 ">
+            {eventStatus === "pending" 
+              ? "This event is pending and has no results yet."
+              : "No results submitted yet. Click \"Submit Result\" to add event results."}
           </div>
         )}
       </div>
@@ -158,7 +182,6 @@ const ResultPage = () => {
         existingData={podiumData}
       />
     </div>
-
   );
 };
 

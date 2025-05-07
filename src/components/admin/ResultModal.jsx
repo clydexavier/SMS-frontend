@@ -75,23 +75,72 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existing
 
   if (!isOpen) return null;
 
-  const renderSelect = (label, value, setter, exclude = [], colorTheme = "gray", iconColor = "gray-500", textColor = "gray-700") => (
-    <div className={`bg-${colorTheme}-50 border border-${colorTheme}-200 rounded-lg p-4`}>
-      <label className={`block text-sm font-medium text-${textColor} mb-2 flex items-center`}>
-        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-2 text-${iconColor}`} viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+  // Custom medal card components with consistent theme
+  const GoldMedalCard = () => (
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 transition-all hover:shadow-md">
+      <label className="block text-sm font-medium text-amber-800 mb-2 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
-        {label}
+        Gold Medalist (1st Place)
       </label>
       <select
-        value={value}
-        onChange={(e) => setter(e.target.value)}
-        className={`w-full border border-${colorTheme}-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${colorTheme}-500 bg-white`}
+        value={gold}
+        onChange={(e) => setGold(e.target.value)}
+        className="w-full border border-amber-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
         required
       >
         <option value="">Select Team</option>
         {teams
-          .filter(team => !exclude.includes(team.id.toString()))
+          .filter(team => team.id.toString() !== silver && team.id.toString() !== bronze)
+          .map(team => (
+            <option key={team.id} value={team.id}>{team.name}</option>
+          ))}
+      </select>
+    </div>
+  );
+
+  const SilverMedalCard = () => (
+    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 transition-all hover:shadow-md">
+      <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        Silver Medalist (2nd Place)
+      </label>
+      <select
+        value={silver}
+        onChange={(e) => setSilver(e.target.value)}
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
+        required
+      >
+        <option value="">Select Team</option>
+        {teams
+          .filter(team => team.id.toString() !== gold && team.id.toString() !== bronze)
+          .map(team => (
+            <option key={team.id} value={team.id}>{team.name}</option>
+          ))}
+      </select>
+    </div>
+  );
+
+  const BronzeMedalCard = () => (
+    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 transition-all hover:shadow-md">
+      <label className="block text-sm font-medium text-orange-800 mb-2 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        Bronze Medalist (3rd Place)
+      </label>
+      <select
+        value={bronze}
+        onChange={(e) => setBronze(e.target.value)}
+        className="w-full border border-orange-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
+        required
+      >
+        <option value="">Select Team</option>
+        {teams
+          .filter(team => team.id.toString() !== gold && team.id.toString() !== silver)
           .map(team => (
             <option key={team.id} value={team.id}>{team.name}</option>
           ))}
@@ -100,13 +149,13 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existing
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-800">Tournament Results</h3>
+    <div className="fixed inset-0  bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+      <div className="bg-[#F7FAF7] rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out">
+        <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+          <h3 className="text-xl font-semibold text-[#2A6D3A]">Tournament Results</h3>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition duration-150"
+            className="text-gray-500 hover:text-[#2A6D3A] transition duration-150"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -119,28 +168,35 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existing
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-700 rounded-lg text-sm">
-            {error}
+          <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-700 rounded-lg text-sm flex items-start">
+            <svg className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#6BBF59]"></div>
+            <p className="mt-3 text-sm text-gray-600">Loading teams...</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-4">
-              {renderSelect("Gold Medalist (1st Place)", gold, setGold, [silver, bronze], "amber", "amber-500", "amber-800")}
-              {renderSelect("Silver Medalist (2nd Place)", silver, setSilver, [gold, bronze], "gray", "gray-400", "gray-700")}
-              {renderSelect("Bronze Medalist (3rd Place)", bronze, setBronze, [gold, silver], "orange", "orange-500", "orange-800")}
+              <GoldMedalCard />
+              <SilverMedalCard />
+              <BronzeMedalCard />
             </div>
-            <button
-              type="submit"
-              className="w-full bg-[#6BBF59] hover:bg-[#5CAF4A] text-white py-2 rounded-lg mt-4 transition duration-150"
-            >
-              {existingData ? "Update Results" : "Submit Results"}
-            </button>
+            
+            <div className="pt-2">
+              <button
+                type="submit"
+                className="w-full bg-[#6BBF59] hover:bg-[#5CAF4A] text-white py-2.5 rounded-lg transition duration-150 font-medium shadow-sm flex items-center justify-center"
+              >
+                {existingData ? "Update Results" : "Submit Results"}
+              </button>
+            </div>
           </form>
         )}
       </div>

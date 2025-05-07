@@ -63,7 +63,7 @@ export default function EventCard({ event, openEditModal, deleteEvent }) {
       </div>
 
       {/* Header with Link */}
-      <Link to={`${event.id}/bracket`} state={{ event_name: event.name}} className="w-full group">
+      <Link to={`${event.id}/players`} state={{ event_name: event.name}} className="w-full group">
         <div className="w-full bg-gradient-to-r from-[#2A6D3A] to-[#6BBF59] text-white p-4 rounded-t-lg flex flex-col items-start group-hover:from-[#1E4D2B] group-hover:to-[#5CAF4A] transition-all duration-300">
           <span className="text-lg font-bold text-left truncate w-full pr-8">
             {event.name}

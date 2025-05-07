@@ -63,7 +63,7 @@ export default function BracketPage() {
         {eventStatus !== "in progress" ? (
           <div className="text-center text-gray-500 text-sm mt-20">
             {eventStatus === "pending"
-              ? "The bracket has not started yet. Please check back once the event begins."
+              ? "The bracket has not started yet. Please go to Team Seeder page to initialize the seeding of teams."
               : "This event has been completed. Bracket display is for viewing only."}
           </div>
         ) : bracketId ? (

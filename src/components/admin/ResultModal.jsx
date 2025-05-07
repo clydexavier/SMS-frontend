@@ -1,71 +1,103 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../../axiosClient";
 
-const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id }) => {
-  const [goldMedalistId, setGoldMedalistId] = useState("");
-  const [silverMedalistId, setSilverMedalistId] = useState("");
-  const [bronzeMedalistId, setBronzeMedalistId] = useState("");
+const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existingData }) => {
   const [teams, setTeams] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [gold, setGold] = useState("");
+  const [silver, setSilver] = useState("");
+  const [bronze, setBronze] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
 
     const fetchTeams = async () => {
-      setIsLoading(true);
+      setLoading(true);
       try {
-        const response = await axiosClient.get(
+        const res = await axiosClient.get(
           `/intramurals/${intrams_id}/events/${event_id}/team_names`
         );
-        console.log(response);
-        setTeams(response.data || []);
+        setTeams(res.data || []);
         setError(null);
+
+        // Prefill if editing
+        if (existingData) {
+          setGold(existingData.gold_team_id?.toString() || "");
+          setSilver(existingData.silver_team_id?.toString() || "");
+          setBronze(existingData.bronze_team_id?.toString() || "");
+        } else {
+          setGold("");
+          setSilver("");
+          setBronze("");
+        }
       } catch (err) {
-        console.error("Failed to fetch teams data:", err);
+        console.error("Failed to fetch teams:", err);
         setError("Failed to load teams. Please try again.");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchTeams();
-  }, [isOpen, event_id, intrams_id]);
+  }, [isOpen, event_id, intrams_id, existingData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!goldMedalistId || !silverMedalistId || !bronzeMedalistId) {
+
+    if (!gold || !silver || !bronze) {
       setError("Please select all medalists");
       return;
     }
 
-    if (
-      goldMedalistId === silverMedalistId ||
-      goldMedalistId === bronzeMedalistId ||
-      silverMedalistId === bronzeMedalistId
-    ) {
-      setError("Each medal position must have a different team");
+    if (gold === silver || gold === bronze || silver === bronze) {
+      setError("Each medal must be awarded to a different team");
       return;
     }
 
     try {
       await onSubmit({
-        gold_team_id: goldMedalistId,
-        silver_team_id: silverMedalistId,
-        bronze_team_id: bronzeMedalistId,
+        gold_team_id: gold,
+        silver_team_id: silver,
+        bronze_team_id: bronze,
       });
 
-      setGoldMedalistId("");
-      setSilverMedalistId("");
-      setBronzeMedalistId("");
+      setGold("");
+      setSilver("");
+      setBronze("");
       setError(null);
       onClose();
     } catch (err) {
-      setError("Failed to submit medal results. Please try again.");
+      console.error(err);
+      setError("Failed to submit results. Please try again.");
     }
   };
 
   if (!isOpen) return null;
+
+  const renderSelect = (label, value, setter, exclude = [], colorTheme = "gray", iconColor = "gray-500", textColor = "gray-700") => (
+    <div className={`bg-${colorTheme}-50 border border-${colorTheme}-200 rounded-lg p-4`}>
+      <label className={`block text-sm font-medium text-${textColor} mb-2 flex items-center`}>
+        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-2 text-${iconColor}`} viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+        </svg>
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => setter(e.target.value)}
+        className={`w-full border border-${colorTheme}-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${colorTheme}-500 bg-white`}
+        required
+      >
+        <option value="">Select Team</option>
+        {teams
+          .filter(team => !exclude.includes(team.id.toString()))
+          .map(team => (
+            <option key={team.id} value={team.id}>{team.name}</option>
+          ))}
+      </select>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
@@ -92,98 +124,23 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id }) => {
           </div>
         )}
 
-        {isLoading ? (
+        {loading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
-              {/* Gold Medalist */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-amber-800 mb-2 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                  </svg>
-                  Gold Medalist (1st Place)
-                </label>
-                <select
-                  value={goldMedalistId}
-                  onChange={(e) => setGoldMedalistId(e.target.value)}
-                  className="w-full border border-amber-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
-                  required
-                >
-                  <option value="">Select Gold Medalist</option>
-                  {teams
-                    .filter(team => String(team.id) !== silverMedalistId && String(team.id) !== bronzeMedalistId)
-                    .map(team => (
-                      <option key={team.id} value={team.id}>{team.name}</option>
-                    ))}
-                </select>
-              </div>
-
-              {/* Silver Medalist */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                  </svg>
-                  Silver Medalist (2nd Place)
-                </label>
-                <select
-                  value={silverMedalistId}
-                  onChange={(e) => setSilverMedalistId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
-                  required
-                >
-                  <option value="">Select Silver Medalist</option>
-                  {teams
-                    .filter(team => String(team.id) !== goldMedalistId && String(team.id) !== bronzeMedalistId)
-                    .map(team => (
-                      <option key={team.id} value={team.id}>{team.name}</option>
-                    ))}
-                </select>
-              </div>
-
-              {/* Bronze Medalist */}
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-orange-800 mb-2 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                  </svg>
-                  Bronze Medalist (3rd Place)
-                </label>
-                <select
-                  value={bronzeMedalistId}
-                  onChange={(e) => setBronzeMedalistId(e.target.value)}
-                  className="w-full border border-orange-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-                  required
-                >
-                  <option value="">Select Bronze Medalist</option>
-                  {teams
-                    .filter(team => String(team.id) !== goldMedalistId && String(team.id) !== silverMedalistId)
-                    .map(team => (
-                      <option key={team.id} value={team.id}>{team.name}</option>
-                    ))}
-                </select>
-              </div>
+              {renderSelect("Gold Medalist (1st Place)", gold, setGold, [silver, bronze], "amber", "amber-500", "amber-800")}
+              {renderSelect("Silver Medalist (2nd Place)", silver, setSilver, [gold, bronze], "gray", "gray-400", "gray-700")}
+              {renderSelect("Bronze Medalist (3rd Place)", bronze, setBronze, [gold, silver], "orange", "orange-500", "orange-800")}
             </div>
-
-            <div className="flex justify-end space-x-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition duration-150"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition duration-150"
-              >
-                Submit Results
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-[#6BBF59] hover:bg-[#5CAF4A] text-white py-2 rounded-lg mt-4 transition duration-150"
+            >
+              {existingData ? "Update Results" : "Submit Results"}
+            </button>
           </form>
         )}
       </div>

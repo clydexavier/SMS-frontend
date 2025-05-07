@@ -1,14 +1,17 @@
 import React from "react";
 
-const EventPodium = ({ podiumData, teamNames }) => {
-  const getTeamName = (teamId) => {
-    const team = teamNames.find((team) => team.id === teamId);
-    return team ? team.name : `Team #${teamId}`;
-  };
-
-  const goldTeamName = getTeamName(podiumData.gold_team_id);
-  const silverTeamName = getTeamName(podiumData.silver_team_id);
-  const bronzeTeamName = getTeamName(podiumData.bronze_team_id);
+const EventPodium = ({ podiumData }) => {
+  if (
+    !podiumData ||
+    !("gold_team_id" in podiumData) ||
+    !("gold_team_name" in podiumData)
+  ) {
+    return (
+      <div className="text-center text-gray-500 py-10">
+        No podium results available.
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full p-4">
@@ -24,7 +27,9 @@ const EventPodium = ({ podiumData, teamNames }) => {
               </div>
             </div>
             <div className="text-center mb-2">
-              <p className="font-bold text-gray-800">{silverTeamName}</p>
+              <p className="font-bold text-gray-800">
+                {podiumData.silver_team_name}
+              </p>
               <p className="text-sm text-gray-500">Silver</p>
             </div>
             <div className="h-32 w-28 sm:w-32 bg-gray-200 rounded-t-lg"></div>
@@ -40,7 +45,9 @@ const EventPodium = ({ podiumData, teamNames }) => {
               </div>
             </div>
             <div className="text-center mb-2">
-              <p className="font-bold text-gray-800">{goldTeamName}</p>
+              <p className="font-bold text-gray-800">
+                {podiumData.gold_team_name}
+              </p>
               <p className="text-sm text-gray-500">Gold</p>
             </div>
             <div className="h-48 w-28 sm:w-32 bg-yellow-400 rounded-t-lg"></div>
@@ -56,7 +63,9 @@ const EventPodium = ({ podiumData, teamNames }) => {
               </div>
             </div>
             <div className="text-center mb-2">
-              <p className="font-bold text-gray-800">{bronzeTeamName}</p>
+              <p className="font-bold text-gray-800">
+                {podiumData.bronze_team_name}
+              </p>
               <p className="text-sm text-gray-500">Bronze</p>
             </div>
             <div className="h-24 w-28 sm:w-32 bg-orange-600 rounded-t-lg"></div>

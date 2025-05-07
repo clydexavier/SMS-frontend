@@ -140,7 +140,7 @@ const ResultPage = () => {
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-sm">
-            No results submitted yet. Click "Submit Result" to add tournament
+            No results submitted yet. Click "Submit Result" to add event
             results.
           </div>
         )}

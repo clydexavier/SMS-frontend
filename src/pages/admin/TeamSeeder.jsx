@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../../axiosClient";
 import { useParams } from "react-router-dom";
+import Filter from "../../components/Filter";
+import PaginationControls from "../../components/PaginationControls";
+import { Users, Loader, Trophy } from "lucide-react";
 
 export default function TeamSeeder() {
   const { intrams_id, event_id } = useParams();
@@ -11,8 +14,25 @@ export default function TeamSeeder() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [eventName, setEventName] = useState(""); 
+  const [eventName, setEventName] = useState("");
   const [eventStatus, setEventStatus] = useState(null);
+
+  // Added for consistency with PlayersPage
+  const [activeTab, setActiveTab] = useState("All");
+  const [search, setSearch] = useState("");
+  const [filterOptions, setFilterOptions] = useState([
+    { label: "All", value: "All" },
+    { label: "Seeded", value: "Seeded" },
+    { label: "Not Seeded", value: "Not Seeded" },
+  ]);
+
+  // Added pagination state similar to PlayersPage
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    perPage: 10,
+    total: 0,
+    lastPage: 1,
+  });
 
   useEffect(() => {
     const fetchEventStatus = async () => {
@@ -30,9 +50,7 @@ export default function TeamSeeder() {
         
         // If event is pending, load teams for seeding
         if (data === "pending") {
-            console.log("pending");
           const teamsResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}/team_names`);
-          console.log(teamsResponse.data);
           const fetchedTeams = teamsResponse.data;
           setTeams(fetchedTeams);
 
@@ -41,6 +59,13 @@ export default function TeamSeeder() {
             initialSeeds[team.id] = index + 1;
           });
           setSeeds(initialSeeds);
+          
+          // Set pagination based on teams count
+          setPagination(prev => ({
+            ...prev,
+            total: fetchedTeams.length,
+            lastPage: Math.ceil(fetchedTeams.length / prev.perPage)
+          }));
         }
         
         setError(null);
@@ -54,6 +79,10 @@ export default function TeamSeeder() {
 
     fetchEventStatus();
   }, [intrams_id, event_id]);
+
+  const handlePageChange = (page) => {
+    setPagination((prev) => ({ ...prev, currentPage: page }));
+  };
 
   const handleSeedChange = (teamId, value) => {
     const seedValue = Math.max(1, parseInt(value) || 1);
@@ -110,7 +139,6 @@ export default function TeamSeeder() {
 
       setSuccess(true);
       setEventStatus("in progress");
-      // Consider adding a redirect here after successful submission
     } catch (err) {
       console.error(err);
       setError("Failed to start tournament. Please try again.");
@@ -119,23 +147,24 @@ export default function TeamSeeder() {
     }
   };
 
-  const sortedTeams = teams.length > 0 ? [...teams].sort((a, b) => seeds[a.id] - seeds[b.id]) : [];
+  // Filter teams based on search and active tab
+  const filteredTeams = teams.filter(team => {
+    const matchesSearch = team.name.toLowerCase().includes(search.toLowerCase());
+    
+    if (activeTab === "All") return matchesSearch;
+    if (activeTab === "Seeded") return matchesSearch && seeds[team.id] > 0;
+    if (activeTab === "Not Seeded") return matchesSearch && (!seeds[team.id] || seeds[team.id] <= 0);
+    
+    return matchesSearch;
+  });
 
-  // Skeleton loader similar to TeamsPage
-  const SkeletonLoader = () => (
-    <div className="space-y-4">
-      {[...Array(5)].map((_, i) => (
-        <div
-          key={i}
-          className="animate-pulse bg-white p-4 rounded-lg shadow-sm border border-gray-200"
-        >
-          <div className="flex justify-between items-center">
-            <div className="h-4 bg-[#e0f2f1] rounded w-12" />
-            <div className="h-4 bg-[#e0f2f1] rounded w-3/4" />
-          </div>
-        </div>
-      ))}
-    </div>
+  // Sort teams by seed value
+  const sortedTeams = filteredTeams.length > 0 ? [...filteredTeams].sort((a, b) => seeds[a.id] - seeds[b.id]) : [];
+  
+  // Get paginated teams
+  const paginatedTeams = sortedTeams.slice(
+    (pagination.currentPage - 1) * pagination.perPage,
+    pagination.currentPage * pagination.perPage
   );
 
   const renderStatusMessage = () => {
@@ -179,159 +208,152 @@ export default function TeamSeeder() {
     );
   };
 
-  const renderSeeder = () => {
-    if (teams.length === 0) {
-      return (
-        <div className="text-center py-12 bg-white rounded-xl shadow-md border border-[#E6F2E8]">
-          <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          <h3 className="text-lg font-medium text-gray-600">No teams available for seeding</h3>
-          <p className="text-sm text-gray-500 mt-2">Please add teams to the whole intramural first.</p>
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] overflow-hidden">
-          <div className="p-4 bg-[#F7FAF7] border-b border-[#E6F2E8]">
-            <h3 className="font-medium text-[#2A6D3A]">Team Seeding</h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Assign a unique seed number to each team (1 being the highest). 
-              Seeds determine the initial matchups in the tournament bracket.
-            </p>
-          </div>
-          
-          <div className="divide-y divide-[#E6F2E8]">
-            {sortedTeams.map((team) => (
-              <div
-                key={team.id}
-                className="flex items-center p-4 hover:bg-[#F7FAF7] transition-colors"
-              >
-                <div className="w-16 flex justify-center">
-                  <input
-                    type="number"
-                    min="1"
-                    max={teams.length}
-                    className="border border-gray-300 rounded-lg px-3 py-2 w-12 text-center focus:ring-2 focus:ring-[#6BBF59] focus:border-[#6BBF59]"
-                    value={seeds[team.id] || ""}
-                    onChange={(e) => handleSeedChange(team.id, e.target.value)}
-                    disabled={submitting}
-                  />
-                </div>
-                <div className="flex-1 font-medium text-gray-800 ml-4">{team.name}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Action buttons */}
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={submitSeeds}
-            disabled={loading || submitting || teams.length === 0}
-            className={`px-5 py-2.5 rounded-lg shadow text-sm font-medium flex items-center ${
-              loading || submitting || teams.length === 0
-                ? "bg-gray-400 text-white cursor-not-allowed"
-                : "bg-[#6BBF59] hover:bg-[#5CAF4A] text-white"
-            }`}
-          >
-            {submitting ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-            ) : (
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-              </svg>
-            )}
-            Start Event
-          </button>
-        </div>
-      </>
-    );
-  };
-
-  const renderContent = () => {
-    if (loading) {
-      return <SkeletonLoader />;
-    }
-    
-    if (error) {
-      return (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md text-sm text-red-700 flex items-center">
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          {error}
-        </div>
-      );
-    }
-
-    if (success) {
-      return (
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-md text-sm text-green-700 flex items-center">
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-          Event started successfully! Redirecting to bracket view...
-        </div>
-      );
-    }
-
-    if (eventStatus === "in progress" || eventStatus === "completed") {
-      return renderStatusMessage();
-    }
-
-    if (eventStatus === "pending") {
-      return renderSeeder();
-    }
-
-    return (
-      <div className="text-center text-gray-500">
-        Unable to determine event status. Please refresh the page.
-      </div>
-    );
-  };
-
   return (
     <div className="flex flex-col w-full h-full">
-      {/* Header section */}
-      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-semibold text-[#2A6D3A]">Team Seeder</h2>
-          {eventName && (
-            <p className="text-sm text-gray-600">{eventName}</p>
+      <div className="w-full h-full flex-1 flex flex-col">
+        {/* Main container with overflow handling */}
+        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+          {/* Header section with responsive layout */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
+            <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+              <Trophy size={20} className="mr-2" /> Team Seeder {eventName && <span className="ml-2 text-gray-600 font-normal">- {eventName}</span>}
+            </h2>
+            {eventStatus === "pending" && teams.length > 0 && (
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={randomizeSeeds}
+                  className="bg-[#E6F2E8] hover:bg-[#D8EBDB] text-[#2A6D3A] px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                  disabled={loading || submitting}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                  Randomize
+                </button>
+                <button
+                  type="button"
+                  onClick={resetSeeds}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                  disabled={loading || submitting}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                  Reset
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Filter section */}
+          
+
+          {error && (
+            <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-50 p-4 rounded-lg text-green-600 text-center mb-4">
+              Event started successfully! Redirecting to bracket view...
+            </div>
+          )}
+
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+            {loading ? (
+              <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+                <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+              </div>
+            ) : eventStatus !== "pending" ? (
+              <div className="flex-1 overflow-auto">
+                {renderStatusMessage()}
+              </div>
+            ) : teams.length === 0 ? (
+              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
+                <p className="text-gray-500 mt-1">Add teams to the event before seeding</p>
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
+                {/* Table with horizontal and vertical scrolling */}
+                <div className="flex-1 overflow-auto">
+                  <table className="min-w-full text-sm text-left text-gray-700">
+                    <thead className="bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8] sticky top-0">
+                      <tr>
+                        <th className="px-6 py-3 font-medium tracking-wider">Seed</th>
+                        <th className="px-6 py-3 font-medium tracking-wider">Team Name</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedTeams.map((team, idx) => (
+                        <tr
+                          key={team.id}
+                          className={`border-b border-[#E6F2E8] hover:bg-[#F7FAF7] transition duration-200 ${
+                            idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }`}
+                        >
+                          <td className="px-6 py-4 w-24">
+                            <input
+                              type="number"
+                              min="1"
+                              max={teams.length}
+                              className="border border-gray-300 rounded-lg px-3 py-2 w-full text-center focus:ring-2 focus:ring-[#6BBF59] focus:border-[#6BBF59]"
+                              value={seeds[team.id] || ""}
+                              onChange={(e) => handleSeedChange(team.id, e.target.value)}
+                              disabled={submitting}
+                            />
+                          </td>
+                          <td className="px-6 py-4 font-medium">{team.name}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Pagination with horizontal scroll if needed */}
+                <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      {paginatedTeams.length > 0 && (
+                        <span className="text-sm text-gray-600">
+                          Showing {(pagination.currentPage - 1) * pagination.perPage + 1} to {Math.min(pagination.currentPage * pagination.perPage, sortedTeams.length)} of {sortedTeams.length} teams
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Start Tournament Button - Only shown for pending events with teams */}
+          {eventStatus === "pending" && teams.length > 0 && (
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={submitSeeds}
+                disabled={loading || submitting}
+                className={`px-5 py-2.5 rounded-lg shadow text-sm font-medium flex items-center ${
+                  loading || submitting
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-[#6BBF59] hover:bg-[#5CAF4A] text-white"
+                }`}
+              >
+                {submitting ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                )}
+                Start Tournament
+              </button>
+            </div>
           )}
         </div>
-        {eventStatus === "pending" && teams.length > 0 && (
-          <div className="flex space-x-2">
-            <button
-              onClick={randomizeSeeds}
-              className="bg-[#E6F2E8] hover:bg-[#D8EBDB] text-[#2A6D3A] px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center"
-              disabled={submitting || loading}
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-              Randomize
-            </button>
-            <button
-              onClick={resetSeeds}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center"
-              disabled={submitting || loading}
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-              Reset
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 p-6 bg-[#F7FAF7]">
-        {renderContent()}
       </div>
     </div>
   );

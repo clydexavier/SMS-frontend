@@ -128,7 +128,7 @@ export default function EventPage() {
               <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
             </div>
 
-            <div className="flex-auto overflow-y-auto p-6 bg-white-100 text-sm sm:text-xs md:text-sm lg:text-sm">
+            <div className="flex-auto overflow-y-auto p-6 text-sm sm:text-xs md:text-sm lg:text-sm bg-white">
               <Outlet />
             </div>
           </>

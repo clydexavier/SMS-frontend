@@ -158,15 +158,16 @@ export default function EventsPage() {
 
   return (
     <div className="flex flex-col w-full h-full">
-      <div className="space-y-8 w-full h-full flex-1">
-        <div className="flex flex-col w-full h-full bg-gray-75 p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
-          <div className="flex justify-between items-center mb-4">
+      <div className="w-full h-full flex-1 flex flex-col">
+        {/* Main container with overflow handling */}
+        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <CalendarClock size={20} className="mr-2" /> Events
             </h2>
             <button
               type="button"
-              className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
+              className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
               onClick={openModal}
               disabled={loading}
             >
@@ -183,7 +184,7 @@ export default function EventsPage() {
             </div>
           )}
 
-          <div className="bg-white p-4 rounded-xl shadow-md border border-[#E6F2E8]">
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
             <Filter
               activeTab={activeTab}
               setActiveTab={(value) => handleFilterChange(value, 'tab')}
@@ -194,34 +195,36 @@ export default function EventsPage() {
             />
           </div>
 
-          {/* Events List / State Handling */}
-          {loading ? (
-            <div className="flex justify-center items-center py-16">
-              <Loader size={32} className="animate-spin text-[#2A6D3A]" />
-            </div>
-          ) : events.length === 0 ? (
-            <div className="mt-8 flex-1 bg-white p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-              <CalendarClock size={48} className="mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-medium text-gray-600">No events found</h3>
-              <p className="text-gray-500 mt-1">Click "Add Event" to create one</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
-              {events.map((event) => (
-                <div key={event.id} className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm">
-                  <EventCard
-                    event={event}
-                    openEditModal={openEditModal}
-                    deleteEvent={deleteEvent}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Scrollable content area */}
+          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
+            {loading ? (
+              <div className="flex justify-center items-center py-16">
+                <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+              </div>
+            ) : events.length === 0 ? (
+              <div className="mt-4 flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                <CalendarClock size={48} className="mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-600">No events found</h3>
+                <p className="text-gray-500 mt-1">Click "Add Event" to create one</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-4">
+                {events.map((event) => (
+                  <div key={event.id} className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm">
+                    <EventCard
+                      event={event}
+                      openEditModal={openEditModal}
+                      deleteEvent={deleteEvent}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Pagination */}
+          {/* Pagination in a fixed position at the bottom */}
           {!loading && events.length > 0 && (
-            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-6">
+            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4 overflow-x-auto">
               <PaginationControls
                 pagination={pagination}
                 handlePageChange={handlePageChange}

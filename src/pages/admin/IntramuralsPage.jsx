@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../../axiosClient";
 import IntramuralCard from "../../components/IntramuralCard";
-import Filter from "../../components/Filter";
 import IntramuralModal from "../../components/admin/IntramuralModal";
+import Filter from "../../components/Filter";
 import PaginationControls from "../../components/PaginationControls";
 import { useLocation, useParams } from "react-router-dom";
+import { Trophy, Loader } from "lucide-react";
 
 export default function IntramuralsPage() {
   const location = useLocation();
@@ -22,10 +23,10 @@ export default function IntramuralsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shouldRefetch, setShouldRefetch] = useState(false);
 
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
-  const [shouldRefetch, setShouldRefetch] = useState(false);
 
   // Pagination states
   const [pagination, setPagination] = useState({
@@ -49,6 +50,13 @@ export default function IntramuralsPage() {
   const openEditModal = (intramural) => {
     setSelectedIntramural(intramural);
     setIsModalOpen(true);
+  };
+
+  const handlePageChange = (page) => {
+    setPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }));
   };
 
   // Instead of calling fetchIntramurals directly, we trigger a refetch
@@ -92,11 +100,15 @@ export default function IntramuralsPage() {
     }
   };
 
-  const handlePageChange = (page) => {
-    setPagination(prev => ({
-      ...prev,
-      currentPage: page
-    }));
+  const handleFilterChange = (value, type) => {
+    // Reset pagination to first page when filters change
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    
+    if (type === 'tab') {
+      setActiveTab(value);
+    } else if (type === 'search') {
+      setSearch(value);
+    }
   };
 
   // Single source of truth for data fetching
@@ -136,100 +148,82 @@ export default function IntramuralsPage() {
     return () => clearTimeout(debounceTimer);
   }, [search, activeTab, pagination.currentPage, shouldRefetch]);
 
-  const SkeletonLoader = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {[...Array(8)].map((_, index) => (
-        <div
-          key={index}
-          className="w-full h-40 p-4 bg-[#E6F2E8]/50 animate-pulse rounded-lg shadow-sm"
-        >
-          <div className="w-3/4 h-4 bg-[#E6F2E8]/70 mb-3 rounded" />
-          <div className="w-1/2 h-4 bg-[#E6F2E8]/70 mb-2 rounded" />
-          <div className="w-full h-2 bg-[#E6F2E8]/70 rounded" />
-          <div className="w-5/6 h-2 bg-[#E6F2E8]/70 mt-2 rounded" />
-        </div>
-      ))}
-    </div>
-  );
-
   return (
-    <div className="rounded-lg shadow-sm border border-gray-100 flex flex-col w-full h-full ">
-      {/* Header with gradient background <div className="bg-gradient-to-r from-[#1E4D2B] to-[#2A6D3A] px-6 py-4 shadow-md">   </div>*/}
-    
-      {/* Add Intramural Button Section */}
-      <div className="bg-[#F7FAF7] px-6 py-3 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg sm:text-xl font-semibold text-[#2A6D3A]">Intramurals</h2>
+    <div className="flex flex-col w-full h-full">
+      <div className="w-full h-full flex-1 flex flex-col">
+        {/* Main container with overflow handling */}
+        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+            <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+              <Trophy size={20} className="mr-2" /> Intramurals
+            </h2>
+            <button
+              type="button"
+              className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+              onClick={openModal}
+              disabled={loading}
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Intramural
+            </button>
+          </div>
 
-        <div>
           {error && (
-            <div className="text-red-500 bg-red-50 px-3 py-1 rounded text-sm">
+            <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
               {error}
             </div>
           )}
-        </div>
-        <button
-          type="button"
-          className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
-          onClick={openModal}
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Add Intramural
-        </button>
-      </div>
 
-      {/* Main Content Area */}
-      <div className="flex flex-col flex-1 p-6 bg-[#F7FAF7]">
-        {/* Filter Component */}
-        <div className="mb-6">
-          <Filter
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            search={search}
-            setSearch={setSearch}
-            placeholder="Search intramural"
-            filterOptions={filterOptions}
-          />
-        </div>
-
-        {/* Content Display Area */}
-        {loading ? (
-          <SkeletonLoader />
-        ) : intramurals.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-100">
-            <svg className="mx-auto h-12 w-12 text-[#2A6D3A]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <p className="mt-4 text-[#2A6D3A]/70 font-medium">No intramurals found</p>
-            <p className="text-gray-500 text-sm mt-1">Click "Add Intramural" to create one</p>
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
+            <Filter
+              activeTab={activeTab}
+              setActiveTab={(value) => handleFilterChange(value, 'tab')}
+              search={search}
+              setSearch={(value) => handleFilterChange(value, 'search')}
+              placeholder="Search intramural"
+              filterOptions={filterOptions}
+            />
           </div>
-        ) : (
-          <div className="w-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {intramurals.map((intramural) => (
-                <div
-                  key={intramural.id}
-                  className="w-full h-auto"
-                >
-                  <IntramuralCard
-                    intramural={intramural}
-                    openEditModal={openEditModal}
-                    deleteIntramural={deleteIntramural}
-                  />
-                </div>
-              ))}
-            </div>
 
-            {/* Pagination */}
-            <div className="mt-8">
+          {/* Scrollable content area */}
+          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
+            {loading ? (
+              <div className="flex justify-center items-center py-16">
+                <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+              </div>
+            ) : intramurals.length === 0 ? (
+              <div className="mt-4 flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-600">No intramurals found</h3>
+                <p className="text-gray-500 mt-1">Click "Add Intramural" to create one</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-4">
+                {intramurals.map((intramural) => (
+                  <div key={intramural.id} className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm">
+                    <IntramuralCard
+                      intramural={intramural}
+                      openEditModal={openEditModal}
+                      deleteIntramural={deleteIntramural}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Pagination in a fixed position at the bottom */}
+          {!loading && intramurals.length > 0 && (
+            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4 overflow-x-auto">
               <PaginationControls
                 pagination={pagination}
                 handlePageChange={handlePageChange}
               />
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Modal Component */}
@@ -239,6 +233,8 @@ export default function IntramuralsPage() {
         addIntramural={addIntramural}
         updateIntramural={updateIntramural}
         existingIntramural={selectedIntramural}
+        isLoading={loading}
+        error={error}
       />
     </div>
   );

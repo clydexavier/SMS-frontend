@@ -53,7 +53,6 @@ export default function EventModal({
         gold: existingEvent.gold || "",
         silver: existingEvent.silver || "",
         bronze: existingEvent.bronze || "",
-        venue: existingEvent.venue || "",
         status: existingEvent.status || "pending",
       });
     } else {
@@ -66,7 +65,6 @@ export default function EventModal({
         gold: "",
         silver: "",
         bronze: "",
-        venue: "",
         status: "pending",
       });
     }
@@ -80,7 +78,7 @@ export default function EventModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     existingEvent ? updateEvent(existingEvent.id, formData) : addEvent(formData);
-    clearForm();
+    //clearForm();
   };
 
   if (!isModalOpen) return null;
@@ -188,24 +186,6 @@ export default function EventModal({
                   <option value="music">Music</option>
                   <option value="dance">Dance</option>
                 </select>
-              </div>
-
-              {/* Venue */}
-              <div>
-                <label htmlFor="venue" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Venue
-                </label>
-                <input
-                  id="venue"
-                  name="venue"
-                  type="text"
-                  value={formData.venue}
-                  onChange={handleChange}
-                  autoComplete="off"
-                  required
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="Enter venue"
-                />
               </div>
 
               {/* Medal Count */}

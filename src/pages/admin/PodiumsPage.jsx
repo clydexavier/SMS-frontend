@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import axiosClient from "../../axiosClient";
 import Filter from "../../components/Filter";
 import PaginationControls from "../../components/PaginationControls";
-import { Trophy, Loader } from "lucide-react";
+import { Trophy, Loader , Medal} from "lucide-react";
+
 import PodiumCard from "../../components/admin/PodiumCard";
 
 export default function PodiumsPage() {
@@ -68,7 +69,7 @@ export default function PodiumsPage() {
       <div className="space-y-8 w-full h-full flex-1">
         <div className="flex flex-col w-full h-full bg-gray-75 p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           <h2 className="text-lg font-semibold text-[#2A6D3A] mb-4 flex items-center">
-            <Trophy size={20} className="mr-2" /> Events Result
+            <Medal size={20} className="mr-2" /> Events Result
           </h2>
           <div className="bg-white p-4 rounded-xl shadow-md border border-[#E6F2E8]">
             <Filter
@@ -98,7 +99,7 @@ export default function PodiumsPage() {
             </div>
           ) : podiums.length === 0 ? (
             <div className="mt-8 flex-1 bg-white p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-              <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
+              <Medal size={48} className="mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-medium text-gray-600">No results found</h3>
               <p className="text-gray-500 mt-1">Try adjusting your search or filter criteria</p>
             </div>

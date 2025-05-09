@@ -24,7 +24,6 @@ export default function EventModal({
     silver: "",
     bronze: "",
     venue: "",
-    status: "pending",
   });
 
   const clearForm = () => {
@@ -38,7 +37,6 @@ export default function EventModal({
       silver: "",
       bronze: "",
       venue: "",
-      status: "pending",
     }); 
   }
   
@@ -53,7 +51,6 @@ export default function EventModal({
         gold: existingEvent.gold || "",
         silver: existingEvent.silver || "",
         bronze: existingEvent.bronze || "",
-        status: existingEvent.status || "pending",
       });
     } else {
       setFormData({
@@ -65,7 +62,6 @@ export default function EventModal({
         gold: "",
         silver: "",
         bronze: "",
-        status: "pending",
       });
     }
   }, [existingEvent, intrams_id]);
@@ -243,26 +239,6 @@ export default function EventModal({
                 />
                 <p className="mt-1 text-xs text-gray-500">Only positive integers allowed</p>
               </div>
-
-              {/* Status (for updating) */}
-              {existingEvent && (
-                <div>
-                  <label htmlFor="status" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Status
-                  </label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="in progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </div>
-              )}
             </div>
 
             {/* Action Buttons */}

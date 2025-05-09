@@ -17,6 +17,9 @@ export default function VarsityPlayersPage() {
 
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
+  const [filterOptions, setFilterOptions] = useState([
+    { label: "All", value: "All" }
+  ]);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -24,13 +27,6 @@ export default function VarsityPlayersPage() {
     total: 0,
     lastPage: 1,
   });
-
-  const filterOptions = [
-    { label: "All", value: "All" },
-    { label: "Basketball", value: "Basketball" },
-    { label: "Volleyball", value: "Volleyball" },
-    { label: "Football", value: "Football" },
-  ];
 
   const openModal = () => {
     setSelectedPlayer(null);
@@ -46,6 +42,21 @@ export default function VarsityPlayersPage() {
     setIsModalOpen(false);
     setSelectedPlayer(null);
     setError(null);
+  };
+
+  const fetchFilterOptions = async () => {
+    try {
+      const { data } = await axiosClient.get(`/intramurals/${intrams_id}/vplayers_sport`);
+      // Assuming the API returns an array of sport names
+      console.log(data.data);
+      const options = [
+        { label: "All", value: "All" },
+        ...data.data.map(sport => ({ label: sport, value: sport }))
+      ];
+      setFilterOptions(options);
+    } catch (err) {
+      console.error("Error fetching filter options:", err);
+    }
   };
 
   const fetchPlayers = async (page = 1) => {
@@ -114,6 +125,13 @@ export default function VarsityPlayersPage() {
       }
     }
   };
+
+  useEffect(() => {
+    // Fetch filter options when component mounts
+    if (intrams_id) {
+      fetchFilterOptions();
+    }
+  }, [intrams_id]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {

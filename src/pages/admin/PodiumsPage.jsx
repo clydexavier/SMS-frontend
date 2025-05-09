@@ -89,6 +89,8 @@ export default function PodiumsPage() {
           </div>
 
           {/* Podiums List / State Handling */}
+          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
+
           {loading ? (
             <div className="flex justify-center items-center py-16">
               <Loader size={32} className="animate-spin text-[#2A6D3A]" />
@@ -112,11 +114,12 @@ export default function PodiumsPage() {
               ))}
             </div>
           )}
+          </div>
 
           {/* Pagination */}
           {!loading && podiums.length > 0 && (
-            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-6">
-              <PaginationControls
+            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4 overflow-x-auto">
+            <PaginationControls
                 pagination={pagination}
                 handlePageChange={handlePageChange}
               />

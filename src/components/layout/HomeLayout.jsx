@@ -1,14 +1,16 @@
+import { useState } from "react";
 import { useStateContext } from "../../context/ContextProvider";
-import { Navigate } from "react-router-dom";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 export default function HomeLayout() {
-    const {token } = useStateContext();
-    if (!token) {
-        return <Navigate to="/login" />;
-    }
-    
-    return (
-     <Outlet/>
-  )
+  const location = useLocation(); // ✅ Hook called unconditionally
+  const { token, role } = useStateContext();
+
+  if (!token) {
+    return <Navigate to="/login" />;
+  } else if (location.pathname === "/" || location.pathname === "/admin/" ||  location.pathname === "/admin") {
+    return <Navigate to={`/${role}/intramurals`} />;
+  }
+
+  return <Outlet />;
 }

@@ -1,12 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import Sidebar from "../../components/Sidebar";
-import { Outlet } from "react-router-dom";
-import { Link } from "react-router-dom";
-import logo from '../../assets/vsu_logo.png';
+import { Outlet, Link } from "react-router-dom";
+import logo from '../../assets/IHK_logo2.png';
 
-//import ResponsiveDropdown from "../../components/ResponsiveDropdown";
 // Admin Icons
 import { GrTrophy, GrHistory } from "react-icons/gr";
+import { MdMenuOpen } from "react-icons/md";
 
 const menuItems = [
   {
@@ -22,51 +21,57 @@ const menuItems = [
 ];
 
 export default function AdminPage() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">
+    <div className="flex flex-col w-screen h-screen overflow-hidden bg-gray-200">
       <noscript>
         <strong className="text-sm sm:text-xs md:text-sm lg:text-sm">
           We're sorry but the frontend doesn't work properly without JavaScript enabled. Please enable it to continue.
         </strong>
       </noscript>
 
-     
-      {/* Header 
-      <header className="h-16 bg-gradient-to-r from-[#1E4D2B] to-[#2A6D3A] text-white flex items-center justify-between px-6 shadow-md">
-   
-      <Link
-        to="/admin/intramurals"
-        className="hover:text-gray-200 transition-colors text-sm sm:text-xs md:text-sm lg:text-sm h-full flex items-center"
-      >
-        <img src={logo} alt="vsu logo" className="h-full object-contain" />
-      </Link>
-
-      <div className="font-semibold sm:text-sm md:text-md lg:text-lg">
-       
-      </div>
-      
-      <div></div>
-    </header>
-    */}
-
-
-      {/* Responsive Dropdown - Only shows on mobile 
-      <div className="md:hidden w-full px-4 py-2 bg-gray-900">
-        <ResponsiveDropdown title="Your Tournaments" items={menuItems} />
-      </div>*/}
+      {/* Header */}
+      <header className="bg-[#1E4D2B] shadow-md h-16 px-4 flex items-center justify-between z-30 relative">
+        <div className="flex items-center">
+          {/* Logo */}
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="IHK Logo" className={`h-8 w-auto rounded-full ${isSidebarOpen? "": "hidden"}`} />
+            
+          </Link>
+          {/* Menu button */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="text-[#E6F2E8] hover:bg-[#3A8049]/40 p-2 rounded-md mr-2"
+          >
+            <MdMenuOpen
+              size={24}
+              className={`duration-300 ${isSidebarOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+        </div>
+      </header>
 
       {/* Main Content */}
-      <main className="flex flex-1 w-full overflow-auto">
-        {/*  Sidebar for medium and up */}
-        <div className="hidden md:block">
-          <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
-        </div>
+      <main className="flex flex-1 w-full overflow-hidden">
+        {/* Mobile Overlay - Only cover the sidebar area when it's open */}
+        {isSidebarOpen && (
+          <div
+            className="fixed md:hidden left-0 top-16 bottom-0 w-64 bg-black bg-opacity-40"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
 
-        <div className="flex-auto overflow-y-auto p-6 text-sm sm:text-xs md:text-sm lg:text-sm bg-white">
+        <Sidebar
+          menuItems={menuItems}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
+
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-10 bg-white">
           <Outlet />
         </div>
       </main>
     </div>
-
   );
 }

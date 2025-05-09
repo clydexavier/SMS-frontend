@@ -58,21 +58,27 @@ export default function BracketPage() {
       );
     }
     
-    if (eventStatus !== "in progress" && eventStatus !== "completed") {
+    if (eventStatus === "completed") {
       return (
         <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
           <Award size={48} className="mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-600">Bracket Not Available</h3>
-          <p className="text-gray-500 mt-1">
-            {eventStatus === "pending"
-              ? "The bracket has not started yet. Please go to Team Seeder page to initialize the seeding of teams."
-              : "This event has been completed. Bracket display is for viewing only."}
-          </p>
+          <h3 className="text-lg font-medium text-gray-600">Event Completed</h3>
+          <p className="text-gray-500 mt-1">This event has been completed. Bracket display is for viewing only.</p>
         </div>
       );
     }
     
-    if (!bracketId) {
+    if (eventStatus === "pending") {
+      return (
+        <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+          <Award size={48} className="mx-auto mb-4 text-gray-400" />
+          <h3 className="text-lg font-medium text-gray-600">Event Pending</h3>
+          <p className="text-gray-500 mt-1">The bracket has not started yet. Please go to Team Seeder page to initialize the seeding of teams.</p>
+        </div>
+      );
+    }
+    
+    if (eventStatus !== "in progress" || !bracketId) {
       return (
         <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
           <Award size={48} className="mx-auto mb-4 text-gray-400" />
@@ -148,7 +154,7 @@ export default function BracketPage() {
           )}
 
           {/* Scrollable content area */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
             {renderBracketContent()}
           </div>
         </div>

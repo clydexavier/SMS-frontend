@@ -1,5 +1,5 @@
 import React, { useRef, useState , useEffect} from 'react';
-import logo from "../../assets/react.svg";
+import logo from "../../assets/IHK_logo1.png";
 import axiosClient from '../../axiosClient';
 import { Link } from 'react-router-dom';
 import { useStateContext } from "../../context/ContextProvider";

@@ -111,22 +111,10 @@ const ResultPage = () => {
               <Trophy size={20} className="mr-2" /> Event Results {eventName && <span className="ml-2 text-gray-600 font-normal">- {eventName}</span>}
             </h2>
             
-            {submitStatus && (
-              <div
-                className={`px-4 py-2 rounded text-sm ${
-                  submitStatus.type === "success"
-                    ? "bg-green-50 text-green-700"
-                    : "bg-red-50 text-red-700"
-                }`}
-              >
-                {submitStatus.message}
-              </div>
-            )}
-            
             {showActionButton && (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
+                className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
                 disabled={loading}
               >
                 <svg
@@ -157,6 +145,18 @@ const ResultPage = () => {
             )}
           </div>
 
+          {submitStatus && (
+            <div
+              className={`px-4 py-2 rounded text-sm mb-4 ${
+                submitStatus.type === "success"
+                  ? "bg-green-50 text-green-700"
+                  : "bg-red-50 text-red-700"
+              }`}
+            >
+              {submitStatus.message}
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
               {error}
@@ -170,8 +170,10 @@ const ResultPage = () => {
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
             ) : podiumData ? (
-              <div className="flex-1 bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden p-6">
-                <EventPodium podiumData={podiumData} />
+              <div className="flex-1 bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-auto">
+                <div className="p-6">
+                  <EventPodium podiumData={podiumData} />
+                </div>
               </div>
             ) : (
               <div className="flex-1 overflow-auto">

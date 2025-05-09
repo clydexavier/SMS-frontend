@@ -9,6 +9,10 @@ import { LiaSitemapSolid } from "react-icons/lia";
 import { MdOutlineScoreboard } from "react-icons/md";
 import { TbUsersGroup } from "react-icons/tb";
 import { GiPodium } from "react-icons/gi";
+import logo from '../../assets/IHK_logo2.png';
+import { MdMenuOpen } from "react-icons/md";
+
+
 
 
 // Skeleton loader component for the page
@@ -63,6 +67,8 @@ const SkeletonLoader = () => (
 );
 
 export default function EventPage() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [event, setEvent] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -117,22 +123,46 @@ export default function EventPage() {
         </strong>
       </noscript>
 
-      {/* Main Content */}
-      <main className="flex flex-1 w-full overflow-auto">
-        {loading ? (
-          <SkeletonLoader />
-        ) : (
-          <>
-            {/* Sidebar (hidden on mobile) */}
-            <div className="hidden md:block">
-              <Sidebar menuItems={menuItems} className="bg-white shadow-md h-full hover:bg-gray-100" />
-            </div>
+      {/* Header */}
+      <header className="bg-[#1E4D2B] shadow-md h-16 px-4 flex items-center justify-between z-30 relative">
+            <div className="flex items-center">
+          {/* Logo */}
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="IHK Logo" className={`h-8 w-auto rounded-full ${isSidebarOpen? "": "hidden"}`} />
+            
+          </Link>
+          {/* Menu button */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="text-[#E6F2E8] hover:bg-[#3A8049]/40 p-2 rounded-md mr-2"
+          >
+            <MdMenuOpen
+              size={24}
+              className={`duration-300 ${isSidebarOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+        </div>
+      </header>
 
-            <div className="flex-auto overflow-y-auto p-6 text-sm sm:text-xs md:text-sm lg:text-sm bg-white">
-              <Outlet />
-            </div>
-          </>
+      {/* Main Content */}
+      <main className="flex flex-1 w-full overflow-hidden">
+        {/* Mobile Overlay - Only cover the sidebar area when it's open */}
+        {isSidebarOpen && (
+          <div
+            className="fixed md:hidden left-0 top-16 bottom-0 w-64 bg-black bg-opacity-40"
+            onClick={() => setIsSidebarOpen(false)}
+          />
         )}
+
+        <Sidebar
+          menuItems={menuItems}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
+
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-10 bg-white">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

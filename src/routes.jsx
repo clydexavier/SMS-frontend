@@ -1,6 +1,6 @@
 // src/routes.jsx;
-import HomeLayout from './components/layout/HomeLayout'
-import GuestLayout from "./components/layout/GuestLayout";
+import HomeLayout from "./pages/layout/HomeLayout";
+import GuestLayout from "./pages/layout/GuestLayout";
 
 // Auth Components
 import ProtectedRoute from "./auth/ProtectedRoute";
@@ -11,33 +11,29 @@ import LoginPage from "./pages/public/LoginPage";
 import RegisterPage from "./pages/public/RegisterPage";
 
 // Role-specific pages
-import AdminPage from "./pages/admin/AdminPage";
+import AdminPage from "./pages/admin/intramurals/parent/AdminPage";
 import GAMPage from "./pages/GAM/GAMPage";
 import SecretariatPage from "./pages/Secretariat/SecretariatPage";
 import TSecretaryPage from "./pages/TSecretary/TSecretaryPage";
 
 // Admin child components
-import AdminLogsPage from "./pages/admin/AdminLogsPage";
-import IntramuralsPage from "./pages/admin/IntramuralsPage";
-import DocumentsPage from "./pages/admin/DocumentsPage";
-import EventsPage from "./pages/admin/EventsPage";
-import TeamsPage from "./pages/admin/TeamsPage";
-import VenuesPage from "./pages/admin/VenuesPage";
-import IntramuralLogsPage from "./pages/admin/IntramuralLogsPage";
-import VarsityPlayersPage from "./pages/admin/VarsityPlayersPage";
+import IntramuralsPage from "./pages/admin/intramurals/IntramuralsPage";
+import EventsPage from "./pages/admin/events/EventsPage";
+import TeamsPage from "./pages/admin/teams/TeamsPage";
+import VarsityPlayersPage from "./pages/admin/varsity_players/VarsityPlayersPage";
+
 
 // Within Intramural Pages
-import IntramuralPage from "./pages/admin/IntramuralPage";
+import IntramuralPage from "./pages/admin/events/parent/IntramuralPage";
 import EventPage from "./pages/admin/EventPage";
-import BracketPage from "./pages/admin/BracketPage";
-import GamePage from "./pages/admin/GamePage";
-import PodiumsPage from "./pages/admin/PodiumsPage";
-import OverallTallyPage from "./pages/admin/OverallTallyPage";
-import ParticipantPage from "./pages/admin/ParticipantPage";
-import PlayersPage from "./pages/admin/PlayersPage";
-import GalleryPage from "./pages/admin/GalleryPage";
-import ResultPage from "./pages/admin/ResultPage";
-import TeamSeeder from "./pages/admin/TeamSeeder";
+import BracketPage from "./pages/admin/bracket/BracketPage";
+import GamePage from "./pages/admin/games/GamePage";
+import PodiumsPage from "./pages/admin/podiums/PodiumsPage";
+import OverallTallyPage from "./pages/admin/tally/OverallTallyPage";
+import PlayersPage from "./pages/admin/players/PlayersPage";
+import GalleryPage from "./pages/admin/gallery/GalleryPage";
+import ResultPage from "./pages/admin/result/ResultPage";
+import TeamSeeder from "./pages/admin/seeder/TeamSeeder";
 
 const routes = [
   {
@@ -52,7 +48,7 @@ const routes = [
         </ProtectedRoute>
       ),
       children: [
-        { path: "logs", element: <AdminLogsPage /> },
+        
         { path: "intramurals", element: <IntramuralsPage /> },
       ],
       },
@@ -64,15 +60,12 @@ const routes = [
           </ProtectedRoute>
         ),
         children: [
-          { path: "venues", element: <VenuesPage /> },
           { path: "events", element: <EventsPage /> },
           { path: "teams", element: <TeamsPage /> },
           { path: "vplayers", element: <VarsityPlayersPage /> },
-          { path: "documents", element: <DocumentsPage /> },
           {path: "podiums", element: <PodiumsPage/>},
           { path: "tally", element: <OverallTallyPage /> },
 
-          { path: "logs", element: <IntramuralLogsPage /> },
           
         ],
       },
@@ -94,18 +87,12 @@ const routes = [
         ],
       },
       {
-        path: ":intrams_id/events/:event_id/participants/:participant_id",
+        path: "/tsecretary",
         element: (
-          <ProtectedRoute roles = {["admin"]}>
-            <ParticipantPage/>
+          <ProtectedRoute roles={["tsecretary"]}>
+            <TSecretaryPage />
           </ProtectedRoute>
         ),
-        children: [
-          { path: "bracket", element: <BracketPage /> },
-          { path: "games", element: <GamePage /> },
-          { path: "players", element: <PlayersPage /> },
-          { path: "logs", element: <VarsityPlayersPage /> },
-        ],
       },
       {
         path: "/GAM",
@@ -123,14 +110,7 @@ const routes = [
           </ProtectedRoute>
         ),
       },
-      {
-        path: "/tsecretary",
-        element: (
-          <ProtectedRoute roles={["tsecretary"]}>
-            <TSecretaryPage />
-          </ProtectedRoute>
-        ),
-      },
+      
     ],
   },
   {

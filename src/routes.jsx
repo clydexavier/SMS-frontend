@@ -1,17 +1,20 @@
-import { useStateContext } from "./context/ContextProvider";
-
-import HomeLayout from "./components/layout/HomeLayout";
+// src/routes.jsx;
+import HomeLayout from './components/layout/HomeLayout'
 import GuestLayout from "./components/layout/GuestLayout";
 
-//public pages
+// Auth Components
+import ProtectedRoute from "./auth/ProtectedRoute";
+import UnauthorizedPage from "./pages/public/UnauthorizedPage";
+
+// Public pages
 import LoginPage from "./pages/public/LoginPage";
 import RegisterPage from "./pages/public/RegisterPage";
 
+// Role-specific pages
 import AdminPage from "./pages/admin/AdminPage";
 import GAMPage from "./pages/GAM/GAMPage";
 import SecretariatPage from "./pages/Secretariat/SecretariatPage";
 import TSecretaryPage from "./pages/TSecretary/TSecretaryPage";
-import ProtectedRoute from "./context/ProtectedRoute";
 
 // Admin child components
 import AdminLogsPage from "./pages/admin/AdminLogsPage";
@@ -23,15 +26,13 @@ import VenuesPage from "./pages/admin/VenuesPage";
 import IntramuralLogsPage from "./pages/admin/IntramuralLogsPage";
 import VarsityPlayersPage from "./pages/admin/VarsityPlayersPage";
 
-//Within Intramural Pages
+// Within Intramural Pages
 import IntramuralPage from "./pages/admin/IntramuralPage";
-
 import EventPage from "./pages/admin/EventPage";
 import BracketPage from "./pages/admin/BracketPage";
 import GamePage from "./pages/admin/GamePage";
 import PodiumsPage from "./pages/admin/PodiumsPage";
 import OverallTallyPage from "./pages/admin/OverallTallyPage";
-
 import ParticipantPage from "./pages/admin/ParticipantPage";
 import PlayersPage from "./pages/admin/PlayersPage";
 import GalleryPage from "./pages/admin/GalleryPage";
@@ -44,22 +45,19 @@ const routes = [
     element: <HomeLayout/>,
     children: [
     {
-        path: "/admin",
-        element: (
-          <ProtectedRoute roles={["admin"]}>
-            <AdminPage />
-          </ProtectedRoute>
-        ),
-        children: [
-          { path: "logs", element: <AdminLogsPage /> },
-          {
-            path: "intramurals",
-            element: <IntramuralsPage />,
-          },
-        ],
+      path: "/admin",
+      element: (
+        <ProtectedRoute roles={["admin"]}>
+          <AdminPage /> 
+        </ProtectedRoute>
+      ),
+      children: [
+        { path: "logs", element: <AdminLogsPage /> },
+        { path: "intramurals", element: <IntramuralsPage /> },
+      ],
       },
       {
-        path: ":intrams_id",
+        path: "admin/:intrams_id",
         element: (
           <ProtectedRoute roles = {["admin"]}>
             <IntramuralPage/>
@@ -79,7 +77,7 @@ const routes = [
         ],
       },
       {
-        path: ":intrams_id/events/:event_id",
+        path: "admin/:intrams_id/events/:event_id",
         element: (
           <ProtectedRoute roles = {["admin"]}>
             <EventPage/>

@@ -1,32 +1,25 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import React from "react";
-import axiosClient from "../axiosClient";
-import { useStateContext } from "../context/ContextProvider";
+import { useAuth } from "../auth/AuthContext"; // Import the useAuth hook
 
 // Icons
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { FaRegUserCircle } from "react-icons/fa";
-import { LuLogOut } from "react-icons/lu";
+import { LogOut } from "lucide-react";
 
 export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [expandedMenus, setExpandedMenus] = useState({});
-  const { setUser, setToken, setRole, user } = useStateContext();
-  const sidebarRef = useRef(null); 
- 
+  const { user, logout } = useAuth(); // Use the auth context
+  const sidebarRef = useRef(null);
 
-  const onLogout = async (ev) => {
+  const onLogout = (ev) => {
     ev.preventDefault();
-    try {
-      await axiosClient.get("/logout");
-      setUser(null);
-      setToken(null);
-      setRole(null);
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    logout(); // Use the logout function from AuthContext
   };
+
   // Close sidebar on outside click
   useEffect(() => {
     function handleClickOutside(event) {
@@ -43,13 +36,6 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, setIsOpen]);
-
-  useEffect(() => {
-    axiosClient
-      .get("/user")
-      .then(({ data }) => setUser(data))
-      .catch((err) => console.error("Error fetching user:", err));
-  }, []);
 
   useEffect(() => {
     const newExpandedState = {};
@@ -191,7 +177,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
               onClick={onLogout}
             >
               <div className="flex items-center justify-center w-6">
-                <LuLogOut size={18} />
+                <LogOut size={18} />
               </div>
               {isOpen && (
                 <p className="ml-3 text-sm font-medium">Logout</p>

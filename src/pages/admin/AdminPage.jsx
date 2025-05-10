@@ -6,18 +6,16 @@ import logo from '../../assets/IHK_logo2.png';
 // Admin Icons
 import { GrTrophy, GrHistory } from "react-icons/gr";
 import { MdMenuOpen } from "react-icons/md";
+import { Volleyball,Trophy , Medal, House, Users} from "lucide-react";
+
 
 const menuItems = [
   {
-    icon: <GrTrophy className="text-[20px] sm:text-[15px]" color="black" />,
+    icon: <House className="text-[20px] sm:text-[15px]" color="black" />,
     label: "Intramurals",
     route: "intramurals",
   },
-  {
-    icon: <GrHistory className="text-[20px] sm:text-[15px]" color="black" />,
-    label: "Log",
-    route: "logs",
-  },
+  
 ];
 
 export default function AdminPage() {

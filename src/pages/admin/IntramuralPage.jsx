@@ -9,18 +9,19 @@ import { MdMenuOpen } from "react-icons/md";
 import { GrTrophy, GrLocation, GrHistory } from "react-icons/gr";
 import { MdOutlinePeopleAlt, MdOutlinePersonAddAlt } from "react-icons/md";
 import { IoDocumentsOutline, IoMedalOutline } from "react-icons/io5";
+import { Volleyball,Trophy , Medal, House, Users, UserPlus } from "lucide-react";
+
 
 const isize = 20;
 
 const menuItems = [
-  { icon: <GrTrophy size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
-  { icon: <IoMedalOutline size={isize} color="black" />, label: 'Events', route: 'events' },
-  { icon: <MdOutlinePeopleAlt size={isize} color="black" />, label: 'Teams', route: 'teams' },
-  { icon: <MdOutlinePersonAddAlt size={isize} color="black" />, label: 'Varsity Players', route: 'vplayers' },
+  { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
+  { icon: <Volleyball size={isize} color="black" />, label: 'Events', route: 'events' },
+  { icon: <Users size={isize} color="black" />, label: 'Teams', route: 'teams' },
+  { icon: <UserPlus size={isize} color="black" />, label: 'Varsity Players', route: 'vplayers' },
   //{ icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
-  { icon: <GrHistory size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
-  { icon: <GrHistory size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
-  { icon: <GrHistory size={isize} color="black" />, label: 'Log', route: 'logs' },
+  { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
+  { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
 ];
 
 export default function IntramuralPage() {

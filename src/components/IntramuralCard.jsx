@@ -78,7 +78,7 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
       </div>
 
       {/* Header with Link */}
-      <Link to={`/${intramural.id}/events`} state={{ intrams_id: intramural.id }} className="w-full group">
+      <Link to={`/admin/${intramural.id}/events`} state={{ intrams_id: intramural.id }} className="w-full group">
         <div className="w-full bg-gradient-to-r from-[#2A6D3A] to-[#6BBF59] text-white p-4 rounded-t-lg flex flex-col items-start group-hover:from-[#1E4D2B] group-hover:to-[#5CAF4A] transition-all duration-300">
           <span className="text-lg font-bold text-left truncate w-full pr-8">
             {intramural.name}

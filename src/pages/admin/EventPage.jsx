@@ -12,59 +12,7 @@ import { GiPodium } from "react-icons/gi";
 import logo from '../../assets/IHK_logo2.png';
 import { MdMenuOpen } from "react-icons/md";
 
-
-
-
-// Skeleton loader component for the page
-const SkeletonLoader = () => (
-  <div className="flex flex-1 w-full">
-    {/* Skeleton Sidebar */}
-    <div className="hidden md:block w-64 bg-white shadow-md">
-      <div className="p-4">
-        <div className="h-8 bg-gray-200 rounded w-24 mb-6"></div>
-      </div>
-      <div className="px-4">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-2 py-3 px-2 mb-2">
-            <div className="h-5 w-5 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded w-24"></div>
-          </div>
-        ))}
-      </div>
-    </div>
-    
-    {/* Skeleton Content */}
-    <div className="flex-auto p-6">
-      <div className="animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
-        <div className="shadow-md rounded-xl border border-[#E6F2E8]">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-[#F7FAF7]">
-              <tr>
-                {[...Array(5)].map((_, i) => (
-                  <th key={i} className="px-6 py-3">
-                    <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {[...Array(5)].map((_, row) => (
-                <tr key={row}>
-                  {[...Array(5)].map((_, col) => (
-                    <td key={col} className="px-6 py-4">
-                      <div className="h-4 bg-gray-200 rounded w-20"></div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+import { Volleyball,Trophy , Medal, House, Users, Shuffle  , FileUser} from "lucide-react";
 
 export default function EventPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -75,19 +23,19 @@ export default function EventPage() {
   const { intrams_id, event_id } = useParams();
   const isize = 20;
   const menuItems = [
-    { icon: <GrTrophy size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
+    { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
     { 
-      icon: <IoMedalOutline size={isize} color="black" />, 
+      icon: <Volleyball size={isize} color="black" />, 
       label: `${event}`, 
       route: `/${intrams_id}/events`,
       submenu: [
-        { icon: <TbUsersGroup size={isize} color="black" />, label: 'Players', route: 'players' },
-        { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },
-        { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Team Seeder', route: 'seeder' },
+        { icon: <Users size={isize} color="black" />, label: 'Players', route: 'players' },
+        { icon: <FileUser size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },
+        { icon: <Shuffle size={isize} color="black" />, label: 'Team Seeder', route: 'seeder' },
 
         { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
         { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
-        { icon: <GiPodium size={isize} color="black" />, label: 'Event Result', route: 'result' },
+        { icon: <Medal size={isize} color="black" />, label: 'Event Result', route: 'result' },
 
       ]
     },
@@ -95,7 +43,56 @@ export default function EventPage() {
     
   ];
 
-
+  // Skeleton loader component for the page
+  const SkeletonLoader = () => (
+    <div className="flex flex-1 w-full">
+      {/* Skeleton Sidebar */}
+      <div className="hidden md:block w-64 bg-white shadow-md">
+        <div className="p-4">
+          <div className="h-8 bg-gray-200 rounded w-24 mb-6"></div>
+        </div>
+        <div className="px-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-2 py-3 px-2 mb-2">
+              <div className="h-5 w-5 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-24"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Skeleton Content */}
+      <div className="flex-auto p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+          <div className="shadow-md rounded-xl border border-[#E6F2E8]">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-[#F7FAF7]">
+                <tr>
+                  {[...Array(5)].map((_, i) => (
+                    <th key={i} className="px-6 py-3">
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {[...Array(5)].map((_, row) => (
+                  <tr key={row}>
+                    {[...Array(5)].map((_, col) => (
+                      <td key={col} className="px-6 py-4">
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   const fetchEvent = async () => {
     try {
       setLoading(true);

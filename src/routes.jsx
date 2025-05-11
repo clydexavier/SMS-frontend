@@ -20,6 +20,7 @@ import TSecretaryPage from "./pages/TSecretary/TSecretaryPage";
 
 // Admin child components
 import IntramuralsPage from "./pages/admin/intramurals/IntramuralsPage";
+import UsersPage from "./pages/admin/users/UsersPage";
 import EventsPage from "./pages/admin/events/EventsPage";
 import TeamsPage from "./pages/admin/teams/TeamsPage";
 import VarsityPlayersPage from "./pages/admin/varsity_players/VarsityPlayersPage";
@@ -52,6 +53,7 @@ const routes = [
       children: [
         
         { path: "intramurals", element: <IntramuralsPage /> },
+        { path: "users", element: <UsersPage/>}
       ],
       },
       {

@@ -7,13 +7,18 @@ import Breadcrumb from "../../../components/Breadcrumb"; // Import the Breadcrum
 // Admin Icons
 import { GrTrophy, GrHistory } from "react-icons/gr";
 import { MdMenuOpen } from "react-icons/md";
-import { Volleyball, Trophy, Medal, House, Users } from "lucide-react";
+import {  House, ShieldUser} from "lucide-react";
 
 const menuItems = [
   {
     icon: <House className="text-[20px] sm:text-[15px]" color="black" />,
     label: "Intramurals",
     route: "intramurals",
+  },
+  {
+    icon: <ShieldUser className="text-[20px] sm:text-[15px]" color="black" />,
+    label: "Users",
+    route: "users",
   },
   // Add more menu items as needed
 ];

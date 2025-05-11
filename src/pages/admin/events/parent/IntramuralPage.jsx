@@ -1,14 +1,12 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import Sidebar from '../../../components/Sidebar';
+import Breadcrumb from '../../../components/Breadcrumb';
 import logo from '../../../../assets/IHK_logo2.png';
 import { useState } from 'react';
 import { MdMenuOpen } from "react-icons/md";
 
 
-import { GrTrophy, GrLocation, GrHistory } from "react-icons/gr";
-import { MdOutlinePeopleAlt, MdOutlinePersonAddAlt } from "react-icons/md";
-import { IoDocumentsOutline, IoMedalOutline } from "react-icons/io5";
 import { Volleyball,Trophy , Medal, House, Users, UserPlus } from "lucide-react";
 
 
@@ -72,6 +70,7 @@ export default function IntramuralPage() {
         />
 
         <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-10 bg-white">
+        <Breadcrumb/>
           <Outlet />
         </div>
       </main>

@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import Sidebar from "../../../components/Sidebar";
 import { Outlet, Link } from "react-router-dom";
 import logo from '../../../../assets/IHK_logo2.png';
+import Breadcrumb from "../../../components/Breadcrumb"; // Import the Breadcrumb component
 
 // Admin Icons
 import { GrTrophy, GrHistory } from "react-icons/gr";
 import { MdMenuOpen } from "react-icons/md";
-import { Volleyball,Trophy , Medal, House, Users} from "lucide-react";
-
+import { Volleyball, Trophy, Medal, House, Users } from "lucide-react";
 
 const menuItems = [
   {
@@ -15,7 +15,7 @@ const menuItems = [
     label: "Intramurals",
     route: "intramurals",
   },
-  
+  // Add more menu items as needed
 ];
 
 export default function AdminPage() {
@@ -35,7 +35,6 @@ export default function AdminPage() {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img src={logo} alt="IHK Logo" className={`h-8 w-auto rounded-full ${isSidebarOpen? "": "hidden"}`} />
-            
           </Link>
           {/* Menu button */}
           <button
@@ -67,6 +66,9 @@ export default function AdminPage() {
         />
 
         <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-10 bg-white">
+          {/* Add Breadcrumb component here */}
+          <Breadcrumb />
+          
           <Outlet />
         </div>
       </main>

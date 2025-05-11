@@ -1,4 +1,6 @@
 // src/routes.jsx;
+import { Navigate } from "react-router-dom";
+
 import HomeLayout from "./pages/layout/HomeLayout";
 import GuestLayout from "./pages/layout/GuestLayout";
 
@@ -60,6 +62,7 @@ const routes = [
           </ProtectedRoute>
         ),
         children: [
+          { index: true, element: <Navigate to="events" replace /> },
           { path: "events", element: <EventsPage /> },
           { path: "teams", element: <TeamsPage /> },
           { path: "vplayers", element: <VarsityPlayersPage /> },
@@ -77,6 +80,7 @@ const routes = [
           </ProtectedRoute>
         ),
         children: [
+          { index: true, element: <Navigate to="players" replace /> },
           {path: "seeder", element: <TeamSeeder/>},
           { path: "bracket", element: <BracketPage /> },
           { path: "games", element: <GamePage /> },

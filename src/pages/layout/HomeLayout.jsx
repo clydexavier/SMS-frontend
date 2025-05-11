@@ -19,7 +19,7 @@ export default function HomeLayout() {
   if(!token) {
     return <Navigate to="/login" replace />;
   }
-  else if (location.pathname === "/" || location.pathname === "/admin/" ||  location.pathname === "/admin") {
+  else if (location.pathname === "/") {
     const targetRoute = ROLE_ROUTES[role] || "/";
     return <Navigate to={targetRoute} replace />;
   }

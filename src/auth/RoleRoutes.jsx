@@ -1,10 +1,10 @@
 // src/auth/RoleRoutes.jsx
 // Role-based route configuration
 export const ROLE_ROUTES = {
-    admin: "/admin/intramurals",
-    GAM: "/GAM/intramurals",
-    secretariat: "/secretariat/intramurals",
-    tsecretary: "/tsecretary/intramurals",
+    admin: "/admin",
+    GAM: "/GAM",
+    secretariat: "/secretariat",
+    tsecretary: "/tsecretary",
   };
   
   // Default path after authentication if no specific role route exists

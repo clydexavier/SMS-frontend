@@ -35,7 +35,7 @@ const Breadcrumb = () => {
       "result": "Results",
       "logs": "Logs",
       "seeder": "Team Seeder",
-      "tsecretary": "Technical Secretary",
+      "tsecretary": "Tournament Secretary",
       "GAM": "Game Affairs Manager",
       "secretariat": "Secretariat"
     };

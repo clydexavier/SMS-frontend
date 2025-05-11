@@ -38,6 +38,14 @@ import GalleryPage from "./pages/admin/gallery/GalleryPage";
 import ResultPage from "./pages/admin/result/ResultPage";
 import TeamSeeder from "./pages/admin/seeder/TeamSeeder";
 
+
+//Tournament Secretary Pages
+import TSGamesPage from "./pages/TSecretary/games/TSGamesPage";
+import TSBracketPage from "./pages/TSecretary/bracket/TSBracketPage";
+import TSResultPage from "./pages/TSecretary/result/TSResultPage";
+import TSPodiumsPage from "./pages/TSecretary/podiums/TSPodiumsPage";
+import TSOverallTallyPage from "./pages/TSecretary/tally/TSOverallTallyPage";
+
 const routes = [
   {
     path: "/",
@@ -99,6 +107,13 @@ const routes = [
             <TSecretaryPage />
           </ProtectedRoute>
         ),
+        children: [
+          { index: true, element: <Navigate to="bracket" replace /> },
+          { path: "bracket", element: <TSBracketPage/>},
+          { path: "result", element: <TSResultPage /> },
+          { path: "podiums", element: <TSPodiumsPage /> },
+          { path: "tally", element: <TSOverallTallyPage /> },
+        ],
       },
       {
         path: "/GAM",

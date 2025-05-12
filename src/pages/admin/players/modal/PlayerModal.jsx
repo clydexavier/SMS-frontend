@@ -18,6 +18,10 @@ export default function PlayerModal({
     name: "",
     id_number: "",
     team_id: "",
+    birthdate: "",
+    degree: "",
+    year: "",
+    contact: "",
     picture: null,
     medical_certificate: null,
     parents_consent: null,
@@ -55,6 +59,17 @@ export default function PlayerModal({
 
   useEffect(() => {
     if (existingPlayer) {
+      // Parse course_year if it exists in the format "Degree - Year"
+      let degree = "";
+      let year = "";
+      if (existingPlayer.course_year) {
+        const parts = existingPlayer.course_year.split(" - ");
+        if (parts.length === 2) {
+          degree = parts[0];
+          year = parts[1];
+        }
+      }
+
       const previews = {
         picture: existingPlayer.picture || "",
         medical_certificate: existingPlayer.medical_certificate || "",
@@ -65,6 +80,10 @@ export default function PlayerModal({
         name: existingPlayer.name || "",
         id_number: existingPlayer.id_number || "",
         team_id: existingPlayer.team_id || "",
+        birthdate: existingPlayer.birthdate || "",
+        degree: degree,
+        year: year,
+        contact: existingPlayer.contact || "", // Match the backend field name
         picture: null,
         medical_certificate: null,
         parents_consent: null,
@@ -112,9 +131,21 @@ export default function PlayerModal({
     return formatted;
   };
 
+  const formatContactNumber = (value) => {
+    const digits = value.replace(/\D/g, "");
+    return digits.slice(0, 11); // Limit to 11 digits for PH numbers
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const newValue = name === "id_number" ? formatIDNumber(value) : value;
+    let newValue = value;
+    
+    if (name === "id_number") {
+      newValue = formatIDNumber(value);
+    } else if (name === "contact") {
+      newValue = formatContactNumber(value);
+    }
+    
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
@@ -177,6 +208,12 @@ export default function PlayerModal({
     playerData.append("name", formData.name);
     playerData.append("id_number", formData.id_number);
     playerData.append("team_id", formData.team_id);
+    playerData.append("birthdate", formData.birthdate);
+    playerData.append("contact", formData.contact); // Changed from "contact" to "contact_no" to match backend
+    
+    // Combine degree and year into course_year
+    const course_year = `${formData.degree} - ${formData.year}`;
+    playerData.append("course_year", course_year);
 
     ["picture", "medical_certificate", "parents_consent", "cor"].forEach((field) => {
       if (formData[field]) {
@@ -296,7 +333,7 @@ export default function PlayerModal({
 
             {isLoading ? (
               <div className="space-y-4 animate-pulse">
-                {[...Array(7)].map((_, i) => (
+                {[...Array(10)].map((_, i) => (
                   <div key={i} className="h-10 bg-gray-200 rounded" />
                 ))}
               </div>
@@ -336,6 +373,165 @@ export default function PlayerModal({
                     placeholder="XX-X-XXXXX"
                     required
                   />
+                </div>
+                
+                {/* Birthdate */}
+                <div>
+                  <label htmlFor="birthdate" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Birthdate
+                  </label>
+                  <input
+                    type="date"
+                    name="birthdate"
+                    id="birthdate"
+                    value={formData.birthdate}
+                    onChange={handleChange}
+                    max={new Date().toISOString().split('T')[0]} // Set max date to today
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    required
+                  />
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    <div>
+                      <label htmlFor="birth-month" className="block mb-1 text-xs text-gray-500">
+                        Month
+                      </label>
+                      <select
+                        id="birth-month"
+                        className="bg-white border border-[#E6F2E8] text-gray-700 text-xs rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-1.5 transition-all duration-200"
+                        onChange={(e) => {
+                          const currentDate = formData.birthdate ? new Date(formData.birthdate) : new Date();
+                          currentDate.setMonth(parseInt(e.target.value) - 1);
+                          setFormData({
+                            ...formData,
+                            birthdate: currentDate.toISOString().split('T')[0]
+                          });
+                        }}
+                        value={formData.birthdate ? new Date(formData.birthdate).getMonth() + 1 : ""}
+                      >
+                        <option value="" disabled>Month</option>
+                        {Array.from({ length: 12 }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="birth-day" className="block mb-1 text-xs text-gray-500">
+                        Day
+                      </label>
+                      <select
+                        id="birth-day"
+                        className="bg-white border border-[#E6F2E8] text-gray-700 text-xs rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-1.5 transition-all duration-200"
+                        onChange={(e) => {
+                          const currentDate = formData.birthdate ? new Date(formData.birthdate) : new Date();
+                          currentDate.setDate(parseInt(e.target.value));
+                          setFormData({
+                            ...formData,
+                            birthdate: currentDate.toISOString().split('T')[0]
+                          });
+                        }}
+                        value={formData.birthdate ? new Date(formData.birthdate).getDate() : ""}
+                      >
+                        <option value="" disabled>Day</option>
+                        {Array.from({ length: 31 }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {i + 1}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="birth-year" className="block mb-1 text-xs text-gray-500">
+                        Year
+                      </label>
+                      <select
+                        id="birth-year"
+                        className="bg-white border border-[#E6F2E8] text-gray-700 text-xs rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-1.5 transition-all duration-200"
+                        onChange={(e) => {
+                          const currentDate = formData.birthdate ? new Date(formData.birthdate) : new Date();
+                          currentDate.setFullYear(parseInt(e.target.value));
+                          setFormData({
+                            ...formData,
+                            birthdate: currentDate.toISOString().split('T')[0]
+                          });
+                        }}
+                        value={formData.birthdate ? new Date(formData.birthdate).getFullYear() : ""}
+                      >
+                        <option value="" disabled>Year</option>
+                        {Array.from({ length: 50 }, (_, i) => {
+                          const year = new Date().getFullYear() - i;
+                          return (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Contact Number */}
+                <div>
+                  <label htmlFor="contact" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Contact Number
+                  </label>
+                  <input
+                    type="text"
+                    name="contact"
+                    id="contact"
+                    autoComplete="off"
+                    value={formData.contact}
+                    onChange={handleChange}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="09XXXXXXXXX"
+                    maxLength="11"
+                    required
+                  />
+                </div>
+                
+                {/* Course/Degree Program */}
+                <div>
+                  <label htmlFor="degree" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Degree Program
+                  </label>
+                  <input
+                    type="text"
+                    name="degree"
+                    id="degree"
+                    autoComplete="off"
+                    value={formData.degree}
+                    onChange={handleChange}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="e.g. BS Computer Science"
+                    required
+                  />
+                </div>
+                
+                {/* Year Level */}
+                <div>
+                  <label htmlFor="year" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Year Level
+                  </label>
+                  <select
+                    name="year"
+                    id="year"
+                    value={formData.year}
+                    onChange={handleChange}
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  >
+                    <option value="" disabled>
+                      Select year level
+                    </option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                    <option value="5">5th Year</option>
+                    <option value="6">6th Year</option>
+                  </select>
                 </div>
 
                 {/* Team Dropdown */}

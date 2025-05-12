@@ -3,7 +3,7 @@ import logo from "../../assets/IHK_logo1.png";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import axiosClient from '../../axiosClient';
-import { Loader, Eye, EyeOff, Mail, User } from 'lucide-react';
+import { Loader, Eye, EyeOff, Mail, User, XCircle, AlertCircle, CheckCircle } from 'lucide-react';
 import GoogleAuthButton from '../public/GoogleAuthButton';
 
 export default function RegisterPage() {
@@ -11,19 +11,42 @@ export default function RegisterPage() {
   const emailRef = useRef();
   const passwordRef = useRef();
   const passwordConfirmationRef = useRef();
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
-  const { setUser, setToken, setRole, googleAuthSuccess } = useAuth(); 
+  const { setUser, setToken, setRole, googleAuthSuccess } = useAuth();
+  
+  // Enhanced message handling
+  const [message, setMessage] = useState({
+    type: null, // 'success', 'error', 'info', 'warning'
+    text: '',
+    visible: false,
+    timeout: null
+  });
+  
+  // Show message with optional auto-dismiss
+  const showMessage = (type, text, duration = 0) => {
+    // Clear any existing timeout
+    if (message.timeout) {
+      clearTimeout(message.timeout);
+    }
+    
+    // Set the new message
+    setMessage(prev => ({
+      type,
+      text,
+      visible: true,
+      timeout: duration > 0 ? setTimeout(() => {
+        setMessage(prev => ({ ...prev, visible: false }));
+      }, duration) : null
+    }));
+  };
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
+    setMessage({ type: null, text: '', visible: false, timeout: null });
     setIsLoading(true);
 
     const payload = {
@@ -36,8 +59,17 @@ export default function RegisterPage() {
     try {
       const { data } = await axiosClient.post("/register", payload);
       
-      // Show success message briefly before redirecting
-      setSuccessMessage("Account created successfully! Redirecting to login...");
+      // Check if the backend response contains only message (user role case)
+      if (data.message && !data.token) {
+        showMessage('warning', data.message, 5000);
+        setTimeout(() => {
+          navigate('/login');
+        }, 5000);
+        return;
+      }
+      
+      // Regular success flow
+      showMessage('success', "Account created successfully! Redirecting...", 5000);
       
       // Set user data in auth context
       setUser(data.user);
@@ -49,17 +81,66 @@ export default function RegisterPage() {
       const response = err.response;
       if (response && response.status === 422) {
         // Validation errors
-        setErrorMessage(Object.values(response.data.errors)[0][0]);
+        showMessage('error', Object.values(response.data.errors)[0][0], 5000);
       } else if (response && response.data && response.data.message) {
         // Server returned an error message
-        setErrorMessage(response.data.message);
+        showMessage('error', response.data.message, 5000);
       } else {
         // Generic error
-        setErrorMessage("An error occurred. Please try again later.");
+        showMessage('error', "An error occurred. Please try again later.", 5000);
       }
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Render the appropriate message UI based on message type
+  const renderMessage = () => {
+    if (!message.visible) return null;
+    
+    const messageStyles = {
+      success: {
+        bg: 'bg-green-50',
+        border: 'border-green-200',
+        text: 'text-green-800',
+        icon: <CheckCircle size={18} className="text-green-500" />
+      },
+      error: {
+        bg: 'bg-red-50',
+        border: 'border-red-200',
+        text: 'text-red-800',
+        icon: <XCircle size={18} className="text-red-500" />
+      },
+      warning: {
+        bg: 'bg-yellow-50',
+        border: 'border-yellow-200',
+        text: 'text-yellow-800',
+        icon: <AlertCircle size={18} className="text-yellow-500" />
+      },
+      info: {
+        bg: 'bg-blue-50',
+        border: 'border-blue-200',
+        text: 'text-blue-800',
+        icon: <AlertCircle size={18} className="text-blue-500" />
+      }
+    };
+    
+    const style = messageStyles[message.type] || messageStyles.info;
+    
+    return (
+      <div className={`p-3 rounded-lg border flex items-start gap-2 ${style.bg} ${style.border} ${style.text}`} role="alert">
+        <div className="flex-shrink-0 mt-0.5">
+          {style.icon}
+        </div>
+        <div className="text-sm flex-grow">{message.text}</div>
+        <button 
+          onClick={() => setMessage(prev => ({ ...prev, visible: false }))}
+          className="flex-shrink-0 ml-auto -mr-1 -mt-1 text-gray-500 hover:text-gray-700"
+        >
+          <XCircle size={16} />
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -71,17 +152,7 @@ export default function RegisterPage() {
         </div>
         
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-          {errorMessage && (
-            <div className="p-3 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
-              {errorMessage}
-            </div>
-          )}
-          
-          {successMessage && (
-            <div className="p-3 text-sm text-green-800 rounded-lg bg-green-50 border border-green-200" role="alert">
-              {successMessage}
-            </div>
-          )}
+          {message.visible && renderMessage()}
           
           <div>
             <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
@@ -217,7 +288,7 @@ export default function RegisterPage() {
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
           
-          <GoogleAuthButton setErrorMessage={setErrorMessage} />
+          <GoogleAuthButton setErrorMessage={(error) => showMessage('error', error, 5000)} />
         </form>
         
         <p className="mt-6 text-center text-sm text-gray-600">

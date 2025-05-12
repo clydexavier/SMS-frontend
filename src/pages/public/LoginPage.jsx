@@ -24,10 +24,12 @@ export default function LoginPage() {
 
   // Handle OAuth callback
   useEffect(() => {
-    // Check if we're returning from OAuth flow with a token
+    // Check if we're returning from OAuth flow with a token or pending message
     const queryParams = new URLSearchParams(location.search);
     const oauthToken = queryParams.get('token');
     const error = queryParams.get('error');
+    const pending = queryParams.get('pending');
+    const pendingMessage = queryParams.get('message');
     
     if (oauthToken) {
       handleGoogleAuthSuccess(oauthToken);
@@ -35,7 +37,11 @@ export default function LoginPage() {
       // Clean up URL parameters
       window.history.replaceState({}, document.title, location.pathname);
     } else if (error) {
-      showMessage('error', `Authentication failed: ${error}`);
+      showMessage('error', `Authentication failed: ${error}`, 5000);
+      window.history.replaceState({}, document.title, location.pathname);
+    } else if (pending && pendingMessage) {
+      // Handle the case where a user with 'user' role tried to login via Google
+      showMessage('warning', decodeURIComponent(pendingMessage), 5000);
       window.history.replaceState({}, document.title, location.pathname);
     }
   }, [location]);
@@ -76,10 +82,10 @@ export default function LoginPage() {
       if (result.success) {
         showMessage('success', 'Successfully logged in with Google!', 5000);
       } else {
-        showMessage('error', result.message);
+        showMessage('error', result.message, 5000);
       }
     } catch (error) {
-      showMessage('error', 'Failed to authenticate with Google. Please try again.');
+      showMessage('error', 'Failed to authenticate with Google. Please try again.', 5000);
     } finally {
       setIsLoading(false);
     }
@@ -97,14 +103,15 @@ export default function LoginPage() {
 
     try {
       const result = await login(payload);
-      console.log(payload);
+      
       if (result.success) {
         showMessage('success', 'Successfully logged in!', 5000);
       } else {
-        showMessage('error', result.message || 'Invalid email or password');
+        // For 'user' role or other login failures
+        showMessage('error', result.message || 'Invalid email or password', 5000);
       }
     } catch (error) {
-      showMessage('error', 'An error occurred. Please try again later.');
+      showMessage('error', 'An error occurred. Please try again later.', 5000);
     } finally {
       setIsLoading(false);
     }
@@ -257,7 +264,7 @@ export default function LoginPage() {
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
           
-          <GoogleAuthButton setErrorMessage={(error) => showMessage('error', error)} />
+          <GoogleAuthButton setErrorMessage={(error) => showMessage('error', error, 5000)} />
         </form>
         
         <p className="mt-6 text-center text-sm text-gray-600">

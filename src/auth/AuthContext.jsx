@@ -55,9 +55,20 @@ export const AuthProvider = ({ children, navigate, location }) => {
     setError(null);
     
     try {
-      console.log(credentials);
       const { data } = await axiosClient.post("/login", credentials);
+      
       console.log(data);
+      // Check if the response contains a message - this could be an error for 'user' role
+      if (!data.user) {
+        // This is likely the response when a user with 'user' role tries to log in
+        setError(data.message);
+        return {
+          success: false,
+          message: data.message
+        };
+      }
+      
+      // Normal success flow
       setToken(data.token);
       setUser(data.user);
       setRole(data.user.role);
@@ -85,11 +96,33 @@ export const AuthProvider = ({ children, navigate, location }) => {
     setError(null);
     
     try {
+      // Check if the token is actually an error message from 'user' role restriction
+      if (!token) {
+        // This doesn't look like a JWT token, it might be an error message
+        setError(token);
+        return {
+          success: false,
+          message: token
+        };
+      }
+      
       // Set token first
       setToken(token);
       
       // Fetch user data
       const { data } = await axiosClient.get("/user");
+      
+      // Check if user has 'user' role which should not happen at this point
+      // but adding as a safeguard
+      if (data.role === 'user') {
+        setToken(null); // Clear the token
+        setError("Please wait for the administrator to assign your appropriate role.");
+        return {
+          success: false,
+          message: "Please wait for the administrator to assign your appropriate role."
+        };
+      }
+      
       setUser(data);
       setRole(data.role);
       
@@ -102,6 +135,45 @@ export const AuthProvider = ({ children, navigate, location }) => {
       const errorMessage = "Failed to complete Google authentication";
       setError(errorMessage);
       logout();
+      return {
+        success: false,
+        message: errorMessage
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (credentials) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const { data } = await axiosClient.post("/register", credentials);
+      
+      // Check if the response contains only a message (for 'user' role)
+      if (data.message && !data.token) {
+        // This is the response when a newly registered user has 'user' role
+        setError(data.message);
+        return {
+          success: false,
+          message: data.message
+        };
+      }
+      
+      // Normal success flow
+      setToken(data.token);
+      setUser(data.user);
+      setRole(data.user.role);
+      
+      // Redirect to appropriate route based on role
+      redirectToRoleBasedRoute(data.user.role);
+      
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 
+                          "Registration failed. Please try again.";
+      setError(errorMessage);
       return {
         success: false,
         message: errorMessage
@@ -173,6 +245,7 @@ export const AuthProvider = ({ children, navigate, location }) => {
     login,
     logout,
     googleAuthSuccess,
+    register,
     checkPermission,
     redirectToRoleBasedRoute,
     setUser,

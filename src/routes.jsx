@@ -60,6 +60,7 @@ const routes = [
       ),
       children: [
         
+        { index: true, element: <Navigate to="intramurals" replace /> },
         { path: "intramurals", element: <IntramuralsPage /> },
         { path: "users", element: <UsersPage/>}
       ],

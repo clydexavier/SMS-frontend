@@ -3,18 +3,24 @@ import React, { useRef, useState, useEffect } from 'react';
 import logo from "../../assets/IHK_logo1.png";
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { Loader, Eye, EyeOff, Mail } from 'lucide-react';
+import { Loader, Eye, EyeOff, Mail, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import GoogleAuthButton from './GoogleAuthButton';
 
 export default function LoginPage() {
   const emailRef = useRef();
   const passwordRef = useRef();
   const { login, googleAuthSuccess } = useAuth();
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const location = useLocation();
+  
+  // Enhanced message handling
+  const [message, setMessage] = useState({
+    type: null, // 'success', 'error', 'info', 'warning'
+    text: '',
+    visible: false,
+    timeout: null
+  });
 
   // Handle OAuth callback
   useEffect(() => {
@@ -29,10 +35,37 @@ export default function LoginPage() {
       // Clean up URL parameters
       window.history.replaceState({}, document.title, location.pathname);
     } else if (error) {
-      setErrorMessage("Authentication failed: " + error);
+      showMessage('error', `Authentication failed: ${error}`);
       window.history.replaceState({}, document.title, location.pathname);
     }
   }, [location]);
+
+  // Clear message on component unmount
+  useEffect(() => {
+    return () => {
+      if (message.timeout) {
+        clearTimeout(message.timeout);
+      }
+    };
+  }, [message.timeout]);
+
+  // Show message with optional auto-dismiss
+  const showMessage = (type, text, duration = 0) => {
+    // Clear any existing timeout
+    if (message.timeout) {
+      clearTimeout(message.timeout);
+    }
+    
+    // Set the new message
+    setMessage(prev => ({
+      type,
+      text,
+      visible: true,
+      timeout: duration > 0 ? setTimeout(() => {
+        setMessage(prev => ({ ...prev, visible: false }));
+      }, duration) : null
+    }));
+  };
 
   const handleGoogleAuthSuccess = async (token) => {
     setIsLoading(true);
@@ -41,12 +74,12 @@ export default function LoginPage() {
       const result = await googleAuthSuccess(token);
       
       if (result.success) {
-        setSuccessMessage("Successfully logged in with Google!");
+        showMessage('success', 'Successfully logged in with Google!', 5000);
       } else {
-        setErrorMessage(result.message);
+        showMessage('error', result.message);
       }
     } catch (error) {
-      setErrorMessage("Failed to authenticate with Google. Please try again.");
+      showMessage('error', 'Failed to authenticate with Google. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -55,8 +88,7 @@ export default function LoginPage() {
   const handleSubmit = async (ev) => {
     ev.preventDefault();
     setIsLoading(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+    setMessage({ type: null, text: '', visible: false, timeout: null });
     
     const payload = {
       email: emailRef.current.value,
@@ -65,17 +97,66 @@ export default function LoginPage() {
 
     try {
       const result = await login(payload);
-      
+      console.log(payload);
       if (result.success) {
-        setSuccessMessage("Successfully logged in!");
+        showMessage('success', 'Successfully logged in!', 5000);
       } else {
-        setErrorMessage(result.message);
+        showMessage('error', result.message || 'Invalid email or password');
       }
     } catch (error) {
-      setErrorMessage("An error occurred. Please try again later.");
+      showMessage('error', 'An error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Render the appropriate message UI based on message type
+  const renderMessage = () => {
+    if (!message.visible) return null;
+    
+    const messageStyles = {
+      success: {
+        bg: 'bg-green-50',
+        border: 'border-green-200',
+        text: 'text-green-800',
+        icon: <CheckCircle size={18} className="text-green-500" />
+      },
+      error: {
+        bg: 'bg-red-50',
+        border: 'border-red-200',
+        text: 'text-red-800',
+        icon: <XCircle size={18} className="text-red-500" />
+      },
+      warning: {
+        bg: 'bg-yellow-50',
+        border: 'border-yellow-200',
+        text: 'text-yellow-800',
+        icon: <AlertCircle size={18} className="text-yellow-500" />
+      },
+      info: {
+        bg: 'bg-blue-50',
+        border: 'border-blue-200',
+        text: 'text-blue-800',
+        icon: <AlertCircle size={18} className="text-blue-500" />
+      }
+    };
+    
+    const style = messageStyles[message.type] || messageStyles.info;
+    
+    return (
+      <div className={`p-3 rounded-lg border flex items-start gap-2 ${style.bg} ${style.border} ${style.text}`} role="alert">
+        <div className="flex-shrink-0 mt-0.5">
+          {style.icon}
+        </div>
+        <div className="text-sm flex-grow">{message.text}</div>
+        <button 
+          onClick={() => setMessage(prev => ({ ...prev, visible: false }))}
+          className="flex-shrink-0 ml-auto -mr-1 -mt-1 text-gray-500 hover:text-gray-700"
+        >
+          <XCircle size={16} />
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -87,17 +168,7 @@ export default function LoginPage() {
         </div>
         
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-          {errorMessage && (
-            <div className="p-3 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
-              {errorMessage}
-            </div>
-          )}
-          
-          {successMessage && (
-            <div className="p-3 text-sm text-green-800 rounded-lg bg-green-50 border border-green-200" role="alert">
-              {successMessage}
-            </div>
-          )}
+          {message.visible && renderMessage()}
           
           <div>
             <label htmlFor="email" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
@@ -186,7 +257,7 @@ export default function LoginPage() {
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
           
-          <GoogleAuthButton setErrorMessage={setErrorMessage} />
+          <GoogleAuthButton setErrorMessage={(error) => showMessage('error', error)} />
         </form>
         
         <p className="mt-6 text-center text-sm text-gray-600">

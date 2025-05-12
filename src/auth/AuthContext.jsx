@@ -55,7 +55,9 @@ export const AuthProvider = ({ children, navigate, location }) => {
     setError(null);
     
     try {
+      console.log(credentials);
       const { data } = await axiosClient.post("/login", credentials);
+      console.log(data);
       setToken(data.token);
       setUser(data.user);
       setRole(data.user.role);

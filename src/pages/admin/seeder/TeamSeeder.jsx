@@ -16,6 +16,7 @@ export default function TeamSeeder() {
   const [success, setSuccess] = useState(false);
   const [eventName, setEventName] = useState("");
   const [eventStatus, setEventStatus] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   // Added for consistency with PlayersPage
   const [activeTab, setActiveTab] = useState("All");
@@ -85,8 +86,50 @@ export default function TeamSeeder() {
   };
 
   const handleSeedChange = (teamId, value) => {
+    // Ensure value is a positive integer within the range
     const seedValue = Math.max(1, parseInt(value) || 1);
-    setSeeds((prev) => ({ ...prev, [teamId]: seedValue }));
+    
+    // Check if this seed value already exists for another team
+    const existingTeamWithSameSeed = Object.entries(seeds).find(
+      ([id, seed]) => seed === seedValue && id !== teamId.toString()
+    );
+    
+    // Create a new seeds object with the updated value
+    const newSeeds = { ...seeds, [teamId]: seedValue };
+    
+    // If there's a conflict, resolve it by shifting other values
+    if (existingTeamWithSameSeed) {
+      const [conflictingTeamId] = existingTeamWithSameSeed;
+      
+      // Find an available seed value
+      let availableSeed = 1;
+      const usedSeeds = new Set(Object.values(newSeeds));
+      
+      while (usedSeeds.has(availableSeed)) {
+        availableSeed++;
+      }
+      
+      // Update the conflicting team with a new seed
+      newSeeds[conflictingTeamId] = availableSeed;
+      
+      // Remove any validation error for this team
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[teamId];
+        delete newErrors[conflictingTeamId];
+        return newErrors;
+      });
+    } else {
+      // No conflict, just remove any validation error for this team
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[teamId];
+        return newErrors;
+      });
+    }
+    
+    // Update the seeds state
+    setSeeds(newSeeds);
   };
 
   const randomizeSeeds = () => {
@@ -104,6 +147,8 @@ export default function TeamSeeder() {
     });
 
     setSeeds(randomSeeds);
+    // Clear any validation errors after randomizing
+    setValidationErrors({});
   };
 
   const resetSeeds = () => {
@@ -112,13 +157,50 @@ export default function TeamSeeder() {
       initialSeeds[team.id] = index + 1;
     });
     setSeeds(initialSeeds);
+    // Clear any validation errors after resetting
+    setValidationErrors({});
   };
 
   const validateSeeds = () => {
     const values = Object.values(seeds);
     const allInRange = values.every((seed) => seed >= 1 && seed <= teams.length);
-    const allUnique = new Set(values).size === values.length;
-    return allInRange && allUnique;
+    const valueSet = new Set(values);
+    const allUnique = valueSet.size === values.length;
+    
+    // If seeds are valid, reset errors and return true
+    if (allInRange && allUnique) {
+      setValidationErrors({});
+      return true;
+    }
+    
+    // Find and set specific validation errors
+    const newErrors = {};
+    
+    // Check for duplicates
+    if (!allUnique) {
+      // Create a map to track count of each seed value
+      const valueCounts = {};
+      values.forEach(seed => {
+        valueCounts[seed] = (valueCounts[seed] || 0) + 1;
+      });
+      
+      // Find duplicate seeds and their teams
+      Object.entries(seeds).forEach(([teamId, seed]) => {
+        if (valueCounts[seed] > 1) {
+          newErrors[teamId] = `Duplicate seed ${seed}`;
+        }
+      });
+    }
+    
+    // Check for out of range values
+    Object.entries(seeds).forEach(([teamId, seed]) => {
+      if (seed < 1 || seed > teams.length) {
+        newErrors[teamId] = `Seed must be between 1 and ${teams.length}`;
+      }
+    });
+    
+    setValidationErrors(newErrors);
+    return false;
   };
 
   const submitSeeds = async () => {
@@ -133,6 +215,7 @@ export default function TeamSeeder() {
         name: team.name,
         seed: seeds[team.id],
       }));
+      console.log(participants);
       await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/start`, {
         participants,
       });
@@ -246,9 +329,6 @@ export default function TeamSeeder() {
             )}
           </div>
 
-          {/* Filter section */}
-          
-
           {error && (
             <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
               {error}
@@ -297,15 +377,30 @@ export default function TeamSeeder() {
                           }`}
                         >
                           <td className="px-6 py-4 w-24">
-                            <input
-                              type="number"
-                              min="1"
-                              max={teams.length}
-                              className="border border-gray-300 rounded-lg px-3 py-2 w-full text-center focus:ring-2 focus:ring-[#6BBF59] focus:border-[#6BBF59]"
-                              value={seeds[team.id] || ""}
-                              onChange={(e) => handleSeedChange(team.id, e.target.value)}
-                              disabled={submitting}
-                            />
+                            <div className="relative">
+                              <input
+                                type="number"
+                                min="1"
+                                max={teams.length}
+                                className={`border rounded-lg px-3 py-2 w-full text-center focus:ring-2 focus:ring-[#6BBF59] focus:border-[#6BBF59] ${
+                                  validationErrors[team.id] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
+                                value={seeds[team.id] || ""}
+                                onChange={(e) => handleSeedChange(team.id, e.target.value)}
+                                disabled={submitting}
+                              />
+                              {validationErrors[team.id] && (
+                                <div className="absolute right-0 top-0 -mt-1 -mr-1">
+                                  <span className="flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            {validationErrors[team.id] && (
+                              <p className="text-red-500 text-xs mt-1">{validationErrors[team.id]}</p>
+                            )}
                           </td>
                           <td className="px-6 py-4 font-medium">{team.name}</td>
                         </tr>
@@ -324,6 +419,13 @@ export default function TeamSeeder() {
                         </span>
                       )}
                     </div>
+                    {pagination.lastPage > 1 && (
+                      <PaginationControls
+                        currentPage={pagination.currentPage}
+                        lastPage={pagination.lastPage}
+                        onPageChange={handlePageChange}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -335,9 +437,9 @@ export default function TeamSeeder() {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={submitSeeds}
-                disabled={loading || submitting}
+                disabled={loading || submitting || Object.keys(validationErrors).length > 0}
                 className={`px-5 py-2.5 rounded-lg shadow text-sm font-medium flex items-center ${
-                  loading || submitting
+                  loading || submitting || Object.keys(validationErrors).length > 0
                     ? "bg-gray-400 text-white cursor-not-allowed"
                     : "bg-[#6BBF59] hover:bg-[#5CAF4A] text-white"
                 }`}

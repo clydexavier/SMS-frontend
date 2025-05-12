@@ -40,6 +40,7 @@ export default function EventPage() {
 
       ]
     },
+    { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/admin/${intrams_id}/tally` },    
     { icon: <GrHistory size={isize} color="black" />, label: 'Log', route: 'logs' },
     
   ];

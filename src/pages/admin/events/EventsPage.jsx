@@ -59,6 +59,7 @@ export default function EventsPage() {
 
   // Instead of calling fetchEvents directly, we trigger a refetch
   const addEvent = async (newEvent) => {
+    console.log(newEvent);
     try {
       setLoading(true);
       await axiosClient.post(

@@ -1,23 +1,53 @@
-import React from 'react';
+// src/pages/public/GoogleAuthButton.jsx - With error handling
+import React, { useState } from 'react';
 import axiosClient from '../../axiosClient';
-import { Loader } from 'lucide-react';
+import { Loader, AlertCircle } from 'lucide-react';
 
 export default function GoogleAuthButton({ setErrorMessage }) {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
       
+      // Clear any previous error messages
+      if (setErrorMessage) {
+        setErrorMessage(null);
+      }
+      
       // First, get the Google OAuth URL from your Laravel backend
       const response = await axiosClient.get('/auth/google/redirect');
       
-      // Open the Google OAuth login page
-      window.location.href = response.data.url;
+      if (response.data && response.data.url) {
+        // Open the Google OAuth login page
+        window.location.href = response.data.url;
+      } else {
+        throw new Error("Invalid response from server");
+      }
       
     } catch (error) {
       console.error("Google auth error:", error);
-      setErrorMessage("Failed to connect to Google authentication. Please try again later.");
+      
+      // Handle specific error cases
+      if (error.response) {
+        const status = error.response.status;
+        
+        if (status === 500) {
+          setErrorMessage("Server error. Please try again later.");
+        } else if (status === 429) {
+          setErrorMessage("Too many requests. Please try again in a few minutes.");
+        } else {
+          // Use error message from server if available
+          const serverMessage = error.response.data?.message;
+          setErrorMessage(serverMessage || "Failed to connect to Google authentication.");
+        }
+      } else if (error.request) {
+        // Network error - no response received
+        setErrorMessage("Cannot connect to server. Please check your internet connection.");
+      } else {
+        // Generic error message
+        setErrorMessage("Failed to connect to Google authentication. Please try again later.");
+      }
     } finally {
       setIsLoading(false);
     }

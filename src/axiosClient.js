@@ -1,10 +1,8 @@
 import axios from "axios";
 
-
 const axiosClient = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
 });
-console.log("All environment variables:", import.meta.env);
 axiosClient.interceptors.request.use((config) => {
     const token = localStorage.getItem("ACCESS_TOKEN");
     if (token) {

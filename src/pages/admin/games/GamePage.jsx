@@ -218,79 +218,79 @@ export default function GamePage() {
           )}
 
           {/* Scrollable content area */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-            {loading ? (
-              <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
-                <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+<div className="flex-1 overflow-hidden flex flex-col min-h-0">
+  {loading ? (
+    <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+      <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+    </div>
+  ) : eventStatus === "completed" ? (
+    <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
+      <Calendar size={48} className="mx-auto mb-4 text-green-400" />
+      <h3 className="text-lg font-medium text-green-800">Event Completed</h3>
+      <p className="text-gray-600 mt-1">This event has been completed. No matches to show.</p>
+    </div>
+  ) : eventStatus === "pending" ? (
+    <div className="flex-1 bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
+      <Calendar size={48} className="mx-auto mb-4 text-yellow-400" />
+      <h3 className="text-lg font-medium text-yellow-800">Event Pending</h3>
+      <p className="text-gray-600 mt-1">This event is pending. Matches will appear once the event begins.</p>
+    </div>
+  ) : currentItems.length === 0 ? (
+    <div className="flex-1 bg-blue-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-blue-200">
+      <Calendar size={48} className="mx-auto mb-4 text-blue-400" />
+      <h3 className="text-lg font-medium text-blue-800">No matches found</h3>
+      {eventStatus === "in_progress" && (
+        <p className="text-gray-600 mt-1">Click "Generate Matches" to create brackets</p>
+      )}
+    </div>
+  ) : (
+    <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
+      {/* Matches grid with scrolling */}
+      <div className="flex-1 overflow-auto p-4">
+        <div className="grid gap-4">
+          {currentItems.map((match) => (
+            <div
+              key={match.id}
+              className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm p-4 flex flex-col sm:flex-row justify-between items-center gap-4 hover:bg-[#F7FAF7] transition"
+            >
+              <div className="text-sm text-gray-500 font-medium">
+                Match ID: {match.match_id}
               </div>
-            ) : eventStatus === "completed" ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">Event Completed</h3>
-                <p className="text-gray-500 mt-1">This event has been completed. No matches to show.</p>
+              <div className="flex items-center gap-2 font-medium text-base text-gray-800">
+                <span>{match.team1_name || "TBD"}</span>
+                <span className="text-gray-400">vs</span>
+                <span>{match.team2_name || "TBD"}</span>
               </div>
-            ) : eventStatus === "pending" ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">Event Pending</h3>
-                <p className="text-gray-500 mt-1">This event is pending. Matches will appear once the event begins.</p>
+              <div className="text-sm text-gray-600">
+                {match.date && match.time
+                  ? new Date(`${match.date}T${match.time}`).toLocaleString("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })
+                  : "TBA"}
               </div>
-            ) : currentItems.length === 0 ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">No matches found</h3>
-                {eventStatus === "in_progress" && (
-                  <p className="text-gray-500 mt-1">Click "Generate Matches" to create brackets</p>
-                )}
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-                {/* Matches grid with scrolling */}
-                <div className="flex-1 overflow-auto p-4">
-                  <div className="grid gap-4">
-                    {currentItems.map((match) => (
-                      <div
-                        key={match.id}
-                        className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm p-4 flex flex-col sm:flex-row justify-between items-center gap-4 hover:bg-[#F7FAF7] transition"
-                      >
-                        <div className="text-sm text-gray-500 font-medium">
-                          Match ID: {match.match_id}
-                        </div>
-                        <div className="flex items-center gap-2 font-medium text-base text-gray-800">
-                          <span>{match.team1_name || "TBD"}</span>
-                          <span className="text-gray-400">vs</span>
-                          <span>{match.team2_name || "TBD"}</span>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {match.date && match.time
-                            ? new Date(`${match.date}T${match.time}`).toLocaleString("en-US", {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })
-                            : "TBA"}
-                        </div>
 
-                        <button
-                          onClick={() => openScoreModal(match)}
-                          className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                        >
-                          Set Schedule
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Pagination with horizontal scroll if needed */}
-                <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
-                  <PaginationControls
-                    pagination={pagination}
-                    handlePageChange={handlePageChange}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+              <button
+                onClick={() => openScoreModal(match)}
+                className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+              >
+                Set Schedule
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Pagination with horizontal scroll if needed */}
+      <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
+        <PaginationControls
+          pagination={pagination}
+          handlePageChange={handlePageChange}
+        />
+      </div>
+    </div>
+  )}
+</div>
         </div>
       </div>
 

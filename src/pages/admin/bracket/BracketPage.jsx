@@ -61,20 +61,20 @@ export default function BracketPage() {
     
     if (eventStatus === "completed") {
       return (
-        <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-          <Award size={48} className="mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-600">Event Completed</h3>
-          <p className="text-gray-500 mt-1">This event has been completed. Bracket display is for viewing only.</p>
+        <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
+          <Award size={48} className="mx-auto mb-4 text-green-400" />
+          <h3 className="text-lg font-medium text-green-800">Event Completed</h3>
+          <p className="text-gray-600 mt-1">This event has been completed. Bracket display is for viewing only.</p>
         </div>
       );
     }
     
     if (eventStatus === "pending") {
       return (
-        <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-          <Award size={48} className="mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-600">Event Pending</h3>
-          <p className="text-gray-500 mt-1">The bracket has not started yet. Please go to Team Seeder page to initialize the seeding of teams.</p>
+        <div className="flex-1 bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
+          <Award size={48} className="mx-auto mb-4 text-yellow-400" />
+          <h3 className="text-lg font-medium text-yellow-800">Event Pending</h3>
+          <p className="text-gray-600 mt-1">The bracket has not started yet. Please go to Team Seeder page to initialize the seeding of teams.</p>
         </div>
       );
     }

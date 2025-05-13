@@ -183,12 +183,14 @@ export default function TeamsPage() {
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
-              </div>
+              </div >
             ) : teams.length === 0 ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                <Users size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
-                <p className="text-gray-500 mt-1">Click "Add Team" to create one</p>
+              <div className="flex-1 overflow-auto">
+                <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                  <Users size={48} className="mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
+                  <p className="text-gray-500 mt-1">Click "Add Team" to create one</p>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-4 overflow-y-auto">

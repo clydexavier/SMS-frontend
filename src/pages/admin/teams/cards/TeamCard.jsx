@@ -142,20 +142,7 @@ export default function TeamCard({ team, openEditModal, deleteTeam }) {
           <span className="text-sm text-gray-600">Created {formatDate(team.created_at || new Date())}</span>
         </div>
 
-        {team.type && (
-          <div className="flex justify-center">
-            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-              team.type === 'A' 
-                ? "bg-green-100 text-green-800 border-green-200" 
-                : team.type === 'B'
-                  ? "bg-blue-100 text-blue-800 border-blue-200"
-                  : "bg-purple-100 text-purple-800 border-purple-200"
-            }`}>
-              <Users size={16} className="mr-1.5" />
-              Type {team.type}
-            </div>
-          </div>
-        )}
+        
       </div>
 
       {/* Action buttons */}

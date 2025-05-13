@@ -197,13 +197,13 @@ export default function EventsPage() {
           </div>
 
           {/* Scrollable content area */}
-          <div className="mt-4 flex-1 overflow-y-hidden min-h-0">
+          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
             ) : events.length === 0 ? (
-              <div className="mt-4 flex-1 h-full bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+              <div className="flex-1 h-full bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                 <CalendarClock size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600">No events found</h3>
                 <p className="text-gray-500 mt-1">Click "Add Event" to create one</p>

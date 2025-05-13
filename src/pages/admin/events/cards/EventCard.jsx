@@ -1,11 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiMoreVertical, FiMapPin, FiCheckCircle, FiClock, FiAlertCircle } from "react-icons/fi";
 import { Link, useParams } from "react-router-dom";
+import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 
 export default function EventCard({ event, openEditModal, deleteEvent }) {
   const { intrams_id } = useParams();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+
+  // Delete confirmation modal states
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -17,12 +23,26 @@ export default function EventCard({ event, openEditModal, deleteEvent }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleDelete = () => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${event.name}?`);
-    if (confirmDelete) {
-      deleteEvent(event.id);
-    }
+  const confirmDeleteIntramural = () => {
     setMenuOpen(false);
+    setShowDeleteConfirmation(true);
+  };
+
+  // Handle the actual deletion after confirmation
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      
+      // Call the deleteIntramural function passed from parent
+      await deleteEvent(event);
+      
+      setShowDeleteConfirmation(false);
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      setDeleteError("Failed to delete event. Please try again.");
+      setIsDeleting(false);
+    }
   };
 
   const getStatusDetails = (status) => {
@@ -111,13 +131,25 @@ export default function EventCard({ event, openEditModal, deleteEvent }) {
             </button>
             <button
               className="block w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center gap-2"
-              onClick={handleDelete}
+              onClick={confirmDeleteIntramural}
             >
               Delete
             </button>
           </div>
         )}
       </div>
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleDelete}
+        title="Delete Event"
+        itemName={event.name}
+        message={`Are you sure you want to delete "${event.name}"? This action cannot be undone and will remove all associated players, matches, results, and data.`}
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
+      
     </div>
   );
 }

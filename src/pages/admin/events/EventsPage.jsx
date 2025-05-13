@@ -90,15 +90,15 @@ export default function EventsPage() {
     }
   };
 
-  const deleteEvent = async (id) => {
+  const deleteEvent = async (event) => {
     try {
-      setLoading(true);
-      await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
+      await axiosClient.delete(`/intramurals/${intrams_id}/events/${event.id}`);
       setShouldRefetch(prev => !prev); // Toggle to trigger refetch
+      return true;
     } catch (err) {
       setError("Failed to delete event");
       console.error("Error deleting event:", err);
-      setLoading(false);
+      throw err;
     }
   };
 

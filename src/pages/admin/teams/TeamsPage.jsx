@@ -104,20 +104,17 @@ export default function TeamsPage() {
     }
   };
 
-  const deleteTeam = async (id, name) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
-    if (confirmDelete) {
+  const deleteTeam = async (team) => {
       try {
-        setLoading(true);
-        await axiosClient.delete(`/intramurals/${intrams_id}/overall_teams/${id}`);
+        await axiosClient.delete(`/intramurals/${intrams_id}/overall_teams/${team.id}`);
         await fetchTeams();
+        return true;
       } catch (err) {
         setError("Failed to delete team");
-        console.error("Error deleting team:", err);
+        throw err;
       } finally {
-        setLoading(false);
       }
-    }
+    
   };
 
   useEffect(() => {

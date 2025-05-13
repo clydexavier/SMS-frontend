@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Users, MoreVertical, Edit, Trash, Calendar, AlertTriangle, X, Loader } from "lucide-react";
+import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 
 export default function TeamCard({ team, openEditModal, deleteTeam }) {
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+
+  
   
   // Create refs for the delete modal and options menu
   const deleteModalRef = useRef(null);
@@ -26,24 +29,27 @@ export default function TeamCard({ team, openEditModal, deleteTeam }) {
     });
   };
 
-  // Handle team deletion
-  async function handleDeleteTeam() {
-    setIsDeleting(true);
-    setDeleteError(null);
-    
+  const confirmDeleteTeam = () => {
+    setMenuOpen(false);
+    setShowDeleteConfirmation(true);
+  };
+
+  // Handle the actual deletion after confirmation
+  const handleDelete = async () => {
     try {
-      await deleteTeam(team.id, team.name);
+      setIsDeleting(true);
+      setDeleteError(null);
+      
+      // Call the deleteIntramural function passed from parent
+      await deleteTeam(team);
+      
       setShowDeleteConfirmation(false);
     } catch (error) {
       console.error("Error deleting team:", error);
-      setDeleteError(
-        error.response?.data?.message || 
-        "An error occurred while deleting the team. Please try again."
-      );
-    } finally {
+      setDeleteError("Failed to delete team. Please try again.");
       setIsDeleting(false);
     }
-  }
+  };
   
   // Handle clicks outside of the delete modal and options menu
   useEffect(() => {
@@ -201,7 +207,7 @@ export default function TeamCard({ team, openEditModal, deleteTeam }) {
                 </button>
                 <button
                   type="button"
-                  onClick={handleDeleteTeam}
+                  onClick={confirmDeleteTeam}
                   disabled={isDeleting}
                   className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 flex justify-center items-center"
                 >
@@ -213,6 +219,17 @@ export default function TeamCard({ team, openEditModal, deleteTeam }) {
                 </button>
               </div>
             </div>
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmationModal
+              isOpen={showDeleteConfirmation}
+              onClose={() => setShowDeleteConfirmation(false)}
+              onConfirm={handleDelete}
+              title="Delete Team"
+              itemName={team.name}
+              message={`Are you sure you want to delete "${team.name}"? This action cannot be undone and will remove all associated players, galleries, and data.`}
+              isDeleting={isDeleting}
+              error={deleteError}
+            />
           </div>
         </div>
       )}

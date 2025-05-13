@@ -59,7 +59,6 @@ export default function EventsPage() {
 
   // Instead of calling fetchEvents directly, we trigger a refetch
   const addEvent = async (newEvent) => {
-    console.log(newEvent);
     try {
       setLoading(true);
       await axiosClient.post(
@@ -78,7 +77,6 @@ export default function EventsPage() {
   const updateEvent = async (id, updatedData) => {
     try {
       setLoading(true);
-      console.log("Updating event with ID:", id, "and data:", updatedData);
       await axiosClient.patch(
         `/intramurals/${intrams_id}/events/${id}/edit`,
         updatedData

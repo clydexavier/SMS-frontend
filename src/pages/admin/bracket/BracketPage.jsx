@@ -21,7 +21,6 @@ export default function BracketPage() {
       );
       setBracketId(res.data.bracket_id);
       setEventStatus(res.data.status);
-      console.log(res.data.status);
       
       // Get event name
       const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);

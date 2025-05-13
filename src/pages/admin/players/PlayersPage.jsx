@@ -38,7 +38,6 @@ export default function PlayersPage() {
   };
 
   const openEditModal = (player) => {
-    console.log("COR player:", player.cor);
     setSelectedPlayer(player);
     setIsModalOpen(true);
   };
@@ -56,9 +55,6 @@ export default function PlayersPage() {
   const addPlayer = async (newPlayer) => {
     try {
       setLoading(true);
-      for (let [key, value] of newPlayer.entries()) {
-        console.log(key, value);
-      }
       
       await axiosClient.post(
         `/intramurals/${intrams_id}/events/${event_id}/players/create`,

@@ -215,7 +215,6 @@ export default function TeamSeeder() {
         name: team.name,
         seed: seeds[team.id],
       }));
-      console.log(participants);
       await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/start`, {
         participants,
       });

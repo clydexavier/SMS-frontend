@@ -37,8 +37,6 @@ export default function GamePage() {
   const fetchEventStatus = async () => {
     try {
       const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/status`);
-      console.log("Event status:", data);
-
       setEventStatus(data); // expected to be 'pending', 'in_progress', or 'completed'
     } catch (err) {
       console.error("Failed to fetch event status", err);

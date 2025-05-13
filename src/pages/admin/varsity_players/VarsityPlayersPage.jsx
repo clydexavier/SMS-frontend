@@ -48,7 +48,6 @@ export default function VarsityPlayersPage() {
     try {
       const { data } = await axiosClient.get(`/intramurals/${intrams_id}/vplayers_sport`);
       // Assuming the API returns an array of sport names
-      console.log(data.data);
       const options = [
         { label: "All", value: "All" },
         ...data.data.map(sport => ({ label: sport, value: sport }))

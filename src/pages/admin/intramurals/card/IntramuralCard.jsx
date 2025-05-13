@@ -118,7 +118,6 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
               className="block w-full px-4 py-2.5 text-left text-sm text-[#2A6D3A] hover:bg-[#F7FAF7] transition-colors duration-200 flex items-center gap-2" 
               onClick={() => {
                 openEditModal(intramural);
-                console.log(intramural);
                 setMenuOpen(false);
               }}
             >

@@ -1,4 +1,6 @@
 # Logs
+# Ignore axiosClient.js to prevent local configuration changes
+src/axiosClient.js
 logs
 *.log
 npm-debug.log*

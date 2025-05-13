@@ -5,7 +5,6 @@ import { useAuth } from "./AuthContext";
 const ProtectedRoute = ({ roles, children}) => {
   const { token, user, role, loading, checkPermission } = useAuth();
   const location = useLocation();
-  console.log(role);
 
   // Show loading indicator while auth status is determined
   if (loading) {

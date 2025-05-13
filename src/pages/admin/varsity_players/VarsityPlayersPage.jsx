@@ -48,7 +48,6 @@ export default function VarsityPlayersPage() {
     try {
       const { data } = await axiosClient.get(`/intramurals/${intrams_id}/vplayers_sport`);
       // Assuming the API returns an array of sport names
-      console.log(data.data);
       const options = [
         { label: "All", value: "All" },
         ...data.data.map(sport => ({ label: sport, value: sport }))
@@ -192,7 +191,7 @@ export default function VarsityPlayersPage() {
           )}
 
           {/* Scrollable content area */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />

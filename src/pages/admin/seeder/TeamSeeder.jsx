@@ -215,7 +215,6 @@ export default function TeamSeeder() {
         name: team.name,
         seed: seeds[team.id],
       }));
-      console.log(participants);
       await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/start`, {
         participants,
       });
@@ -342,7 +341,7 @@ export default function TeamSeeder() {
           )}
 
           {/* Scrollable content area */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />

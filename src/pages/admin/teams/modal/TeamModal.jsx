@@ -12,12 +12,14 @@ export default function TeamModal({
   isLoading,
   error,
 }) {
-  const [formData, setFormData] = useState({
+  const initialState = {
     name: "",
     type: "",
     team_logo_path: null,
     previewLogo: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialState);
 
   const fileInputRef = useRef(null);
   const [uploaded, setUploaded] = useState(false);
@@ -27,16 +29,16 @@ export default function TeamModal({
     if (existingTeam) {
       setFormData({
         name: existingTeam.name || "",
-        type: existingTeam.type || "",
+        type: existingTeam.type || "xd",
         team_logo_path: null,
         previewLogo: existingTeam.team_logo_path || "",
       });
     } else {
-      setFormData({ name: "", type: "", team_logo_path: null, previewLogo: "" });
+      setFormData(initialState);
     }
     setUploaded(false);
     setRemoveLogo(false);
-  }, [existingTeam]);
+  }, [existingTeam, isModalOpen]);
 
   const handleChange = (e) => {
     setFormData((prevData) => ({ ...prevData, [e.target.name]: e.target.value }));
@@ -77,6 +79,8 @@ export default function TeamModal({
     if (formData.team_logo_path) teamData.append("team_logo_path", formData.team_logo_path);
     if (removeLogo) teamData.append("remove_logo", "1");
 
+
+
     if (existingTeam) {
       teamData.append("_method", "PATCH");
       updateTeam(existingTeam.id, teamData);
@@ -116,75 +120,86 @@ export default function TeamModal({
               </div>
             )}
 
-            <div className="space-y-4">
-              {/* Team Name */}
-              <div>
-                <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Team Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  autoComplete="off"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="Enter team name"
-                  required
-                />
+            {isLoading ? (
+              <div className="space-y-4 animate-pulse">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-10 bg-gray-200 rounded" />
+                ))}
+                <div className="h-32 bg-gray-200 rounded" />
               </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Team Name */}
+                <div>
+                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Team Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    autoComplete="off"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="Enter team name"
+                    required
+                  />
+                </div>
 
-              {/* Team Logo */}
-              <div>
-                <label htmlFor="team_logo_path" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Team Logo
-                </label>
 
-                {showPreview ? (
-                  <div className="relative inline-block">
-                    <img
-                      src={formData.previewLogo}
-                      alt="Logo preview"
-                      className="max-h-32 object-contain border rounded"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/default-logo.png";
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleRemoveLogo}
-                      className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-white rounded-full"
+
+                {/* Team Logo */}
+                <div>
+                  <label htmlFor="team_logo_path" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Team Logo
+                  </label>
+
+                  {showPreview ? (
+                    <div className="relative inline-block">
+                      <img
+                        src={formData.previewLogo}
+                        alt="Logo preview"
+                        className="max-h-32 object-contain border rounded"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/default-logo.png";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogo}
+                        className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-white rounded-full"
+                      >
+                        <FaTimesCircle size={20} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 border-[#E6F2E8]"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleDrop}
                     >
-                      <FaTimesCircle size={20} />
-                    </button>
-                  </div>
-                ) : (
-                  <div
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 border-[#E6F2E8]"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={handleDrop}
-                  >
-                    <input
-                      id="team_logo_path"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      ref={fileInputRef}
-                      className="hidden"
-                    />
-                    <label htmlFor="team_logo_path" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
-                      <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                      </svg>
-                      <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
-                      <span className="text-xs text-gray-400">SVG, PNG, JPG or GIF</span>
-                    </label>
-                  </div>
-                )}
+                      <input
+                        id="team_logo_path"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        ref={fileInputRef}
+                        className="hidden"
+                      />
+                      <label htmlFor="team_logo_path" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+                        <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
+                        <span className="text-xs text-gray-400">SVG, PNG, JPG or GIF</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-end mt-6 space-x-3">

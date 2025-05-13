@@ -89,7 +89,7 @@ export default function PodiumsPage() {
           </div>
 
           {/* Podiums List / State Handling */}
-          <div className="mt-4 flex-1 overflow-y-hidden min-h-0">
+          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
 
           {loading ? (
             <div className="flex justify-center items-center py-16">

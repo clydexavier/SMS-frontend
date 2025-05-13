@@ -14,7 +14,7 @@ export default function EventModal({
 }) {
   const { intrams_id } = useParams();
 
-  const [formData, setFormData] = useState({
+  const initialState = {
     name: "",
     tournament_type: "",
     category: "",
@@ -24,21 +24,9 @@ export default function EventModal({
     silver: "",
     bronze: "",
     venue: "",
-  });
+  };
 
-  const clearForm = () => {
-    setFormData({
-      name: "",
-      tournament_type: "",
-      category: "",
-      intrams_id: null,
-      type: "",
-      gold: "",
-      silver: "",
-      bronze: "",
-      venue: "",
-    }); 
-  }
+  const [formData, setFormData] = useState(initialState);
   
   useEffect(() => {
     if (existingEvent) {
@@ -51,20 +39,12 @@ export default function EventModal({
         gold: existingEvent.gold || "",
         silver: existingEvent.silver || "",
         bronze: existingEvent.bronze || "",
+        venue: existingEvent.venue || "",
       });
     } else {
-      setFormData({
-        name: "",
-        tournament_type: "",
-        category: "",
-        intrams_id: intrams_id,
-        type: "",
-        gold: "",
-        silver: "",
-        bronze: "",
-      });
+      setFormData(initialState);
     }
-  }, [existingEvent, intrams_id]);
+  }, [existingEvent, intrams_id, isModalOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -96,7 +76,6 @@ export default function EventModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     existingEvent ? updateEvent(existingEvent.id, formData) : addEvent(formData);
-    clearForm();
   };
 
   if (!isModalOpen) return null;
@@ -128,118 +107,126 @@ export default function EventModal({
               </div>
             )}
 
-            <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Event Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  autoComplete="off"
-                  required
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="Enter event name"
-                />
+            {isLoading ? (
+              <div className="space-y-4 animate-pulse">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-10 bg-gray-200 rounded" />
+                ))}
               </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Event Name
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    autoComplete="off"
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="Enter event name"
+                  />
+                </div>
 
-              {/* Tournament Type */}
-              <div>
-                <label htmlFor="tournament_type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Tournament Type
-                </label>
-                <select
-                  id="tournament_type"
-                  name="tournament_type"
-                  value={formData.tournament_type}
-                  onChange={handleChange}
-                  required
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                >
-                  <option value="" disabled>Select tournament type</option>
-                  <option value="single elimination">Single Elimination</option>
-                  <option value="double elimination">Double Elimination</option>
-                </select>
-              </div>
+                {/* Tournament Type */}
+                <div>
+                  <label htmlFor="tournament_type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Tournament Type
+                  </label>
+                  <select
+                    id="tournament_type"
+                    name="tournament_type"
+                    value={formData.tournament_type}
+                    onChange={handleChange}
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  >
+                    <option value="" disabled>Select tournament type</option>
+                    <option value="single elimination">Single Elimination</option>
+                    <option value="double elimination">Double Elimination</option>
+                  </select>
+                </div>
 
-              {/* Category */}
-              <div>
-                <label htmlFor="category" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Category
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                >
-                  <option value="" disabled>Select category</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Mixed">Mixed</option>
-                </select>
-              </div>
+                {/* Category */}
+                <div>
+                  <label htmlFor="category" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Category
+                  </label>
+                  <select
+                    id="category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  >
+                    <option value="" disabled>Select category</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Mixed">Mixed</option>
+                  </select>
+                </div>
 
-              {/* Type */}
-              <div>
-                <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Type
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  required
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                >
-                  <option value="" disabled>Select type</option>
-                  <option value="sports">Sports</option>
-                  <option value="music">Music</option>
-                  <option value="dance">Dance</option>
-                </select>
-              </div>
+                {/* Type */}
+                <div>
+                  <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Type
+                  </label>
+                  <select
+                    id="type"
+                    name="type"
+                    value={formData.type}
+                    onChange={handleChange}
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  >
+                    <option value="" disabled>Select type</option>
+                    <option value="sports">Sports</option>
+                    <option value="music">Music</option>
+                    <option value="dance">Dance</option>
+                  </select>
+                </div>
 
-              {/* Medal Count */}
-              <div>
-                <label htmlFor="medalCount" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Medal Count (applies to gold, silver, and bronze)
-                </label>
-                <input
-                  id="medalCount"
-                  name="medalCount"
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={formData.gold} // any of the three will reflect the value
-                  onChange={handleMedalCountChange}
-                  autoComplete="off"
-                  required
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="Enter number of medals (minimum 1)"
-                  onKeyDown={(e) => {
-                    // Prevent entering negative sign or decimal point
-                    if (e.key === '-' || e.key === '.') {
-                      e.preventDefault();
-                    }
-                  }}
-                  onPaste={(e) => {
-                    // Prevent pasting non-numeric values
-                    const pasteData = e.clipboardData.getData('text');
-                    if (!/^\d+$/.test(pasteData)) {
-                      e.preventDefault();
-                    }
-                  }}
-                />
-                <p className="mt-1 text-xs text-gray-500">Only positive integers allowed</p>
+                {/* Medal Count */}
+                <div>
+                  <label htmlFor="medalCount" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Medal Count (applies to gold, silver, and bronze)
+                  </label>
+                  <input
+                    id="medalCount"
+                    name="medalCount"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={formData.gold} // any of the three will reflect the value
+                    onChange={handleMedalCountChange}
+                    autoComplete="off"
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="Enter number of medals (minimum 1)"
+                    onKeyDown={(e) => {
+                      // Prevent entering negative sign or decimal point
+                      if (e.key === '-' || e.key === '.') {
+                        e.preventDefault();
+                      }
+                    }}
+                    onPaste={(e) => {
+                      // Prevent pasting non-numeric values
+                      const pasteData = e.clipboardData.getData('text');
+                      if (!/^\d+$/.test(pasteData)) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Only positive integers allowed</p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-end mt-6 space-x-3">

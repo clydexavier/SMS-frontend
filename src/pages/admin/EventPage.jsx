@@ -101,7 +101,6 @@ export default function EventPage() {
         `/intramurals/${intrams_id}/events/${event_id}`,
       );
       setEvent(data);
-      console.log(data);
     } catch (err) {
       console.error("Error fetching event name:", err);
     } finally {

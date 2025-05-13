@@ -59,7 +59,6 @@ export default function EventsPage() {
 
   // Instead of calling fetchEvents directly, we trigger a refetch
   const addEvent = async (newEvent) => {
-    console.log(newEvent);
     try {
       setLoading(true);
       await axiosClient.post(
@@ -78,7 +77,6 @@ export default function EventsPage() {
   const updateEvent = async (id, updatedData) => {
     try {
       setLoading(true);
-      console.log("Updating event with ID:", id, "and data:", updatedData);
       await axiosClient.patch(
         `/intramurals/${intrams_id}/events/${id}/edit`,
         updatedData
@@ -92,15 +90,15 @@ export default function EventsPage() {
     }
   };
 
-  const deleteEvent = async (id) => {
+  const deleteEvent = async (event) => {
     try {
-      setLoading(true);
-      await axiosClient.delete(`/intramurals/${intrams_id}/events/${id}`);
+      await axiosClient.delete(`/intramurals/${intrams_id}/events/${event.id}`);
       setShouldRefetch(prev => !prev); // Toggle to trigger refetch
+      return true;
     } catch (err) {
       setError("Failed to delete event");
       console.error("Error deleting event:", err);
-      setLoading(false);
+      throw err;
     }
   };
 
@@ -197,13 +195,13 @@ export default function EventsPage() {
           </div>
 
           {/* Scrollable content area */}
-          <div className="mt-4 flex-1 overflow-y-hidden min-h-0">
+          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
             ) : events.length === 0 ? (
-              <div className="mt-4 flex-1 h-full bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+              <div className="flex-1 h-full bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                 <CalendarClock size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600">No events found</h3>
                 <p className="text-gray-500 mt-1">Click "Add Event" to create one</p>

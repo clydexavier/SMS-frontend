@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { User, Mail, Calendar, ShieldCheck, MoreVertical, Edit, Trash, Shield, AlertTriangle, X, Loader } from "lucide-react";
+import { User, Mail, Calendar, ShieldCheck, MoreVertical, Trash, Shield } from "lucide-react";
 import AssignmentModal from "../modal/AssignmentModal";
-import axiosClient from "../../../../axiosClient";
+import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 
 export default function UserCard({ user, updateUserRole, deleteUser }) {
   const [showOptions, setShowOptions] = useState(false);
@@ -12,8 +12,7 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
   const [deleteError, setDeleteError] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   
-  // Create refs for the delete modal and options menu
-  const deleteModalRef = useRef(null);
+  // Create refs for options menu
   const optionsMenuRef = useRef(null);
   const optionsButtonRef = useRef(null);
 
@@ -70,40 +69,36 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
     return name.charAt(0).toUpperCase();
   };
 
-  // Handle user deletion
-  async function handleDeleteUser() {
-    setIsDeleting(true);
-    setDeleteError(null);
-    
+  // Open delete confirmation modal
+  const confirmDeleteUser = () => {
+    setShowOptions(false);
+    setShowDeleteConfirmation(true);
+  };
+
+  // Handle the actual deletion after confirmation
+  const handleDeleteUser = async () => {
     try {
-      // Call the delete API endpoint using the passed deleteUser function
-      if (deleteUser) {
-        await deleteUser(user.id);
-      } else {
-        await axiosClient.delete(`/users/${user.id}`);
-      }
+      setIsDeleting(true);
+      setDeleteError(null);
       
-      // Close the modal
+      // Call the deleteUser function passed from parent
+      await deleteUser(user);
+      
+      // The parent function will handle the actual API call
+      // and data refetching, so we just need to close the modal
       setShowDeleteConfirmation(false);
     } catch (error) {
       console.error("Error deleting user:", error);
-      setDeleteError(
-        error.response?.data?.message || 
-        "An error occurred while deleting the user. Please try again."
-      );
-    } finally {
+      setDeleteError("Failed to delete user. Please try again.");
       setIsDeleting(false);
     }
-  }
+    // We don't need the finally block here because the parent's deleteUser
+    // function will handle the completion, and this modal will be unmounted
+  };
   
-  // Handle clicks outside of the delete modal and options menu
+  // Handle clicks outside of the options menu
   useEffect(() => {
     function handleClickOutside(event) {
-      // Close delete confirmation modal when clicking outside
-      if (deleteModalRef.current && !deleteModalRef.current.contains(event.target) && showDeleteConfirmation) {
-        setShowDeleteConfirmation(false);
-      }
-      
       // Close options menu when clicking outside
       if (showOptions && 
           optionsMenuRef.current && 
@@ -114,8 +109,8 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
       }
     }
     
-    // Add event listener when any modal is shown
-    if (showDeleteConfirmation || showOptions) {
+    // Add event listener when options menu is shown
+    if (showOptions) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     
@@ -123,13 +118,14 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showDeleteConfirmation, showOptions]);
+  }, [showOptions]);
 
   return (
     <div className="p-4 rounded-xl relative">
       {/* Options menu */}
       <div className="absolute top-4 right-4 z-10">
         <button
+          ref={optionsButtonRef}
           onClick={toggleOptions}
           className="p-1.5 rounded-full hover:bg-gray-100 transition-colors duration-200"
         >
@@ -137,12 +133,12 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
         </button>
 
         {showOptions && (
-          <div className="absolute right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-36 z-20">
+          <div 
+            ref={optionsMenuRef} 
+            className="absolute right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-36 z-20"
+          >
             <button
-              onClick={() => {
-                setShowDeleteConfirmation(true);
-                setShowOptions(false);
-              }}
+              onClick={confirmDeleteUser}
               className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
             >
               <Trash size={16} className="mr-2" />
@@ -268,61 +264,17 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
         updateUserRole={updateUserRole}
       />
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div ref={deleteModalRef} className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="flex justify-between items-center bg-red-50 px-6 py-4">
-              <div className="flex items-center">
-                <AlertTriangle size={20} className="text-red-600 mr-2" />
-                <h3 className="text-lg font-medium text-red-600">Delete User</h3>
-              </div>
-              <button
-                onClick={() => setShowDeleteConfirmation(false)}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <p className="text-gray-700 mb-6">
-                Are you sure you want to delete <span className="font-semibold">{user.name}</span>? 
-                This action cannot be undone.
-              </p>
-
-              {deleteError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  {deleteError}
-                </div>
-              )}
-
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirmation(false)}
-                  className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200"
-                  disabled={isDeleting}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteUser}
-                  disabled={isDeleting}
-                  className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 flex justify-center items-center"
-                >
-                  {isDeleting ? (
-                    <Loader size={18} className="animate-spin" />
-                  ) : (
-                    "Delete User"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Confirmation Modal - Using the reusable component */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleDeleteUser}
+        title="Delete User"
+        itemName={user.name}
+        message={`Are you sure you want to delete ${user.name}? This action cannot be undone.`}
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
     </div>
   );
 }

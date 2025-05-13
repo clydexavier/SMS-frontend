@@ -11,21 +11,23 @@ export default function VarsityPlayerModal({
   isLoading,
   error,
 }) {
-  const [formData, setFormData] = useState({
+  const initialState = {
     name: "",
     id_number: "",
     sport: "",
     is_varsity: true,
     team_id: null,
-  });
+  };
+
+  const [formData, setFormData] = useState(initialState);
 
   useEffect(() => {
     if (existingPlayer) {
       setFormData(existingPlayer);
     } else {
-      setFormData({ name: "", id_number: "", sport: "", is_varsity: true, team_id: null });
+      setFormData(initialState);
     }
-  }, [existingPlayer]);
+  }, [existingPlayer, isModalOpen]);
 
   const formatIDNumber = (value) => {
     const digits = value.replace(/\D/g, "");
@@ -50,8 +52,6 @@ export default function VarsityPlayerModal({
       ? updatePlayer(existingPlayer.id, formData)
       : addPlayer(formData);
   };
-
-  const sportOptions = ["Basketball", "Volleyball", "Football"];
 
   if (!isModalOpen) return null;
 
@@ -82,61 +82,68 @@ export default function VarsityPlayerModal({
               </div>
             )}
 
-            <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  autoComplete="off"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="Enter player name"
-                  required
-                />
+            {isLoading ? (
+              <div className="space-y-4 animate-pulse">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-10 bg-gray-200 rounded" />
+                ))}
               </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    autoComplete="off"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="Enter player name"
+                    required
+                  />
+                </div>
 
-              {/* ID Number */}
-              <div>
-                <label htmlFor="id_number" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  ID Number
-                </label>
-                <input
-                  type="text"
-                  name="id_number"
-                  id="id_number"
-                  value={formData.id_number}
-                  onChange={handleChange}
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="XX-X-XXXXX"
-                  required
-                />
-              </div>
+                {/* ID Number */}
+                <div>
+                  <label htmlFor="id_number" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    ID Number
+                  </label>
+                  <input
+                    type="text"
+                    name="id_number"
+                    id="id_number"
+                    value={formData.id_number}
+                    onChange={handleChange}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="XX-X-XXXXX"
+                    required
+                  />
+                </div>
 
-              {/* Sport - Now a select dropdown */}
-              <div>
-                <label htmlFor="sport" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Sport
-                </label>
-                <input
-                  type="text"
-                  name="sport"
-                  id="sport"
-                  autoComplete="off"
-                  value={formData.sport}
-                  onChange={handleChange}
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="Enter player sport"
-                  required
-                />
+                {/* Sport */}
+                <div>
+                  <label htmlFor="sport" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Sport
+                  </label>
+                  <input
+                    type="text"
+                    name="sport"
+                    id="sport"
+                    autoComplete="off"
+                    value={formData.sport}
+                    onChange={handleChange}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="Enter player sport"
+                    required
+                  />
+                </div>
               </div>
-              
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-end mt-6 space-x-3">

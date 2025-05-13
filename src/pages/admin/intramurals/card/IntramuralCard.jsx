@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiMoreVertical, FiCalendar, FiMapPin, FiCheckCircle, FiClock, FiAlertCircle } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 
 function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  
+  // Delete confirmation modal states
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -19,13 +25,27 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
     };
   }, []);
 
-  // Handle delete confirmation
-  const handleDelete = () => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${intramural.name}?`);
-    if (confirmDelete) {
-      deleteIntramural(intramural.id);
-    }
+  // Open delete confirmation modal
+  const confirmDeleteIntramural = () => {
     setMenuOpen(false);
+    setShowDeleteConfirmation(true);
+  };
+
+  // Handle the actual deletion after confirmation
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      
+      // Call the deleteIntramural function passed from parent
+      await deleteIntramural(intramural);
+      
+      setShowDeleteConfirmation(false);
+    } catch (error) {
+      console.error("Error deleting intramural:", error);
+      setDeleteError("Failed to delete intramural. Please try again.");
+      setIsDeleting(false);
+    }
   };
 
   // Format date nicely
@@ -118,7 +138,6 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
               className="block w-full px-4 py-2.5 text-left text-sm text-[#2A6D3A] hover:bg-[#F7FAF7] transition-colors duration-200 flex items-center gap-2" 
               onClick={() => {
                 openEditModal(intramural);
-                console.log(intramural);
                 setMenuOpen(false);
               }}
             >
@@ -129,7 +148,7 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
             </button>
             <button 
               className="block w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center gap-2" 
-              onClick={handleDelete}
+              onClick={confirmDeleteIntramural}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -139,6 +158,18 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleDelete}
+        title="Delete Intramural"
+        itemName={intramural.name}
+        message={`Are you sure you want to delete "${intramural.name}"? This action cannot be undone and will remove all associated events, teams, and data.`}
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
     </div>
   );
 }

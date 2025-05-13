@@ -104,20 +104,17 @@ export default function TeamsPage() {
     }
   };
 
-  const deleteTeam = async (id, name) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
-    if (confirmDelete) {
+  const deleteTeam = async (team) => {
       try {
-        setLoading(true);
-        await axiosClient.delete(`/intramurals/${intrams_id}/overall_teams/${id}`);
+        await axiosClient.delete(`/intramurals/${intrams_id}/overall_teams/${team.id}`);
         await fetchTeams();
+        return true;
       } catch (err) {
         setError("Failed to delete team");
-        console.error("Error deleting team:", err);
+        throw err;
       } finally {
-        setLoading(false);
       }
-    }
+    
   };
 
   useEffect(() => {
@@ -186,7 +183,7 @@ export default function TeamsPage() {
               </div >
             ) : teams.length === 0 ? (
               <div className="flex-1 overflow-auto">
-                <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                <div className="flex-1 h-full bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                   <Users size={48} className="mx-auto mb-4 text-gray-400" />
                   <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
                   <p className="text-gray-500 mt-1">Click "Add Team" to create one</p>

@@ -91,30 +91,36 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = async (ev) => {
-    ev.preventDefault();
-    setIsLoading(true);
-    setMessage({ type: null, text: '', visible: false, timeout: null });
-    
-    const payload = {
-      email: emailRef.current.value,
-      password: passwordRef.current.value,
-    };
-
-    try {
-      const result = await login(payload);
+    const handleSubmit = async (e) => {
+      e.preventDefault();
       
-      if (result.success) {
-        showMessage('success', 'Successfully logged in!', 5000);
-      } else {
-        // For 'user' role or other login failures
-        showMessage('error', result.message || 'Invalid email or password', 5000);
+      if (!emailRef.current || !passwordRef.current) {
+          return;
       }
-    } catch (error) {
-      showMessage('error', 'An error occurred. Please try again later.', 5000);
-    } finally {
-      setIsLoading(false);
-    }
+      
+      const email = emailRef.current.value;
+      const password = passwordRef.current.value;
+      
+      setIsLoading(true);
+      
+      try {
+          const result = await login(email, password);
+          
+          if (!result.success) {
+              // Handle pending approval case
+              if (result.pending) {
+                  showMessage('warning', result.message, 5000);
+              } else {
+                  showMessage('error', result.message, 5000);
+              }
+          }
+          // Success case is already handled in the login function with redirect
+      } catch (err) {
+          showMessage('error', "An unexpected error occurred. Please try again.", 5000);
+          console.error("Login error:", err);
+      } finally {
+          setIsLoading(false);
+      }
   };
 
   // Render the appropriate message UI based on message type

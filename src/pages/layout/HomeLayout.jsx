@@ -7,7 +7,6 @@ import { useLocation } from "react-router-dom";
 export default function HomeLayout() {
   const { token, role, loading } = useAuth();
   const location = useLocation()
-  console.log(location.pathname);
   // Show loader while authentication status is being determined
   if (loading) {
     return (

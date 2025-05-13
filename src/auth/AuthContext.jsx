@@ -50,45 +50,51 @@ export const AuthProvider = ({ children, navigate, location }) => {
     };
   }, []);
 
-  const login = async (credentials) => {
-    setLoading(true);
-    setError(null);
+    const login = async (email, password) => {
+      setError('');
+      setLoading(true);
+      
+      try {
+          const response = await axiosClient.post('/login', {
+              email,
+              password
+          });
+          
+          // If successful, handle normal login
+          setToken(response.data.token);
+          setUser(response.data.user);
+          localStorage.setItem('ACCESS_TOKEN', response.data.token);
+          localStorage.setItem('role', response.data.user.role);
+          
+          // Redirect to appropriate page based on role
+          redirectToRoleBasedRoute(response.data.user.role);
+          
+          return { success: true };
+      } catch (err) {
     
-    try {
-      const { data } = await axiosClient.post("/login", credentials);
-      
-      console.log(data);
-      // Check if the response contains a message - this could be an error for 'user' role
-      if (!data.user) {
-        // This is likely the response when a user with 'user' role tries to log in
-        setError(data.message);
-        return {
-          success: false,
-          message: data.message
-        };
+          
+          // Check if this is a pending approval error (403)
+          if (err.response && err.response.status === 403) {
+              // This is a "pending approval" response, treat as a special case
+              const message = err.response.data.message || 'Your account is awaiting approval.';
+              setError(message);
+              return { 
+                  success: false, 
+                  pending: true,
+                  message: message 
+              };
+          }
+          
+          // Handle other errors
+          const errorMessage = err.response?.data?.message || 'An error occurred during login';
+          setError(errorMessage);
+          return {
+              success: false,
+              message: errorMessage
+          };
+      } finally {
+          setLoading(false);
       }
-      
-      // Normal success flow
-      setToken(data.token);
-      setUser(data.user);
-      setRole(data.user.role);
-      
-      // Remember intended location if available
-      const from = location?.state?.from?.pathname || null;
-      redirectToRoleBasedRoute(data.user.role, from);
-      
-      return { success: true };
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          "Failed to login. Please check your credentials.";
-      setError(errorMessage);
-      return {
-        success: false,
-        message: errorMessage
-      };
-    } finally {
-      setLoading(false);
-    }
   };
 
   const googleAuthSuccess = async (token) => {

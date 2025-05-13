@@ -13,15 +13,17 @@ export default function IntramuralModal({
   isLoading,
   error
 }) {
-  const [formData, setFormData] = useState({
+  const initialState = {
     name: "",
     location: "",
     status: "pending",
     start_date: null,
     end_date: null,
-  });
+  };
 
-  // Populate fields when editing
+  const [formData, setFormData] = useState(initialState);
+
+  // Populate fields when editing or reset when modal opens/closes
   useEffect(() => {
     if (existingIntramural) {
       setFormData({
@@ -32,15 +34,9 @@ export default function IntramuralModal({
         end_date: existingIntramural.end_date ? new Date(existingIntramural.end_date) : null,
       });
     } else {
-      setFormData({
-        name: "",
-        location: "",
-        status: "pending",
-        start_date: null,
-        end_date: null,
-      });
+      setFormData(initialState);
     }
-  }, [existingIntramural]);
+  }, [existingIntramural, isModalOpen]);
 
   const handleStartDateChange = (date) => {
     setFormData((prevData) => ({ ...prevData, start_date: date }));
@@ -68,14 +64,6 @@ export default function IntramuralModal({
     } else {
       addIntramural(formattedData);
     }
-    setFormData({
-        name: "",
-        location: "",
-        status: "pending",
-        start_date: null,
-        end_date: null,
-      });
-
   };
 
   if (!isModalOpen) return null;
@@ -107,83 +95,93 @@ export default function IntramuralModal({
               </div>
             )}
 
-            <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Intramural Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  autoComplete="off"
-                  required
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="Enter intramural name"
-                />
+            {isLoading ? (
+              <div className="space-y-4 animate-pulse">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-10 bg-gray-200 rounded" />
+                ))}
               </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Intramural Name
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    autoComplete="off"
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="Enter intramural name"
+                  />
+                </div>
 
-              {/* Location */}
-              <div>
-                <label htmlFor="location" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Location
-                </label>
-                <input
-                  id="location"
-                  name="location"
-                  type="text"
-                  value={formData.location}
-                  onChange={handleChange}
-                  autoComplete="off"
-                  required
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholder="Enter location"
-                />
-              </div>
+                {/* Location */}
+                <div>
+                  <label htmlFor="location" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Location
+                  </label>
+                  <input
+                    id="location"
+                    name="location"
+                    type="text"
+                    value={formData.location}
+                    onChange={handleChange}
+                    autoComplete="off"
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="Enter location"
+                  />
+                </div>
 
-              {/* Dates - Single column layout for consistency */}
-              <div>
-                <label htmlFor="start_date" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Start Date
-                </label>
-                <DatePicker
-                  id="start_date"
-                  name="start_date"
-                  selected={formData.start_date}
-                  onChange={handleStartDateChange}
-                  selectsStart
-                  startDate={formData.start_date}
-                  endDate={formData.end_date}
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholderText="Select start date"
-                  autoComplete="off"
-                  required
-                />
-              </div>
 
-              <div>
-                <label htmlFor="end_date" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  End Date
-                </label>
-                <DatePicker
-                  id="end_date"
-                  name="end_date"
-                  selected={formData.end_date}
-                  onChange={handleEndDateChange}
-                  selectsEnd
-                  startDate={formData.start_date}
-                  endDate={formData.end_date}
-                  minDate={formData.start_date}
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  placeholderText="Select end date"
-                  autoComplete="off"
-                  required
-                />
+
+                {/* Dates - Single column layout for consistency */}
+                <div>
+                  <label htmlFor="start_date" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Start Date
+                  </label>
+                  <DatePicker
+                    id="start_date"
+                    name="start_date"
+                    selected={formData.start_date}
+                    onChange={handleStartDateChange}
+                    selectsStart
+                    startDate={formData.start_date}
+                    endDate={formData.end_date}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholderText="Select start date"
+                    autoComplete="off"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="end_date" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    End Date
+                  </label>
+                  <DatePicker
+                    id="end_date"
+                    name="end_date"
+                    selected={formData.end_date}
+                    onChange={handleEndDateChange}
+                    selectsEnd
+                    startDate={formData.start_date}
+                    endDate={formData.end_date}
+                    minDate={formData.start_date}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholderText="Select end date"
+                    autoComplete="off"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-end mt-6 space-x-3">

@@ -88,15 +88,15 @@ export default function IntramuralsPage() {
     }
   };
 
-  const deleteIntramural = async (id) => {
+  const deleteIntramural = async (intramural) => {
     try {
-      setLoading(true);
-      await axiosClient.delete(`/intramurals/${id}`);
+      await axiosClient.delete(`/intramurals/${intramural.id}`);
       setShouldRefetch(prev => !prev); // Toggle to trigger refetch
+      return true;
     } catch (err) {
       setError("Failed to delete intramural");
       console.error("Error deleting intramural:", err);
-      setLoading(false);
+      throw err; // Re-throw to be caught by the card component
     }
   };
 
@@ -153,8 +153,8 @@ export default function IntramuralsPage() {
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
         <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
-          < div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
-          <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+            <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Trophy size={20} className="mr-2" /> Intramurals
             </h2>
             <button

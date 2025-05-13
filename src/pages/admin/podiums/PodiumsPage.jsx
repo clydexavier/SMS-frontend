@@ -89,7 +89,7 @@ export default function PodiumsPage() {
           </div>
 
           {/* Podiums List / State Handling */}
-          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
+          <div className="mt-4 flex-1 overflow-y-hidden min-h-0">
 
           {loading ? (
             <div className="flex justify-center items-center py-16">
@@ -100,7 +100,7 @@ export default function PodiumsPage() {
               {error}
             </div>
           ) : podiums.length === 0 ? (
-            <div className="mt-8 flex-1 bg-white p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+            <div className="mt-4 flex-1 h-full bg-white p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
               <Medal size={48} className="mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-medium text-gray-600">No results found</h3>
               <p className="text-gray-500 mt-1">Try adjusting your search or filter criteria</p>

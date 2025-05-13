@@ -153,8 +153,8 @@ export default function IntramuralsPage() {
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
         <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
-            <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+          < div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+          <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Trophy size={20} className="mr-2" /> Intramurals
             </h2>
             <button
@@ -188,13 +188,13 @@ export default function IntramuralsPage() {
           </div>
 
           {/* Scrollable content area */}
-          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
+          <div className="mt-4 flex-1 overflow-hidden flex flex-col min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
             ) : intramurals.length === 0 ? (
-              <div className="mt-4 flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                 <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600">No intramurals found</h3>
                 <p className="text-gray-500 mt-1">Click "Add Intramural" to create one</p>

@@ -1,11 +1,10 @@
 import React from 'react'
 import axiosClient from '../../axiosClient';
-import { useStateContext } from '../../context/ContextProvider';
+import { useAuth } from '../../auth/AuthContext';
 
-;
 
 export default function GAMPage() {
-  const { setUser, setToken ,setRole} = useStateContext();
+  const { setUser, setToken ,setRole} = useAuth();
 
   const onLogout = async (ev) => {
     ev.preventDefault();

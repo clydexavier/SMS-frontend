@@ -1,12 +1,15 @@
 import axios from "axios";
 
-const axiosClient = axios.create({
-    baseURL: "http://127.0.0.1:8000/api/v1",
-});
 
+const axiosClient = axios.create({
+    baseURL: import.meta.env.VITE_API_URL,
+});
+console.log("All environment variables:", import.meta.env);
 axiosClient.interceptors.request.use((config) => {
     const token = localStorage.getItem("ACCESS_TOKEN");
-    config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
 });
 
@@ -15,15 +18,20 @@ axiosClient.interceptors.response.use(
         return response;
     },
     (error) => {
-        try {
-            const { response } = error;
-            if (response.status === 401) {
-                localStorage.removeItem("ACCESS_TOKEN");
+        const { response } = error;
+        
+        // Handle authentication errors
+        if (response && response.status === 401) {
+            localStorage.removeItem("ACCESS_TOKEN");
+            localStorage.removeItem("role");
+            
+            // If there's a "unauthenticated" message, redirect to login
+            if (response.data.message === 'Unauthenticated.') {
+                window.location.href = '/login';
             }
-        } catch (err) {
-            console.error(err);
         }
-        throw error;
+        
+        return Promise.reject(error);
     }
 );
 

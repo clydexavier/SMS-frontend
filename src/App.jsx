@@ -1,21 +1,15 @@
-import React from "react";
-import { BrowserRouter as Router, useRoutes } from "react-router-dom";
-import routes from "./routes";
-import LoginPage from "./pages/public/LoginPage";
-import UnauthorizedPage from "./pages/public/UnauthorizedPage";
-
-function AppRoutes() {
-  return useRoutes([
-    { path: "/unauthorized", element: <UnauthorizedPage /> },
-    ...routes,
-  ]);
-}
+// src/App.jsx
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './AppRoutes';
+import AuthProviderWrapper from './auth/AuthProviderWrapper';
 
 function App() {
   return (
-    <Router>
-      <AppRoutes />
-    </Router>
+    <BrowserRouter>
+      <AuthProviderWrapper>
+        <AppRoutes />
+      </AuthProviderWrapper>
+    </BrowserRouter>
   );
 }
 

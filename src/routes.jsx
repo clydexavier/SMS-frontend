@@ -1,38 +1,50 @@
-import { useStateContext } from "./context/ContextProvider";
+// src/routes.jsx;
+import { Navigate } from "react-router-dom";
 
-import HomeLayout from "./components/layout/HomeLayout";
-import GuestLayout from "./components/layout/GuestLayout";
+import HomeLayout from "./pages/layout/HomeLayout";
+import GuestLayout from "./pages/layout/GuestLayout";
 
-//public pages
+// Auth Components
+import ProtectedRoute from "./auth/ProtectedRoute";
+import UnauthorizedPage from "./pages/public/UnauthorizedPage";
+
+// Public pages
 import LoginPage from "./pages/public/LoginPage";
 import RegisterPage from "./pages/public/RegisterPage";
 
-import AdminPage from "./pages/admin/AdminPage";
+// Role-specific pages
+import AdminPage from "./pages/admin/intramurals/parent/AdminPage";
 import GAMPage from "./pages/GAM/GAMPage";
 import SecretariatPage from "./pages/Secretariat/SecretariatPage";
 import TSecretaryPage from "./pages/TSecretary/TSecretaryPage";
-import ProtectedRoute from "./context/ProtectedRoute";
 
 // Admin child components
-import AdminLogsPage from "./pages/admin/AdminLogsPage";
-import IntramuralsPage from "./pages/admin/IntramuralsPage";
-import DocumentsPage from "./pages/admin/DocumentsPage";
-import EventsPage from "./pages/admin/EventsPage";
-import TeamsPage from "./pages/admin/TeamsPage";
-import VenuesPage from "./pages/admin/VenuesPage";
-import IntramuralLogsPage from "./pages/admin/IntramuralLogsPage";
-import VarsityPlayersPage from "./pages/admin/VarsityPlayersPage";
+import IntramuralsPage from "./pages/admin/intramurals/IntramuralsPage";
+import UsersPage from "./pages/admin/users/UsersPage";
+import EventsPage from "./pages/admin/events/EventsPage";
+import TeamsPage from "./pages/admin/teams/TeamsPage";
+import VarsityPlayersPage from "./pages/admin/varsity_players/VarsityPlayersPage";
 
-//Within Intramural Pages
-import IntramuralPage from "./pages/admin/IntramuralPage";
 
+// Within Intramural Pages
+import IntramuralPage from "./pages/admin/events/parent/IntramuralPage";
 import EventPage from "./pages/admin/EventPage";
-import BracketPage from "./pages/admin/BracketPage";
-import GamePage from "./pages/admin/GamePage";
-import ParticipantsPage from "./pages/admin/ParticipantsPage";
+import BracketPage from "./pages/admin/bracket/BracketPage";
+import GamePage from "./pages/admin/games/GamePage";
+import PodiumsPage from "./pages/admin/podiums/PodiumsPage";
+import OverallTallyPage from "./pages/admin/tally/OverallTallyPage";
+import PlayersPage from "./pages/admin/players/PlayersPage";
+import GalleryPage from "./pages/admin/gallery/GalleryPage";
+import ResultPage from "./pages/admin/result/ResultPage";
+import TeamSeeder from "./pages/admin/seeder/TeamSeeder";
 
-import ParticipantPage from "./pages/admin/ParticipantPage";
-import PlayersPage from "./pages/admin/PlayersPage";
+
+//Tournament Secretary Pages
+import TSGamesPage from "./pages/TSecretary/games/TSGamesPage";
+import TSBracketPage from "./pages/TSecretary/bracket/TSBracketPage";
+import TSResultPage from "./pages/TSecretary/result/TSResultPage";
+import TSPodiumsPage from "./pages/TSecretary/podiums/TSPodiumsPage";
+import TSOverallTallyPage from "./pages/TSecretary/tally/TSOverallTallyPage";
 
 const routes = [
   {
@@ -40,65 +52,68 @@ const routes = [
     element: <HomeLayout/>,
     children: [
     {
-        path: "/admin",
-        element: (
-          <ProtectedRoute roles={["admin"]}>
-            <AdminPage />
-          </ProtectedRoute>
-        ),
-        children: [
-          { path: "logs", element: <AdminLogsPage /> },
-          {
-            path: "intramurals",
-            element: <IntramuralsPage />,
-          },
-        ],
+      path: "/admin",
+      element: (
+        <ProtectedRoute roles={["admin"]}>
+          <AdminPage /> 
+        </ProtectedRoute>
+      ),
+      children: [
+        
+        { index: true, element: <Navigate to="intramurals" replace /> },
+        { path: "intramurals", element: <IntramuralsPage /> },
+        { path: "users", element: <UsersPage/>}
+      ],
       },
       {
-        path: ":intrams_id",
+        path: "admin/:intrams_id",
         element: (
           <ProtectedRoute roles = {["admin"]}>
             <IntramuralPage/>
           </ProtectedRoute>
         ),
         children: [
-          { path: "venues", element: <VenuesPage /> },
+          { index: true, element: <Navigate to="events" replace /> },
           { path: "events", element: <EventsPage /> },
           { path: "teams", element: <TeamsPage /> },
           { path: "vplayers", element: <VarsityPlayersPage /> },
-          { path: "documents", element: <DocumentsPage /> },
-          { path: "logs", element: <IntramuralLogsPage /> },
-          
-          
+          {path: "podiums", element: <PodiumsPage/>},
+          { path: "tally", element: <OverallTallyPage /> },
+
           
         ],
       },
       {
-        path: ":intrams_id/events/:event_id",
+        path: "admin/:intrams_id/events/:event_id",
         element: (
           <ProtectedRoute roles = {["admin"]}>
             <EventPage/>
           </ProtectedRoute>
         ),
         children: [
+          { index: true, element: <Navigate to="players" replace /> },
+          {path: "seeder", element: <TeamSeeder/>},
           { path: "bracket", element: <BracketPage /> },
           { path: "games", element: <GamePage /> },
-          { path: "participants", element: <ParticipantsPage /> },
+          { path: "players", element: <PlayersPage /> },
+          { path: "gallery", element: <GalleryPage /> },
+          { path: "result", element: <ResultPage /> },
           { path: "logs", element: <VarsityPlayersPage /> },
         ],
       },
       {
-        path: ":intrams_id/events/:event_id/participants/:participant_id",
+        path: "/tsecretary",
         element: (
-          <ProtectedRoute roles = {["admin"]}>
-            <ParticipantPage/>
+          <ProtectedRoute roles={["tsecretary"]}>
+            <TSecretaryPage />
           </ProtectedRoute>
         ),
         children: [
-          { path: "bracket", element: <BracketPage /> },
-          { path: "games", element: <GamePage /> },
-          { path: "players", element: <PlayersPage /> },
-          { path: "logs", element: <VarsityPlayersPage /> },
+          { index: true, element: <Navigate to="bracket" replace /> },
+          { path: "bracket", element: <TSBracketPage/>},
+          { path: "result", element: <TSResultPage /> },
+          { path: "podiums", element: <TSPodiumsPage /> },
+          { path: "tally", element: <TSOverallTallyPage /> },
         ],
       },
       {
@@ -117,14 +132,7 @@ const routes = [
           </ProtectedRoute>
         ),
       },
-      {
-        path: "/tsecretary",
-        element: (
-          <ProtectedRoute roles={["tsecretary"]}>
-            <TSecretaryPage />
-          </ProtectedRoute>
-        ),
-      },
+      
     ],
   },
   {

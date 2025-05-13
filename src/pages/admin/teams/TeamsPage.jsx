@@ -5,6 +5,7 @@ import Filter from "../../components/Filter";
 import TeamModal from "./modal/TeamModal";
 import PaginationControls from "../../components/PaginationControls";
 import { Users, Loader } from "lucide-react";
+import TeamCard from "./cards/TeamCard"; // You'll need to create this component
 
 export default function TeamsPage() {
   const { intrams_id } = useParams();
@@ -144,6 +145,9 @@ export default function TeamsPage() {
               onClick={openModal}
               disabled={loading}
             >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
               Add Team
             </button>
           </div>
@@ -179,77 +183,39 @@ export default function TeamsPage() {
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
-              </div>
+              </div >
             ) : teams.length === 0 ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                <Users size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
-                <p className="text-gray-500 mt-1">Click "Add Team" to create one</p>
+              <div className="flex-1 overflow-auto">
+                <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                  <Users size={48} className="mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
+                  <p className="text-gray-500 mt-1">Click "Add Team" to create one</p>
+                </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-                {/* Table with horizontal and vertical scrolling */}
-                <div className="flex-1 overflow-auto">
-                  <table className="min-w-full text-sm text-left text-gray-700">
-                    <thead className="bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8] sticky top-0">
-                      <tr>
-                        <th className="px-6 py-3 font-medium tracking-wider">Logo</th>
-                        <th className="px-6 py-3 font-medium tracking-wider">Name</th>
-                        <th className="px-6 py-3 font-medium tracking-wider">Type</th>
-                        <th className="px-6 py-3 font-medium tracking-wider text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {teams.map((team, idx) => (
-                        <tr
-                          key={team.id}
-                          className={`border-b border-[#E6F2E8] hover:bg-[#F7FAF7] transition duration-200 ${
-                            idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                          }`}
-                        >
-                          <td className="px-6 py-4">
-                            <img
-                              src={team.team_logo_path}
-                              alt={team.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/default-logo.png";
-                              }}
-                            />
-                          </td>
-                          <td className="px-6 py-4">{team.name}</td>
-                          <td className="px-6 py-4">{team.type}</td>
-                          <td className="px-6 py-4 text-right whitespace-nowrap">
-                            <button
-                              onClick={() => openEditModal(team)}
-                              className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors mr-2"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => deleteTeam(team.id, team.name)}
-                              className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                
-                {/* Pagination with horizontal scroll if needed */}
-                <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
-                  <PaginationControls
-                    pagination={pagination}
-                    handlePageChange={handlePageChange}
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-4 overflow-y-auto">
+                {teams.map((team) => (
+                  <div key={team.id} className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm">
+                    <TeamCard
+                      team={team}
+                      openEditModal={() => openEditModal(team)}
+                      deleteTeam={deleteTeam}
+                    />
+                  </div>
+                ))}
               </div>
             )}
           </div>
+
+          {/* Pagination in a fixed position at the bottom */}
+          {!loading && teams.length > 0 && (
+            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4 overflow-x-auto">
+              <PaginationControls
+                pagination={pagination}
+                handlePageChange={handlePageChange}
+              />
+            </div>
+          )}
         </div>
       </div>
 

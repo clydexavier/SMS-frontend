@@ -135,27 +135,6 @@ export default function TeamModal({
                 />
               </div>
 
-              {/* Team Type */}
-              <div>
-                <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                  Team Type
-                </label>
-                <select
-                  name="type"
-                  id="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  required
-                >
-                  <option value="" disabled>Select Type</option>
-                  <option value="A">A</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                  <option value="D">D</option>
-                </select>
-              </div>
-
               {/* Team Logo */}
               <div>
                 <label htmlFor="team_logo_path" className="block mb-2 text-sm font-medium text-[#2A6D3A]">

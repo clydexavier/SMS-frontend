@@ -1,169 +1,153 @@
-// src/pages/public/LoginPage.jsx
-import React, { useRef, useState, useEffect } from 'react';
+// src/pages/public/LoginPage.jsx - With Error Handling
+import React, { useRef, useState } from 'react';
 import logo from "../../assets/IHK_logo1.png";
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { Loader, Eye, EyeOff, Mail, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import GoogleAuthButton from './GoogleAuthButton';
+import axiosClient from "../../axiosClient";
 
 export default function LoginPage() {
   const emailRef = useRef();
   const passwordRef = useRef();
-  const { login, googleAuthSuccess } = useAuth();
+  const { setToken, setUser, setRole, redirectToRoleBasedRoute, googleAuthSuccess } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const location = useLocation();
   
-  // Enhanced message handling
-  const [message, setMessage] = useState({
-    type: null, // 'success', 'error', 'info', 'warning'
-    text: '',
-    visible: false,
-    timeout: null
-  });
-
-  // Handle OAuth callback
+  // Simple error message state
+  const [errorMessage, setErrorMessage] = useState(null);
+  
   useEffect(() => {
-    // Check if we're returning from OAuth flow with a token or pending message
+    // Check if we're returning from OAuth flow with a token or error message
     const queryParams = new URLSearchParams(location.search);
     const oauthToken = queryParams.get('token');
     const error = queryParams.get('error');
     const pending = queryParams.get('pending');
     const pendingMessage = queryParams.get('message');
     
+    // Clean URL parameters after processing
+    const shouldCleanUrl = oauthToken || error || pending;
+    
     if (oauthToken) {
       handleGoogleAuthSuccess(oauthToken);
-      
-      // Clean up URL parameters
-      window.history.replaceState({}, document.title, location.pathname);
     } else if (error) {
-      showMessage('error', `Authentication failed: ${error}`, 5000);
-      window.history.replaceState({}, document.title, location.pathname);
+      // Handle explicit error from OAuth
+      setErrorMessage(decodeURIComponent(error));
     } else if (pending && pendingMessage) {
       // Handle the case where a user with 'user' role tried to login via Google
-      showMessage('warning', decodeURIComponent(pendingMessage), 5000);
+      setErrorMessage(decodeURIComponent(pendingMessage));
+    }
+    
+    // Clean up URL parameters if needed
+    if (shouldCleanUrl) {
       window.history.replaceState({}, document.title, location.pathname);
     }
   }, [location]);
-
-  // Clear message on component unmount
-  useEffect(() => {
-    return () => {
-      if (message.timeout) {
-        clearTimeout(message.timeout);
-      }
-    };
-  }, [message.timeout]);
-
-  // Show message with optional auto-dismiss
-  const showMessage = (type, text, duration = 0) => {
-    // Clear any existing timeout
-    if (message.timeout) {
-      clearTimeout(message.timeout);
-    }
-    
-    // Set the new message
-    setMessage(prev => ({
-      type,
-      text,
-      visible: true,
-      timeout: duration > 0 ? setTimeout(() => {
-        setMessage(prev => ({ ...prev, visible: false }));
-      }, duration) : null
-    }));
-  };
-
+  
+  // Enhanced Google auth success handler
   const handleGoogleAuthSuccess = async (token) => {
     setIsLoading(true);
+    setErrorMessage(null);
     
     try {
+      // Call the googleAuthSuccess function from AuthContext
       const result = await googleAuthSuccess(token);
       
-      if (result.success) {
-        showMessage('success', 'Successfully logged in with Google!', 5000);
-      } else {
-        showMessage('error', result.message, 5000);
+      // If there was a problem, handle it
+      if (result && !result.success) {
+        setErrorMessage(result.message || "Failed to authenticate with Google.");
       }
     } catch (error) {
-      showMessage('error', 'Failed to authenticate with Google. Please try again.', 5000);
+      console.error("Google auth error:", error);
+      
+      // Handle specific error cases if available
+      if (error.response) {
+        const status = error.response.status;
+        
+        if (status === 401) {
+          setErrorMessage("Google authentication failed. Invalid credentials.");
+        } else if (status === 403) {
+          setErrorMessage("Your account requires approval before you can log in.");
+        } else {
+          setErrorMessage(error.response.data?.message || "Failed to authenticate with Google.");
+        }
+      } else {
+        setErrorMessage("Failed to complete Google authentication. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
+  // Login logic with error handling
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!emailRef.current || !passwordRef.current) {
+      return;
+    }
+    
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+    
+    setIsLoading(true);
+    setErrorMessage(null);
+    
+    try {
+      const response = await axiosClient.post('/login', {
+        email,
+        password
+      });
       
-      if (!emailRef.current || !passwordRef.current) {
-          return;
+      if (response.data.user && response.data.token) {
+        setToken(response.data.token);
+        setUser(response.data.user);
+        setRole(response.data.user.role);
+        redirectToRoleBasedRoute(response.data.user.role);
       }
+    } catch (err) {
+      console.error("Login error:", err);
       
-      const email = emailRef.current.value;
-      const password = passwordRef.current.value;
-      
-      setIsLoading(true);
-      
-      try {
-          const result = await login(email, password);
-          
-          if (!result.success) {
-              // Handle pending approval case
-              if (result.pending) {
-                  showMessage('warning', result.message, 5000);
-              } else {
-                  showMessage('error', result.message, 5000);
-              }
-          }
-          // Success case is already handled in the login function with redirect
-      } catch (err) {
-          showMessage('error', "An unexpected error occurred. Please try again.", 5000);
-          console.error("Login error:", err);
-      } finally {
-          setIsLoading(false);
+      // Handle specific error cases based on status codes
+      if (err.response) {
+        const status = err.response.status;
+        console.log("Status:", status);
+        
+        if (status === 422) {
+          // Validation error
+          setErrorMessage(err.response.data.message || "Invalid login credentials.");
+        } else if (status === 403) {
+          // Pending approval
+          setErrorMessage(err.response.data.message || "Your account is awaiting approval.");
+        } else if (status === 401) {
+          // Unauthorized
+          setErrorMessage("Invalid email or password.");
+        } else {
+          // General error
+          setErrorMessage("An error occurred during login. Please try again.");
+        }
+      } else {
+        // Network error or other unexpected error
+        setErrorMessage("Could not connect to the server. Please check your internet connection.");
       }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Render the appropriate message UI based on message type
-  const renderMessage = () => {
-    if (!message.visible) return null;
-    
-    const messageStyles = {
-      success: {
-        bg: 'bg-green-50',
-        border: 'border-green-200',
-        text: 'text-green-800',
-        icon: <CheckCircle size={18} className="text-green-500" />
-      },
-      error: {
-        bg: 'bg-red-50',
-        border: 'border-red-200',
-        text: 'text-red-800',
-        icon: <XCircle size={18} className="text-red-500" />
-      },
-      warning: {
-        bg: 'bg-yellow-50',
-        border: 'border-yellow-200',
-        text: 'text-yellow-800',
-        icon: <AlertCircle size={18} className="text-yellow-500" />
-      },
-      info: {
-        bg: 'bg-blue-50',
-        border: 'border-blue-200',
-        text: 'text-blue-800',
-        icon: <AlertCircle size={18} className="text-blue-500" />
-      }
-    };
-    
-    const style = messageStyles[message.type] || messageStyles.info;
+  // Simple error message component
+  const ErrorMessage = () => {
+    if (!errorMessage) return null;
     
     return (
-      <div className={`p-3 rounded-lg border flex items-start gap-2 ${style.bg} ${style.border} ${style.text}`} role="alert">
+      <div className="p-3 rounded-lg border flex items-start gap-2 bg-red-50 border-red-200 text-red-800" role="alert">
         <div className="flex-shrink-0 mt-0.5">
-          {style.icon}
+          <AlertCircle size={18} className="text-red-500" />
         </div>
-        <div className="text-sm flex-grow">{message.text}</div>
+        <div className="text-sm flex-grow">{errorMessage}</div>
         <button 
-          onClick={() => setMessage(prev => ({ ...prev, visible: false }))}
+          onClick={() => setErrorMessage(null)}
           className="flex-shrink-0 ml-auto -mr-1 -mt-1 text-gray-500 hover:text-gray-700"
         >
           <XCircle size={16} />
@@ -181,7 +165,7 @@ export default function LoginPage() {
         </div>
         
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-          {message.visible && renderMessage()}
+          {errorMessage && <ErrorMessage />}
           
           <div>
             <label htmlFor="email" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
@@ -270,7 +254,7 @@ export default function LoginPage() {
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
           
-          <GoogleAuthButton setErrorMessage={(error) => showMessage('error', error, 5000)} />
+          <GoogleAuthButton setErrorMessage={(error) => setErrorMessage(error)} />
         </form>
         
         <p className="mt-6 text-center text-sm text-gray-600">

@@ -96,7 +96,7 @@ export default function EventModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     existingEvent ? updateEvent(existingEvent.id, formData) : addEvent(formData);
-    //clearForm();
+    clearForm();
   };
 
   if (!isModalOpen) return null;

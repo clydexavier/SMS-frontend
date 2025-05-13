@@ -188,7 +188,7 @@ export default function IntramuralsPage() {
           </div>
 
           {/* Scrollable content area */}
-          <div className="mt-4 flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="mt-4 flex-1 overflow-y-auto flex flex-col min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />

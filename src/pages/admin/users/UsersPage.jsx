@@ -36,7 +36,6 @@ export default function UsersPage() {
     lastPage: 1,
   });
 
-  
   const openEditModal = (user) => {
     setSelectedUser(user);
     setIsModalOpen(true);
@@ -61,16 +60,16 @@ export default function UsersPage() {
     }
   };
   
-  // Add handler for user deletion
-  const deleteUser = async (id) => {
+  // Handle the actual user deletion
+  const deleteUser = async (user) => {
     try {
-      setLoading(true);
-      await axiosClient.delete(`/users/${id}`);
+      await axiosClient.delete(`/users/${user.id}`);
       setShouldRefetch(prev => !prev); // Toggle to trigger refetch
+      return true;
     } catch (err) {
       setError("Failed to delete user");
       console.error("Error deleting user:", err);
-      setLoading(false);
+      throw err; // Re-throw the error to be caught by the UserCard component
     }
   };
 

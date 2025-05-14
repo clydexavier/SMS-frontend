@@ -5,6 +5,7 @@ import axiosClient from "../../../axiosClient";
 import Filter from "../../components/Filter";
 import PlayerModal from "./modal/PlayerModal";
 import PaginationControls from "../../components/PaginationControls";
+import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import { Users, Loader } from "lucide-react";
 
 export default function PlayersPage() {
@@ -20,6 +21,18 @@ export default function PlayersPage() {
   const [search, setSearch] = useState("");
 
   const [teams, setTeams] = useState([]);
+
+  // Delete confirmation modal states
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  
+  // Approval confirmation modal states
+  const [showApprovalConfirmation, setShowApprovalConfirmation] = useState(false);
+  const [playerToToggleApproval, setPlayerToToggleApproval] = useState(null);
+  const [isTogglingApproval, setIsTogglingApproval] = useState(false);
+  const [approvalError, setApprovalError] = useState(null);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -86,40 +99,64 @@ export default function PlayersPage() {
     }
   };
 
-  const deletePlayer = async (id, name) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
-    if (confirmDelete) {
-      try {
-        setLoading(true);
-        await axiosClient.delete(
-          `/intramurals/${intrams_id}/events/${event_id}/players/${id}`
-        );
-        await fetchPlayers();
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to delete player");
-      } finally {
-        setLoading(false);
-      }
+  // Open delete confirmation modal
+  const confirmDeletePlayer = (player) => {
+    setPlayerToDelete(player);
+    setDeleteError(null);
+    setShowDeleteConfirmation(true);
+  };
+  
+  // Handle the actual deletion after confirmation
+  const handleDeletePlayer = async () => {
+    if (!playerToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      
+      await axiosClient.delete(
+        `/intramurals/${intrams_id}/events/${event_id}/players/${playerToDelete.id}`
+      );
+      
+      // Close modal and refresh data
+      setShowDeleteConfirmation(false);
+      await fetchPlayers();
+    } catch (err) {
+      console.error("Error deleting player:", err);
+      setDeleteError(err.response?.data?.message || "Failed to delete player. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const toggleApproval = async (id, currentStatus, name) => {
-    const confirm = window.confirm(
-      `Are you sure you want to ${currentStatus ? "mark as pending" : "approve"} ${name}?`
-    );
-    if (confirm) {
-      try {
-        setLoading(true);
-        await axiosClient.patch(
-          `/intramurals/${intrams_id}/events/${event_id}/players/${id}/edit`,
-          { approved: currentStatus ? 0 : 1 }
-        );
-        await fetchPlayers();
-      } catch (err) {
-        setError("Failed to update approval status");
-      } finally {
-        setLoading(false);
-      }
+  // Open approval confirmation modal
+  const confirmToggleApproval = (player) => {
+    setPlayerToToggleApproval(player);
+    setApprovalError(null);
+    setShowApprovalConfirmation(true);
+  };
+  
+  // Handle the actual approval toggle after confirmation
+  const handleToggleApproval = async () => {
+    if (!playerToToggleApproval) return;
+    
+    try {
+      setIsTogglingApproval(true);
+      setApprovalError(null);
+      
+      await axiosClient.patch(
+        `/intramurals/${intrams_id}/events/${event_id}/players/${playerToToggleApproval.id}/edit`,
+        { approved: playerToToggleApproval.approved ? 0 : 1 }
+      );
+      
+      // Close modal and refresh data
+      setShowApprovalConfirmation(false);
+      await fetchPlayers();
+    } catch (err) {
+      console.error("Error updating approval status:", err);
+      setApprovalError("Failed to update approval status. Please try again.");
+    } finally {
+      setIsTogglingApproval(false);
     }
   };
 
@@ -328,7 +365,7 @@ export default function PlayersPage() {
                               Edit
                             </button>
                             <button
-                              onClick={() => deletePlayer(player.id, player.name)}
+                              onClick={() => confirmDeletePlayer(player)}
                               className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
                             >
                               Delete
@@ -336,7 +373,7 @@ export default function PlayersPage() {
                           </td>
                           <td className="px-6 py-4 text-right whitespace-nowrap">
                             <button
-                              onClick={() => toggleApproval(player.id, player.approved, player.name)}
+                              onClick={() => confirmToggleApproval(player)}
                               className={`${
                                 player.approved
                                   ? "text-yellow-600 border-yellow-200 hover:bg-yellow-50"
@@ -365,6 +402,7 @@ export default function PlayersPage() {
         </div>
       </div>
 
+      {/* Player Modal */}
       <PlayerModal
         isModalOpen={isModalOpen}
         closeModal={closeModal}
@@ -374,6 +412,36 @@ export default function PlayersPage() {
         isLoading={loading}
         error={error}
         teams={teams}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleDeletePlayer}
+        title="Delete Player"
+        itemName={playerToDelete ? playerToDelete.name : ""}
+        message={playerToDelete ? 
+          `Are you sure you want to delete ${playerToDelete.name}? This action cannot be undone.` 
+          : "Are you sure you want to delete this player? This action cannot be undone."
+        }
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
+
+      {/* Approval Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showApprovalConfirmation}
+        onClose={() => setShowApprovalConfirmation(false)}
+        onConfirm={handleToggleApproval}
+        title={playerToToggleApproval?.approved ? "Mark as Pending" : "Approve Player"}
+        itemName={playerToToggleApproval ? playerToToggleApproval.name : ""}
+        message={playerToToggleApproval ? 
+          `Are you sure you want to ${playerToToggleApproval.approved ? "mark as pending" : "approve"} ${playerToToggleApproval.name}?` 
+          : "Are you sure you want to change the approval status of this player?"
+        }
+        isDeleting={isTogglingApproval}
+        error={approvalError}
       />
     </div>
   );

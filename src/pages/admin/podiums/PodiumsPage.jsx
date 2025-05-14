@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
 import Filter from "../../components/Filter";
 import PaginationControls from "../../components/PaginationControls";
@@ -7,6 +7,8 @@ import { Trophy, Loader, Medal, Award } from "lucide-react";
 
 export default function PodiumsPage() {
   const { intrams_id } = useParams();
+
+  const location = useLocation();
 
   const [loading, setLoading] = useState(true);
   const [podiums, setPodiums] = useState([]);

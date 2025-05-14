@@ -12,12 +12,13 @@ export default function EventsPage() {
 
   const filterOptions = [
     { label: "All", value: "all" },
-    { label: "In Progress", value: "in progress" },
-    { label: "Pending", value: "pending" },
-    { label: "Completed", value: "completed" },
+    { label: "Sports", value: "sports" },
+    { label: "Dance", value: "dance" },
+    { label: "Music", value: "music" },
   ];
 
   const [events, setEvents] = useState([]);
+  const [intramsName, setEventName] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -115,13 +116,14 @@ export default function EventsPage() {
           {
             params: {
               page: pagination.currentPage,
-              status: activeTab,
+              type: activeTab,
               search: search,
             },
           }
         );
         
         setEvents(data.data);
+        setEventName(data.event_name);
         setPagination({
           currentPage: data.meta.current_page,
           perPage: data.meta.per_page,
@@ -162,7 +164,7 @@ export default function EventsPage() {
         <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
-              <CalendarClock size={20} className="mr-2" /> Events
+              <CalendarClock size={20} className="mr-2" /> {intramsName} Events
             </h2>
             <button
               type="button"

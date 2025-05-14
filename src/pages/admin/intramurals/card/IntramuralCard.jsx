@@ -140,7 +140,7 @@ function IntramuralCard({ intramural, openEditModal, deleteIntramural }) {
 
       {/* Header */}
       <div className="pt-4 px-4 pb-3 bg-amber-50/70">
-        <Link to={`/admin/${intramural.id}/events`} state={{ intrams_id: intramural.id }} className="block">
+        <Link to={`/admin/${intramural.id}/events`} state={{ intrams_name: intramural.name }} className="block">
           <h3 className="font-semibold text-[#2A6D3A] text-lg mt-2">
             {intramural.name}
           </h3>

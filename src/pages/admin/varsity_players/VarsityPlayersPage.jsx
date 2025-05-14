@@ -4,6 +4,7 @@ import axiosClient from "../../../axiosClient";
 import Filter from "../../components/Filter";
 import VarsityPlayerModal from "./modal/VarsityPlayerModal";
 import PaginationControls from "../../components/PaginationControls";
+import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import { Users, Loader } from "lucide-react";
 
 export default function VarsityPlayersPage() {
@@ -14,6 +15,12 @@ export default function VarsityPlayersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Delete confirmation modal states
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
@@ -110,18 +117,31 @@ export default function VarsityPlayersPage() {
     }
   };
 
-  const deletePlayer = async (id, name) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
-    if (confirmDelete) {
-      try {
-        setLoading(true);
-        await axiosClient.delete(`/intramurals/${intrams_id}/varsity_players/${id}`);
-        await fetchPlayers();
-      } catch (err) {
-        setError("Failed to delete player");
-      } finally {
-        setLoading(false);
-      }
+  // Open delete confirmation modal
+  const confirmDeletePlayer = (player) => {
+    setPlayerToDelete(player);
+    setDeleteError(null);
+    setShowDeleteConfirmation(true);
+  };
+  
+  // Handle the actual deletion after confirmation
+  const handleDeletePlayer = async () => {
+    if (!playerToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      
+      await axiosClient.delete(`/intramurals/${intrams_id}/varsity_players/${playerToDelete.id}`);
+      
+      // Close modal and refresh data
+      setShowDeleteConfirmation(false);
+      await fetchPlayers();
+    } catch (err) {
+      console.error("Error deleting player:", err);
+      setDeleteError("Failed to delete player. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -234,7 +254,7 @@ export default function VarsityPlayersPage() {
                               Edit
                             </button>
                             <button
-                              onClick={() => deletePlayer(player.id, player.name)}
+                              onClick={() => confirmDeletePlayer(player)}
                               className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
                             >
                               Delete
@@ -259,6 +279,7 @@ export default function VarsityPlayersPage() {
         </div>
       </div>
 
+      {/* Varsity Player Modal */}
       <VarsityPlayerModal
         isModalOpen={isModalOpen}
         closeModal={closeModal}
@@ -267,6 +288,21 @@ export default function VarsityPlayersPage() {
         existingPlayer={selectedPlayer}
         isLoading={loading}
         error={error}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleDeletePlayer}
+        title="Delete Varsity Player"
+        itemName={playerToDelete ? playerToDelete.name : ""}
+        message={playerToDelete ? 
+          `Are you sure you want to delete ${playerToDelete.name}? This action cannot be undone.` 
+          : "Are you sure you want to delete this varsity player? This action cannot be undone."
+        }
+        isDeleting={isDeleting}
+        error={deleteError}
       />
     </div>
   );

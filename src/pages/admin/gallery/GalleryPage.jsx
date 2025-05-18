@@ -187,6 +187,7 @@ export default function GalleryPage() {
                       key={gallery.id}
                       gallery={gallery}
                       teamName={teamGallery.team_name}
+                      teamLogo={teamGallery.team_logo_url}
                       onDelete={deleteGallery}
                     />
                   ))

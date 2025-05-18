@@ -2,7 +2,7 @@ import React from "react";
 import { Eye, Download, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
-const GalleryCard = ({ gallery, teamName, onDelete }) => {
+const GalleryCard = ({ gallery, teamName, onDelete, teamLogo }) => {
   const formatDate = (dateString) => {
     try {
       return format(new Date(dateString), "MMM dd, yyyy");
@@ -13,23 +13,27 @@ const GalleryCard = ({ gallery, teamName, onDelete }) => {
 
   return (
     <div className="bg-white border border-[#E6F2E8] rounded-lg overflow-hidden shadow hover:shadow-md transition-all duration-200">
-      <div className="relative aspect-video bg-gray-100">
-        <img 
-          src={gallery.file_url} 
-          alt={`Gallery ${gallery.id}`}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
-          }}
-        />
-      </div>
-      <div className="p-4">
-        <div className="mb-2">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F7FAF7] text-[#2A6D3A] border border-[#E6F2E8]">
-            {teamName}
-          </span>
+      <div className="flex flex-col items-center mb-4 mt-4">
+        <div className="w-20 h-20 bg-[#E6F2E8] text-[#2A6D3A] rounded-full flex items-center justify-center text-xl font-semibold mb-2 overflow-hidden">
+          {teamLogo ? (
+            <img 
+            src={teamLogo} 
+            alt={`Gallery ${gallery.id}`}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
+            }}
+            />
+          ) : (
+            teamLogo.charAt(0).toUpperCase()
+          )}
         </div>
+        <h3 className="font-medium text-gray-800 text-center">{teamName}</h3>
+      </div>
+      
+      <div className="p-4">
+        
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-500">{formatDate(gallery.created_at)}</p>
           <div className="flex space-x-2">

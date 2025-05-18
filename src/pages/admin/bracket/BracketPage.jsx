@@ -58,7 +58,7 @@ export default function BracketPage() {
       );
     }
     
-    if (eventStatus === "completed") {
+    /*if (eventStatus === "completed") {
       return (
         <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
           <Award size={48} className="mx-auto mb-4 text-green-400" />
@@ -66,7 +66,7 @@ export default function BracketPage() {
           <p className="text-gray-600 mt-1">This event has been completed. Bracket display is for viewing only.</p>
         </div>
       );
-    }
+    }*/
     
     if (eventStatus === "pending") {
       return (
@@ -78,7 +78,7 @@ export default function BracketPage() {
       );
     }
     
-    if (eventStatus !== "in progress" || !bracketId) {
+    if ( !bracketId) {
       return (
         <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
           <Award size={48} className="mx-auto mb-4 text-gray-400" />

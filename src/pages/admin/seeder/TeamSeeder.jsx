@@ -41,7 +41,7 @@ export default function TeamSeeder() {
       try {
         // Get event status first
         const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/status`);
-        setEventStatus(data);
+        setEventStatus(data.status);
         
         // Get event name
         const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);

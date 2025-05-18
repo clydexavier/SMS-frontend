@@ -23,7 +23,7 @@ const ResultPage = () => {
       const eventStatusRes = await axiosClient.get(
         `intramurals/${intrams_id}/events/${event_id}/status`
       );
-      setEventStatus(eventStatusRes.data);
+      setEventStatus(eventStatusRes.data.status);
       
       // Get event name
       const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);

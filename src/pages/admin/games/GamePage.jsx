@@ -196,7 +196,7 @@ export default function GamePage() {
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Calendar size={20} className="mr-2" /> Bracket Matches
             </h2>
-            {eventStatus === "in_progress" && (
+            {eventStatus === "in progress" && (
               <button
                 type="button"
                 onClick={generateMatches}
@@ -211,7 +211,7 @@ export default function GamePage() {
             )}
           </div>
           
-          {eventStatus === "in_progress" && (
+          {eventStatus === "in progress" && (
             <div className="mb-4">
               <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
                 <Filter
@@ -259,7 +259,7 @@ export default function GamePage() {
               <div className="flex-1 bg-blue-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-blue-200">
                 <Calendar size={48} className="mx-auto mb-4 text-blue-400" />
                 <h3 className="text-lg font-medium text-blue-800">No matches found</h3>
-                {eventStatus === "in_progress" && (
+                {eventStatus === "in progress" && (
                   <p className="text-gray-600 mt-1">Click "Generate Matches" to create brackets</p>
                 )}
               </div>

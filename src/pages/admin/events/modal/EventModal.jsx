@@ -149,6 +149,8 @@ export default function EventModal({
                     <option value="" disabled>Select tournament type</option>
                     <option value="single elimination">Single Elimination</option>
                     <option value="double elimination">Double Elimination</option>
+                    <option value="round robin">Round Robin</option>
+
                   </select>
                 </div>
 

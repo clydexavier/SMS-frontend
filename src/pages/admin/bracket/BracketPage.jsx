@@ -92,7 +92,7 @@ export default function BracketPage() {
     
     return (
       <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
           <iframe
             src={`https://challonge.com/${bracketId}/module`}
             width="100%"

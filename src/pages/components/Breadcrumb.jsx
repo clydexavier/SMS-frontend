@@ -68,7 +68,7 @@ const Breadcrumb = () => {
   }, [location.pathname, params.intrams_id]);
 
   // Fetch events data when needed
-  useEffect(() => {
+  useEffect( () => {
     // Check if we need to fetch events data
     if (location.pathname.includes('/events/') && params.intrams_id && params.event_id && !events[params.event_id]) {
       setLoading(true);

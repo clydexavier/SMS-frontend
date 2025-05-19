@@ -26,11 +26,13 @@ export default function EventModal({
     venue: "",
     is_umbrella: false,
     parent_id: "",
+    has_independent_medaling: true, // Added new field for umbrella event medaling system
   };
 
   const [formData, setFormData] = useState(initialState);
   
   useEffect(() => {
+    console.log(umbrellaEvents);
     if (existingEvent) {
       setFormData({
         name: existingEvent.name || "",
@@ -43,6 +45,7 @@ export default function EventModal({
         venue: existingEvent.venue || "",
         is_umbrella: existingEvent.is_umbrella || false,
         parent_id: existingEvent.parent_id || "",
+        has_independent_medaling: existingEvent.has_independent_medaling || false, // Added for existing events
       });
     } else {
       setFormData(initialState);
@@ -83,7 +86,6 @@ export default function EventModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
     existingEvent ? updateEvent(existingEvent.id, formData) : addEvent(formData);
   };
 
@@ -143,6 +145,23 @@ export default function EventModal({
                           This is an umbrella event (contains sub-events)
                         </label>
                       </div>
+
+                      {/* Independent Medaling Checkbox - only shown for umbrella events */}
+                      {formData.is_umbrella && (
+                        <div className="flex items-center mt-2">
+                          <input
+                            id="has_independent_medaling"
+                            name="has_independent_medaling"
+                            type="checkbox"
+                            checked={formData.has_independent_medaling}
+                            onChange={handleCheckboxChange}
+                            className="h-4 w-4 text-[#6BBF59] focus:ring-[#6BBF59] rounded"
+                          />
+                          <label htmlFor="has_independent_medaling" className="ml-2 text-sm text-gray-700">
+                            Sub-events have independent medaling (not aggregated)
+                          </label>
+                        </div>
+                      )}
 
                       {/* Parent Event Selection (only shown if not an umbrella event) */}
                       {!formData.is_umbrella && (
@@ -252,8 +271,6 @@ export default function EventModal({
                       <p className="mt-1 text-xs text-gray-500">Type is inherited from parent event</p>
                     )}
                   </div>
-
-                  
 
                   {/* Medal Count */}
                   <div>

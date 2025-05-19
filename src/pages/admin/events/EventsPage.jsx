@@ -103,6 +103,7 @@ export default function EventsPage() {
   const updateEvent = useCallback(async (id, updatedData) => {
     try {
       setLoading(true);
+      console.log(updatedData);
       await axiosClient.patch(
         `/intramurals/${intrams_id}/events/${id}/edit`,
         updatedData

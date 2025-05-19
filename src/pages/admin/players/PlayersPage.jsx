@@ -1,4 +1,4 @@
-// PlayersPage.jsx
+// PlayersPage.jsx with updated approval modal
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
@@ -6,6 +6,7 @@ import Filter from "../../components/Filter";
 import PlayerModal from "./modal/PlayerModal";
 import PaginationControls from "../../components/PaginationControls";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
+import ApprovalConfirmationModal from "./modal/ApproveConfirmationModal";
 import { Users, Loader } from "lucide-react";
 
 export default function PlayersPage() {
@@ -429,19 +430,20 @@ export default function PlayersPage() {
         error={deleteError}
       />
 
-      {/* Approval Confirmation Modal */}
-      <DeleteConfirmationModal
+      {/* Use the new ApprovalConfirmationModal */}
+      <ApprovalConfirmationModal
         isOpen={showApprovalConfirmation}
         onClose={() => setShowApprovalConfirmation(false)}
         onConfirm={handleToggleApproval}
-        title={playerToToggleApproval?.approved ? "Mark as Pending" : "Approve Player"}
+        title={playerToToggleApproval?.approved ? "Mark Player as Pending" : "Approve Player"}
         itemName={playerToToggleApproval ? playerToToggleApproval.name : ""}
         message={playerToToggleApproval ? 
           `Are you sure you want to ${playerToToggleApproval.approved ? "mark as pending" : "approve"} ${playerToToggleApproval.name}?` 
           : "Are you sure you want to change the approval status of this player?"
         }
-        isDeleting={isTogglingApproval}
+        isProcessing={isTogglingApproval}
         error={approvalError}
+        isApproving={playerToToggleApproval ? !playerToToggleApproval.approved : true}
       />
     </div>
   );

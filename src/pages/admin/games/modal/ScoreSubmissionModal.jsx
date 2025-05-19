@@ -112,9 +112,14 @@ export default function ScoreSubmissionModal({
       } else if (scoreType === "sets") {
         payload.scores_csv = createScoresCsv();
       } else if (scoreType === "winner_only") {
-        // Add default scores of 0-0 for winner-only option
-        payload.score_team1 = 0;
-        payload.score_team2 = 0;
+        // Set 1-0 score for winner instead of 0-0
+        if (winner === match.team_1) {
+          payload.score_team1 = 1;
+          payload.score_team2 = 0;
+        } else {
+          payload.score_team1 = 0;
+          payload.score_team2 = 1;
+        }
       }
       
       await submitScore(match.match_id, payload);
@@ -149,32 +154,34 @@ export default function ScoreSubmissionModal({
           </div>
           
           {/* Form */}
-          <div className="p-5">
+          <form onSubmit={handleSubmit} className="p-5">
             {error && (
               <div className="bg-red-100 text-red-700 p-3 rounded-md text-sm mb-6 border border-red-200">
                 {error}
               </div>
             )}
             
+            {/* Match Info - always visible even when submitting */}
+            <div className="flex items-center justify-center mb-6 bg-[#F7FAF7] p-3 rounded-lg">
+              <div className="text-center">
+                <span className="font-medium text-lg text-[#2A6D3A]">{match.team1_name || "Team 1"}</span>
+              </div>
+              <div className="mx-4 text-gray-500">vs</div>
+              <div className="text-center">
+                <span className="font-medium text-lg text-[#2A6D3A]">{match.team2_name || "Team 2"}</span>
+              </div>
+            </div>
+            
             {isSubmitting ? (
+              /* Form loading state animation */
               <div className="space-y-4 animate-pulse">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="h-10 bg-gray-200 rounded" />
                 ))}
               </div>
             ) : (
-              <form onSubmit={handleSubmit}>
-                {/* Match Info */}
-                <div className="flex items-center justify-center mb-6 bg-[#F7FAF7] p-3 rounded-lg">
-                  <div className="text-center">
-                    <span className="font-medium text-lg text-[#2A6D3A]">{match.team1_name || "Team 1"}</span>
-                  </div>
-                  <div className="mx-4 text-gray-500">vs</div>
-                  <div className="text-center">
-                    <span className="font-medium text-lg text-[#2A6D3A]">{match.team2_name || "Team 2"}</span>
-                  </div>
-                </div>
-                
+              /* Form content */
+              <>
                 {/* Score Type Selection */}
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
@@ -250,6 +257,9 @@ export default function ScoreSubmissionModal({
                           {match.team2_name || "Team 2"}
                         </button>
                       </div>
+                    </div>
+                    <div className="mt-4 text-sm text-center text-gray-600">
+                      <span className="text-[#2A6D3A] font-medium">Note:</span> The winner will receive a score of 1, and the loser will receive a score of 0.
                     </div>
                   </div>
                 )}
@@ -415,35 +425,35 @@ export default function ScoreSubmissionModal({
                     </div>
                   </div>
                 )}
-                
-                {/* Action Buttons */}
-                <div className="flex justify-end mt-6 space-x-3">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="text-[#2A6D3A] bg-white border border-[#E6F2E8] hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200"
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200 flex items-center"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader size={16} className="mr-2 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      "Submit Scores"
-                    )}
-                  </button>
-                </div>
-              </form>
+              </>
             )}
-          </div>
+            
+            {/* Action Buttons - always visible */}
+            <div className="flex justify-end mt-6 space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-[#2A6D3A] bg-white border border-[#E6F2E8] hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200"
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="text-white bg-[#6BBF59] hover:bg-[#5CAF4A] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200 flex items-center"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader size={16} className="mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Scores"
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

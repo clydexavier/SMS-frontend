@@ -1,230 +1,220 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  FiMoreVertical,
-  FiMapPin,
-  FiCheckCircle,
-  FiClock,
-  FiAlertCircle,
-  FiCalendar,
-} from "react-icons/fi";
-import { Link, useParams } from "react-router-dom";
-import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
+import React, { useState } from "react";
+import { MoreVertical, Edit, Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function EventCard({ event, openEditModal, deleteEvent }) {
-  const { intrams_id } = useParams();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-
-  // Delete confirmation modal states
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+export default function EventCard({ event, openEditModal, deleteEvent, isUmbrella, onUmbrellaClick }) {
+  const [showActions, setShowActions] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const confirmDeleteEvent = () => {
-    setMenuOpen(false);
-    setShowDeleteConfirmation(true);
+  const toggleActions = (e) => {
+    e.stopPropagation(); // Prevent triggering card click
+    setShowActions(!showActions);
+    setShowConfirmDelete(false);
   };
 
-  // Handle the actual deletion after confirmation
-  const handleDelete = async () => {
+  const handleEditClick = (e) => {
+    e.stopPropagation(); // Prevent triggering card click
+    setShowActions(false);
+    openEditModal(event);
+  };
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation(); // Prevent triggering card click
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async (e) => {
+    e.stopPropagation(); // Prevent triggering card click
+    setIsDeleting(true);
     try {
-      setIsDeleting(true);
-      setDeleteError(null);
-
-      // Call the deleteEvent function passed from parent
       await deleteEvent(event);
-
-      setShowDeleteConfirmation(false);
+      setIsDeleting(false);
+      setShowActions(false);
+      setShowConfirmDelete(false);
     } catch (error) {
-      console.error("Error deleting event:", error);
-      setDeleteError("Failed to delete event. Please try again.");
       setIsDeleting(false);
     }
   };
 
-  const getStatusDetails = (status) => {
-    switch (status) {
-      case "completed":
-        return {
-          icon: <FiCheckCircle className="w-4 h-4" />,
-          bgColor: "bg-green-500",
-          textColor: "text-white",
-          label: "Completed"
-        };
-      case "in progress":
-        return {
-          icon: <FiClock className="w-4 h-4" />,
-          bgColor: "bg-blue-500",
-          textColor: "text-white",
-          label: "In Progress"
-        };
-      case "pending":
-      default:
-        return {
-          icon: <FiAlertCircle className="w-4 h-4" />,
-          bgColor: "bg-amber-400",
-          textColor: "text-gray-800",
-          label: "Pending"
-        };
-    }
+  const cancelDelete = (e) => {
+    e.stopPropagation(); // Prevent triggering card click
+    setShowConfirmDelete(false);
   };
 
-  const statusDetails = getStatusDetails(event.status);
-  
-  // Format event date/time if available
-  const formatSchedule = () => {
-    if (event.event_date && event.event_time) {
-      try {
-        // Format date
-        const date = new Date(event.event_date);
-        const formattedDate = date.toLocaleDateString('en-US', {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric'
-        });
-        
-        // Format time
-        const timeParts = event.event_time.split(':');
-        let hours = parseInt(timeParts[0]);
-        const minutes = timeParts[1];
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        const formattedTime = `${hours}:${minutes} ${ampm}`;
-        
-        return { date: formattedDate, time: formattedTime };
-      } catch (e) {
-        return null;
-      }
+  // Handle the card click for regular events only
+  const handleCardClick = () => {
+    if (!isUmbrella) {
+      navigate(`${event.id}/players`, { state: { event_name: event.name } });
     }
-    return null;
+    // Do nothing for umbrella events - they should only react to the View Sub-Events button
   };
-  
-  const schedule = formatSchedule();
+
+  // Handle "View Sub-Events" button click
+  const handleViewSubEventsClick = (e) => {
+    e.stopPropagation(); // Prevent event bubbling
+    onUmbrellaClick();
+  };
 
   return (
-    <div className="rounded-xl overflow-hidden bg-gradient-to-b from-amber-50 to-[#f7faf7] border border-[#E6F2E8] shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col relative">
-      {/* Status Badge */}
-      <div className="absolute top-3 right-3 z-10">
-        <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm ${statusDetails.bgColor} ${statusDetails.textColor}`}>
-          {statusDetails.icon}
-          <span>{statusDetails.label}</span>
-        </span>
-      </div>
-
-      {/* Header */}
-      <div className="pt-4 px-4 pb-3 bg-amber-50/70">
-        <Link
-          to={`${event.id}/players`}
-          state={{ event_name: event.name }}
-          className="block"
-        >
-          <h3 className="font-semibold text-[#2A6D3A] text-lg mt-2">
-            {event.name}
-          </h3>
-          
-          {/* Category and Type */}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {event.category && (
-              <span className="px-2.5 py-0.5 bg-[#2A6D3A]/10 text-[#2A6D3A] rounded-full text-xs font-medium">
-                {event.category}
+    <div 
+      className={`flex flex-col h-full ${isUmbrella ? 'border-2 border-[#E6F2E8]' : 'cursor-pointer'}`}
+      onClick={handleCardClick} // Only regular events will respond to this click
+    >
+      <div className="flex-1 p-4">
+        <div className="flex justify-between items-start mb-2">
+          {/* Event Type Badge */}
+          <div className="flex flex-wrap gap-1 mb-2" onClick={e => e.stopPropagation()}>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-[#F7FAF7] text-[#2A6D3A]">
+              {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+            </span>
+            
+            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-[#F7FAF7] text-[#2A6D3A]">
+              {event.category}
+            </span>
+            
+            {isUmbrella && (
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-[#E6F2E8] text-[#2A6D3A]">
+                Umbrella Event
               </span>
             )}
-            {event.type && (
-              <span className="px-2.5 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                {event.type}
+            
+            {event.parent_id && (
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-[#E6F2E8] text-[#2A6D3A]">
+                Sub-Event
               </span>
             )}
           </div>
-        </Link>
-      </div>
 
-      {/* Divider */}
-      <div className="border-t border-[#E6F2E8]"></div>
+          {/* Actions Menu */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={toggleActions}
+              className="p-1 rounded-md hover:bg-[#F7FAF7] transition-colors"
+              aria-label="Event actions"
+            >
+              <MoreVertical size={18} className="text-gray-500" />
+            </button>
 
-      {/* Content */}
-      <div className="p-4 pt-3 flex-1 flex flex-col">
-        {/* Schedule if available */}
-        {schedule && (
-          <div className="flex items-start mb-3">
-            <FiCalendar className="text-[#6BBF59] mt-0.5 mr-2 flex-shrink-0" />
-            <div className="text-sm">
-              <div className="text-gray-800">{schedule.date}</div>
-              <div className="text-[#2A6D3A]">{schedule.time}</div>
+            {showActions && (
+              <div className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div className="py-1" role="menu" aria-orientation="vertical">
+                  <button
+                    onClick={handleEditClick}
+                    className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-[#F7FAF7] transition-colors"
+                    role="menuitem"
+                  >
+                    <Edit size={16} className="mr-2" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleDeleteClick}
+                    className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    role="menuitem"
+                  >
+                    <Trash2 size={16} className="mr-2" />
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Event Name and Details */}
+        <div className="mb-3">
+          <h3 className="text-lg font-semibold text-[#2A6D3A] mb-1">{event.name}</h3>
+          <p className="text-sm text-gray-500">
+            {event.tournament_type ? event.tournament_type.replace(/(^|\s)\S/g, (l) => l.toUpperCase()) : 'Tournament'}
+          </p>
+          {event.venue && (
+            <p className="text-sm text-gray-500 mt-1">
+              Venue: {event.venue}
+            </p>
+          )}
+        </div>
+
+        {/* Medal Count */}
+        <div className="flex justify-between mt-3">
+          <div className="flex items-center">
+            <div className="flex flex-col items-center mr-4">
+              <span className="w-6 h-6 bg-yellow-400 rounded-full mb-1"></span>
+              <span className="text-xs">{event.gold}</span>
+            </div>
+            <div className="flex flex-col items-center mr-4">
+              <span className="w-6 h-6 bg-gray-300 rounded-full mb-1"></span>
+              <span className="text-xs">{event.silver}</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="w-6 h-6 bg-amber-700 rounded-full mb-1"></span>
+              <span className="text-xs">{event.bronze}</span>
             </div>
           </div>
-        )}
-        
-        {/* Venue if available */}
-        {event.venue && (
-          <div className="flex items-center">
-            <FiMapPin className="text-[#6BBF59] mr-2 flex-shrink-0" />
-            <span className="text-sm text-gray-700 truncate">
-              {event.venue}
-            </span>
-          </div>
-        )}
+        </div>
       </div>
-
-      {/* Actions */}
-      <div className="px-4 py-3 border-t border-[#E6F2E8] bg-[#f7faf7]/50 flex justify-end" ref={menuRef}>
+      
+      {/* Umbrella Event Action */}
+      {isUmbrella && onUmbrellaClick && (
         <button
-          onClick={() => setMenuOpen((prev) => !prev)}
-          className="p-1.5 rounded-full hover:bg-[#E6F2E8] text-[#2A6D3A] transition-colors duration-200"
-          aria-label="More options"
+          onClick={handleViewSubEventsClick}
+          className="mt-auto w-full py-2 px-3 bg-[#F7FAF7] hover:bg-[#E6F2E8] text-[#2A6D3A] text-sm font-medium rounded-b-lg flex items-center justify-center transition-colors"
         >
-          <FiMoreVertical className="w-5 h-5" />
+          View Sub-Events
+          <ChevronRight size={16} className="ml-1" />
         </button>
-
-        {/* Dropdown Menu */}
-        {menuOpen && (
-          <div className="absolute right-4 bottom-12 w-40 bg-white border border-[#E6F2E8] rounded-lg shadow-lg z-50 overflow-hidden">
-            <button
-              className="block w-full px-4 py-2.5 text-left text-sm text-[#2A6D3A] hover:bg-[#F7FAF7] transition-colors flex items-center gap-2" 
-              onClick={() => {
-                openEditModal(event);
-                setMenuOpen(false);
-              }}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-              </svg>
-              Update
-            </button>
-            <button
-              className="block w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2" 
-              onClick={confirmDeleteEvent}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-              </svg>
-              Delete
-            </button>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
-        isOpen={showDeleteConfirmation}
-        onClose={() => setShowDeleteConfirmation(false)}
-        onConfirm={handleDelete}
-        title="Delete Event"
-        itemName={event.name}
-        message={`Are you sure you want to delete "${event.name}"? This action cannot be undone and will remove all associated players, matches, results, and data.`}
-        isDeleting={isDeleting}
-        error={deleteError}
-      />
+      {showConfirmDelete && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+          onClick={(e) => e.stopPropagation()} // Prevent clicks from propagating to card
+        >
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-sm mx-4">
+            <div className="p-4 border-b">
+              <h3 className="text-lg font-medium text-gray-800">Confirm Delete</h3>
+            </div>
+            <div className="p-4">
+              <p className="text-gray-600">
+                Are you sure you want to delete <span className="font-medium">{event.name}</span>?
+                {isUmbrella && (
+                  <span className="block mt-2 text-red-600 font-medium">
+                    Warning: This will also delete all sub-events!
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="flex justify-end p-4 space-x-3 border-t">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none flex items-center"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

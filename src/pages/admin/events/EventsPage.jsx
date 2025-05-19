@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axiosClient from "../../../axiosClient";
 import EventCard from "./cards/EventCard";
 import EventModal from "./modal/EventModal";
 import Filter from "../../components/Filter";
 import PaginationControls from "../../components/PaginationControls";
 import { useParams } from "react-router-dom";
-import { CalendarClock, Loader } from "lucide-react";
+import { CalendarClock, Loader, ArrowLeft } from "lucide-react";
 
 export default function EventsPage() {
   const { intrams_id } = useParams();
@@ -18,6 +18,7 @@ export default function EventsPage() {
   ];
 
   const [events, setEvents] = useState([]);
+  const [umbrellaEvents, setUmbrellaEvents] = useState([]);
   const [intramsName, setEventName] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,9 @@ export default function EventsPage() {
 
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
+  
+  // New state for tracking active umbrella event filter
+  const [activeUmbrellaEvent, setActiveUmbrellaEvent] = useState(null);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -35,31 +39,52 @@ export default function EventsPage() {
     lastPage: 1,
   });
 
-  const openModal = () => {
+  const openModal = useCallback(() => {
     setSelectedEvent(null);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedEvent(null);
     setError(null);
-  };
+  }, []);
 
-  const openEditModal = (event) => {
+  const openEditModal = useCallback((event) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = useCallback((page) => {
     setPagination(prev => ({
       ...prev,
       currentPage: page
     }));
-  };
+  }, []);
+  
+  
+  const handleUmbrellaClick = useCallback((umbrellaEvent) => {
+    // Don't set state if we're already on this umbrella event to prevent double refresh
+    if (activeUmbrellaEvent?.id === umbrellaEvent.id) return;
+    
+    // Set loading immediately to show spinner
+    setLoading(true);
+    
+    setActiveUmbrellaEvent(umbrellaEvent);
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, [activeUmbrellaEvent]);
+  
+  // Clear umbrella filter
+  const clearUmbrellaFilter = useCallback(() => {
+    // Set loading immediately to show spinner
+    setLoading(true);
+    
+    setActiveUmbrellaEvent(null);
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, []);
 
   // Instead of calling fetchEvents directly, we trigger a refetch
-  const addEvent = async (newEvent) => {
+  const addEvent = useCallback(async (newEvent) => {
     try {
       setLoading(true);
       await axiosClient.post(
@@ -73,9 +98,9 @@ export default function EventsPage() {
       console.error("Error creating event:", err);
       setLoading(false);
     }
-  };
+  }, [intrams_id, closeModal]);
 
-  const updateEvent = async (id, updatedData) => {
+  const updateEvent = useCallback(async (id, updatedData) => {
     try {
       setLoading(true);
       await axiosClient.patch(
@@ -89,9 +114,9 @@ export default function EventsPage() {
       console.error("Error updating event:", err);
       setLoading(false);
     }
-  };
+  }, [intrams_id, closeModal]);
 
-  const deleteEvent = async (event) => {
+  const deleteEvent = useCallback(async (event) => {
     try {
       await axiosClient.delete(`/intramurals/${intrams_id}/events/${event.id}`);
       setShouldRefetch(prev => !prev); // Toggle to trigger refetch
@@ -101,7 +126,7 @@ export default function EventsPage() {
       console.error("Error deleting event:", err);
       throw err;
     }
-  };
+  }, [intrams_id]);
 
   // Single source of truth for data fetching
   useEffect(() => {
@@ -111,19 +136,27 @@ export default function EventsPage() {
       setLoading(true);
       
       try {
+        // Add parent_id parameter if an umbrella event is selected
+        const params = {
+          page: pagination.currentPage,
+          type: activeTab,
+          search: search,
+          show_umbrella: !activeUmbrellaEvent, // Don't show umbrella events when a parent is selected
+        };
+        
+        if (activeUmbrellaEvent) {
+          params.parent_id = activeUmbrellaEvent.id;
+          params.show_subevents = true;
+        }
+        
         const { data } = await axiosClient.get(
           `/intramurals/${intrams_id}/events`, 
-          {
-            params: {
-              page: pagination.currentPage,
-              type: activeTab,
-              search: search,
-            },
-          }
+          { params }
         );
         
         setEvents(data.data);
         setEventName(data.event_name);
+        setUmbrellaEvents(data.umbrella_events || []);
         setPagination({
           currentPage: data.meta.current_page,
           perPage: data.meta.per_page,
@@ -144,9 +177,9 @@ export default function EventsPage() {
     }, 500);
     
     return () => clearTimeout(debounceTimer);
-  }, [search, activeTab, pagination.currentPage, intrams_id, shouldRefetch]);
+  }, [search, activeTab, pagination.currentPage, intrams_id, shouldRefetch, activeUmbrellaEvent]);
 
-  const handleFilterChange = (value, type) => {
+  const handleFilterChange = useCallback((value, type) => {
     // Reset pagination to first page when filters change
     setPagination(prev => ({ ...prev, currentPage: 1 }));
     
@@ -155,7 +188,7 @@ export default function EventsPage() {
     } else if (type === 'search') {
       setSearch(value);
     }
-  };
+  }, []);
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -185,6 +218,23 @@ export default function EventsPage() {
             </div>
           )}
 
+          {/* Umbrella Event Filter */}
+          {activeUmbrellaEvent && (
+            <div className="bg-[#F7FAF7] p-3 rounded-lg border border-[#E6F2E8] mb-4 flex items-center justify-between">
+              <div>
+                <span className="text-sm text-gray-500">Viewing sub-events for:</span>
+                <h3 className="font-medium text-[#2A6D3A]">{activeUmbrellaEvent.name}</h3>
+              </div>
+              <button
+                onClick={clearUmbrellaFilter}
+                className="flex items-center text-sm text-[#2A6D3A] hover:text-[#5CAF4A] transition-colors"
+              >
+                <ArrowLeft size={16} className="mr-1" />
+                Back to all events
+              </button>
+            </div>
+          )}
+
           <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
             <Filter
               activeTab={activeTab}
@@ -196,6 +246,21 @@ export default function EventsPage() {
             />
           </div>
 
+          {/* Umbrella Events Quick Filters (only show when not viewing sub-events) */}
+          {!activeUmbrellaEvent && umbrellaEvents && umbrellaEvents.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {umbrellaEvents.map(event => (
+                <button
+                  key={event.id}
+                  onClick={() => handleUmbrellaClick(event)}
+                  className="px-3 py-1.5 bg-[#E6F2E8] hover:bg-[#D4E8D7] text-[#2A6D3A] rounded-lg text-sm transition-colors"
+                >
+                  {event.name}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Scrollable content area */}
           <div className="mt-4 flex-1 overflow-y-auto min-h-0">
             {loading ? (
@@ -205,7 +270,11 @@ export default function EventsPage() {
             ) : events.length === 0 ? (
               <div className="flex-1 h-full bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                 <CalendarClock size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">No events found</h3>
+                <h3 className="text-lg font-medium text-gray-600">
+                  {activeUmbrellaEvent 
+                    ? `No sub-events found for ${activeUmbrellaEvent.name}` 
+                    : "No events found"}
+                </h3>
                 <p className="text-gray-500 mt-1">Click "Add Event" to create one</p>
               </div>
             ) : (
@@ -216,6 +285,8 @@ export default function EventsPage() {
                       event={event}
                       openEditModal={openEditModal}
                       deleteEvent={deleteEvent}
+                      isUmbrella={event.is_umbrella}
+                      onUmbrellaClick={event.is_umbrella ? () => handleUmbrellaClick(event) : null}
                     />
                   </div>
                 ))}
@@ -243,6 +314,7 @@ export default function EventsPage() {
         existingEvent={selectedEvent}
         isLoading={loading}
         error={error}
+        umbrellaEvents={umbrellaEvents}
       />
     </div>
   );

@@ -188,20 +188,7 @@ export default function GamePage() {
     pagination.currentPage * pagination.perPage
   );
 
-  const generateMatches = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/generate_matches`);
-      await fetchEventStatus();
-      await fetchSchedules();
-    } catch (err) {
-      console.error("Failed to generate matches", err);
-      setError("Failed to generate matches. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   // Render the "no bracket" message
   const renderNoBracketMessage = () => {
@@ -222,19 +209,7 @@ export default function GamePage() {
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Calendar size={20} className="mr-2" /> Bracket Matches
             </h2>
-            {eventStatus === "in progress" && tournamentType !== "no bracket" && (
-              <button
-                type="button"
-                onClick={generateMatches}
-                disabled={loading}
-                className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Generate Matches
-              </button>
-            )}
+           
           </div>
           
           {eventStatus === "in progress" && tournamentType !== "no bracket" && (

@@ -10,7 +10,7 @@ import { LiaSitemapSolid } from "react-icons/lia";
 import { MdOutlineScoreboard } from "react-icons/md";
 import { TbUsersGroup } from "react-icons/tb";
 import { GiPodium } from "react-icons/gi";
-import logo from '../../assets/IHK_logo2.png';
+import logo from '../../assets/vsu_logo.png';
 import { MdMenuOpen } from "react-icons/md";
 
 import { Volleyball,Trophy , Medal, House, Users, Shuffle  , FileUser} from "lucide-react";
@@ -125,7 +125,7 @@ export default function EventPage() {
             <div className="flex items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="IHK Logo" className={`h-8 w-auto rounded-full ${isSidebarOpen? "": "hidden"}`} />
+            <img src={logo} alt="IHK Logo" className={`h-12 w-40 rounded-full ${isSidebarOpen? "": "hidden"}`} />
             
           </Link>
           {/* Menu button */}

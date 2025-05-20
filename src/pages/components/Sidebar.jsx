@@ -65,7 +65,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
 
   return (
     <nav
-      className={`fixed md:relative overflow-y-auto overflow-x-hidden h-full flex flex-col transition-all duration-300 bg-white border-r border-[#E6F2E8] z-30
+      className={`fixed md:relative overflow-y-auto overflow-x-hidden h-full flex flex-col transition-all duration-300 bg-white border-r border-[#E6F2E8] z-30 max-h-[91vh]
       ${isOpen ? "w-64 translate-x-0" : "w-16 md:translate-x-0 -translate-x-full"}`}
       ref={sidebarRef}
     >

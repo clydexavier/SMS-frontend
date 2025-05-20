@@ -80,15 +80,10 @@ export default function PodiumsPage() {
       
       
       
-      // Clear status after 3 seconds
-      setTimeout(() => setDownloadStatus(null), 3000);
       
     } catch (err) {
       console.error("Failed to download podium results PDF", err);
-      setDownloadStatus({
-        type: 'error',
-        message: 'Failed to download results PDF. Please try again.'
-      });
+      
     } finally {
       setIsDownloading(false);
     }

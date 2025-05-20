@@ -11,14 +11,14 @@ export default function ScoreSubmissionModal({
   // Initial state for score type selection
   const [scoreType, setScoreType] = useState("simple");
   
-  // For simple scoring
+  // For simple scoring - initialize with empty strings instead of 0
   const [simpleScores, setSimpleScores] = useState({
-    score_team1: 0,
-    score_team2: 0,
+    score_team1: "",
+    score_team2: "",
   });
   
-  // For set-based scoring
-  const [sets, setSets] = useState([{ team1: 0, team2: 0 }]);
+  // For set-based scoring - initialize with empty strings instead of 0
+  const [sets, setSets] = useState([{ team1: "", team2: "" }]);
   
   // For winner-only (no scores)
   const [winnerId, setWinnerId] = useState("");
@@ -30,12 +30,13 @@ export default function ScoreSubmissionModal({
   
   // Convert sets to Challonge's scores_csv format
   function createScoresCsv() {
-    return sets.map(set => `${set.team1}-${set.team2}`).join(',');
+    return sets.map(set => `${set.team1 || 0}-${set.team2 || 0}`).join(',');
   }
   
   // Handle simple score change
   const handleSimpleScoreChange = (team, value) => {
-    const score = parseInt(value) || 0;
+    // Allow empty string or valid numbers
+    const score = value === "" ? "" : parseInt(value) || 0;
     setSimpleScores(prev => ({
       ...prev,
       [`score_${team}`]: score
@@ -44,7 +45,8 @@ export default function ScoreSubmissionModal({
   
   // Handle set score change
   const handleSetScoreChange = (index, team, value) => {
-    const score = parseInt(value) || 0;
+    // Allow empty string or valid numbers
+    const score = value === "" ? "" : parseInt(value) || 0;
     setSets(prev => {
       const newSets = [...prev];
       newSets[index] = { 
@@ -57,7 +59,7 @@ export default function ScoreSubmissionModal({
   
   // Add a new set
   const addSet = () => {
-    setSets(prev => [...prev, { team1: 0, team2: 0 }]);
+    setSets(prev => [...prev, { team1: "", team2: "" }]);
   };
   
   // Remove a set
@@ -73,8 +75,9 @@ export default function ScoreSubmissionModal({
     }
     
     if (scoreType === "simple") {
-      return simpleScores.score_team1 > simpleScores.score_team2 ? 
-        match.team_1 : match.team_2;
+      const team1Score = simpleScores.score_team1 === "" ? 0 : simpleScores.score_team1;
+      const team2Score = simpleScores.score_team2 === "" ? 0 : simpleScores.score_team2;
+      return team1Score > team2Score ? match.team_1 : match.team_2;
     }
     
     // For set-based scoring, count sets won by each team
@@ -82,8 +85,11 @@ export default function ScoreSubmissionModal({
     let team2Sets = 0;
     
     sets.forEach(set => {
-      if (set.team1 > set.team2) team1Sets++;
-      else if (set.team2 > set.team1) team2Sets++;
+      const team1Score = set.team1 === "" ? 0 : set.team1;
+      const team2Score = set.team2 === "" ? 0 : set.team2;
+      
+      if (team1Score > team2Score) team1Sets++;
+      else if (team2Score > team1Score) team2Sets++;
     });
     
     return team1Sets > team2Sets ? match.team_1 : match.team_2;
@@ -93,6 +99,20 @@ export default function ScoreSubmissionModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    
+    // Validate that at least one score is entered for non-winner-only modes
+    if (scoreType === "simple") {
+      if (simpleScores.score_team1 === "" && simpleScores.score_team2 === "") {
+        setError("Please enter at least one score.");
+        return;
+      }
+    } else if (scoreType === "sets") {
+      const hasAnyScores = sets.some(set => set.team1 !== "" || set.team2 !== "");
+      if (!hasAnyScores) {
+        setError("Please enter at least one score.");
+        return;
+      }
+    }
     
     const winner = determineWinner();
     if (!winner) {
@@ -107,8 +127,8 @@ export default function ScoreSubmissionModal({
       
       // Add appropriate score data based on the scoring type
       if (scoreType === "simple") {
-        payload.score_team1 = simpleScores.score_team1;
-        payload.score_team2 = simpleScores.score_team2;
+        payload.score_team1 = simpleScores.score_team1 === "" ? 0 : simpleScores.score_team1;
+        payload.score_team2 = simpleScores.score_team2 === "" ? 0 : simpleScores.score_team2;
       } else if (scoreType === "sets") {
         payload.scores_csv = createScoresCsv();
       } else if (scoreType === "winner_only") {
@@ -135,8 +155,8 @@ export default function ScoreSubmissionModal({
   
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-      <div className="relative w-full max-w-md mx-auto">
-        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] overflow-hidden">
+      <div className="relative w-full max-w-md mx-auto max-h-[90vh] flex flex-col">
+        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] overflow-hidden flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-[#E6F2E8] bg-[#F7FAF7]">
             <h3 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -153,8 +173,8 @@ export default function ScoreSubmissionModal({
             </button>
           </div>
           
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-5">
+          {/* Form - Added scrollbar with overflow-y-auto */}
+          <form onSubmit={handleSubmit} className="p-5 overflow-y-auto max-h-[calc(90vh-120px)]">
             {error && (
               <div className="bg-red-100 text-red-700 p-3 rounded-md text-sm mb-6 border border-red-200">
                 {error}
@@ -281,6 +301,7 @@ export default function ScoreSubmissionModal({
                             <input
                               type="number"
                               min="0"
+                              placeholder="0"
                               value={simpleScores.score_team1}
                               onChange={(e) => handleSimpleScoreChange("team1", e.target.value)}
                               className="w-full bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] px-3 py-2 text-right transition-all duration-200"
@@ -293,6 +314,7 @@ export default function ScoreSubmissionModal({
                             <input
                               type="number"
                               min="0"
+                              placeholder="0"
                               value={simpleScores.score_team2}
                               onChange={(e) => handleSimpleScoreChange("team2", e.target.value)}
                               className="w-full bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] px-3 py-2 text-right transition-all duration-200"
@@ -309,7 +331,8 @@ export default function ScoreSubmissionModal({
                           type="button"
                           onClick={() => setWinnerId(match.team_1)}
                           className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                            (winnerId === match.team_1 || (simpleScores.score_team1 > simpleScores.score_team2 && !winnerId)) 
+                            (winnerId === match.team_1 || ((simpleScores.score_team1 !== "" && simpleScores.score_team2 !== "") && 
+                              (parseInt(simpleScores.score_team1) > parseInt(simpleScores.score_team2)) && !winnerId)) 
                               ? "bg-[#6BBF59] text-white" 
                               : "bg-white border border-[#E6F2E8] text-[#2A6D3A] hover:bg-[#F7FAF7]"
                           }`}
@@ -320,7 +343,8 @@ export default function ScoreSubmissionModal({
                           type="button"
                           onClick={() => setWinnerId(match.team_2)}
                           className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                            (winnerId === match.team_2 || (simpleScores.score_team2 > simpleScores.score_team1 && !winnerId)) 
+                            (winnerId === match.team_2 || ((simpleScores.score_team1 !== "" && simpleScores.score_team2 !== "") && 
+                              (parseInt(simpleScores.score_team2) > parseInt(simpleScores.score_team1)) && !winnerId)) 
                               ? "bg-[#6BBF59] text-white" 
                               : "bg-white border border-[#E6F2E8] text-[#2A6D3A] hover:bg-[#F7FAF7]"
                           }`}
@@ -352,6 +376,7 @@ export default function ScoreSubmissionModal({
                               <input
                                 type="number"
                                 min="0"
+                                placeholder="0"
                                 value={set.team1}
                                 onChange={(e) => handleSetScoreChange(index, "team1", e.target.value)}
                                 className="w-full bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] px-3 py-2 text-center transition-all duration-200"
@@ -361,6 +386,7 @@ export default function ScoreSubmissionModal({
                               <input
                                 type="number"
                                 min="0"
+                                placeholder="0"
                                 value={set.team2}
                                 onChange={(e) => handleSetScoreChange(index, "team2", e.target.value)}
                                 className="w-full bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] px-3 py-2 text-center transition-all duration-200"
@@ -388,10 +414,10 @@ export default function ScoreSubmissionModal({
                         <span>Sets Won</span>
                         <div>
                           <span className="font-medium text-[#2A6D3A]">{match.team1_name || "Team 1"}: </span>
-                          <span>{sets.filter(set => set.team1 > set.team2).length}</span>
+                          <span>{sets.filter(set => set.team1 !== "" && set.team2 !== "" && parseInt(set.team1) > parseInt(set.team2)).length}</span>
                           <span className="mx-2">|</span>
                           <span className="font-medium text-[#2A6D3A]">{match.team2_name || "Team 2"}: </span>
-                          <span>{sets.filter(set => set.team2 > set.team1).length}</span>
+                          <span>{sets.filter(set => set.team1 !== "" && set.team2 !== "" && parseInt(set.team2) > parseInt(set.team1)).length}</span>
                         </div>
                       </div>
                     </div>
@@ -403,7 +429,10 @@ export default function ScoreSubmissionModal({
                           type="button"
                           onClick={() => setWinnerId(match.team_1)}
                           className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                            (winnerId === match.team_1 || (sets.filter(set => set.team1 > set.team2).length > sets.filter(set => set.team2 > set.team1).length && !winnerId)) 
+                            (winnerId === match.team_1 || (sets.filter(set => set.team1 !== "" && set.team2 !== "" && 
+                              parseInt(set.team1) > parseInt(set.team2)).length > 
+                              sets.filter(set => set.team1 !== "" && set.team2 !== "" && 
+                              parseInt(set.team2) > parseInt(set.team1)).length && !winnerId)) 
                               ? "bg-[#6BBF59] text-white" 
                               : "bg-white border border-[#E6F2E8] text-[#2A6D3A] hover:bg-[#F7FAF7]"
                           }`}
@@ -414,7 +443,10 @@ export default function ScoreSubmissionModal({
                           type="button"
                           onClick={() => setWinnerId(match.team_2)}
                           className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                            (winnerId === match.team_2 || (sets.filter(set => set.team2 > set.team1).length > sets.filter(set => set.team1 > set.team2).length && !winnerId)) 
+                            (winnerId === match.team_2 || (sets.filter(set => set.team1 !== "" && set.team2 !== "" && 
+                              parseInt(set.team2) > parseInt(set.team1)).length > 
+                              sets.filter(set => set.team1 !== "" && set.team2 !== "" && 
+                              parseInt(set.team1) > parseInt(set.team2)).length && !winnerId)) 
                               ? "bg-[#6BBF59] text-white" 
                               : "bg-white border border-[#E6F2E8] text-[#2A6D3A] hover:bg-[#F7FAF7]"
                           }`}

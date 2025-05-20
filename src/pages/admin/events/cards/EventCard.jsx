@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MoreVertical, Edit, Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { MoreVertical, Edit, Trash2, ChevronDown, ChevronRight, Clock, Play, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 
@@ -72,6 +72,41 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
     onUmbrellaClick();
   };
 
+  // Get appropriate status badge styling
+  const getStatusBadge = () => {
+    const status = event.status || 'pending'; // Default to pending if not specified
+    
+    let bgColor, textColor, icon, label;
+    
+    switch (status.toLowerCase()) {
+      case 'in progress':
+        bgColor = 'bg-green-100';
+        textColor = 'text-green-700';
+        icon = <Play size={14} className="mr-1" />;
+        label = 'In Progress';
+        break;
+      case 'completed':
+        bgColor = 'bg-blue-100';
+        textColor = 'text-blue-700';
+        icon = <CheckCircle size={14} className="mr-1" />;
+        label = 'Completed';
+        break;
+      case 'pending':
+      default:
+        bgColor = 'bg-yellow-100';
+        textColor = 'text-yellow-700';
+        icon = <Clock size={14} className="mr-1" />;
+        label = 'Pending';
+    }
+    
+    return (
+      <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-md ${bgColor} ${textColor} ml-1`}>
+        {icon}
+        {label}
+      </span>
+    );
+  };
+  
   return (
     <div 
       className={`flex flex-col h-full rounded-xl overflow-hidden bg-gradient-to-b from-amber-50 to-[#f7faf7] border border-[#E6F2E8] shadow-sm hover:shadow-md transition-all duration-300 ${isUmbrella ? '' : 'cursor-pointer'}`}
@@ -79,7 +114,7 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
     >
       <div className="flex-1 p-4">
         <div className="flex justify-between items-start mb-2">
-          {/* Event Type Badge */}
+          {/* Event Type Badges & Status Badge */}
           <div className="flex flex-wrap gap-1 mb-2" onClick={e => e.stopPropagation()}>
             <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-[#F7FAF7] text-[#2A6D3A]">
               {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
@@ -88,6 +123,9 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
             <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-[#F7FAF7] text-[#2A6D3A]">
               {event.category}
             </span>
+            
+            {/* Status Badge */}
+            {getStatusBadge()}
             
             {isUmbrella && (
               <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-[#E6F2E8] text-[#2A6D3A]">

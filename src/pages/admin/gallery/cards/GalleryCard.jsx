@@ -26,7 +26,7 @@ const GalleryCard = ({ gallery, teamName, onDelete, teamLogo }) => {
             }}
             />
           ) : (
-            teamLogo.charAt(0).toUpperCase()
+            teamName.charAt(0).toUpperCase()
           )}
         </div>
         <h3 className="font-medium text-gray-800 text-center">{teamName}</h3>

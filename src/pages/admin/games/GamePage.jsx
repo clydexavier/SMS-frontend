@@ -3,9 +3,9 @@ import { useParams } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
 import PaginationControls from "../../components/PaginationControls";
 import MatchScheduleModal from "./modal/MatchScheduleModal";
-import ScoreSubmissionModal from "./modal/ScoreSubmissionModal"; // You'll need to create this component
+import ScoreSubmissionModal from "./modal/ScoreSubmissionModal";
 import Filter from "../../components/Filter";
-import { Calendar, Loader, Award } from "lucide-react";
+import { Calendar, Loader, Award, FileText, Download } from "lucide-react";
 
 export default function GamePage() {
   const { intrams_id, event_id } = useParams();
@@ -16,6 +16,7 @@ export default function GamePage() {
   const [tournamentType, setTournamentType] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -41,6 +42,40 @@ export default function GamePage() {
     { label: "Unscheduled", value: "Unscheduled" },
     { label: "Completed", value: "Completed" },
   ]);
+
+  // Download schedule function
+  const downloadSchedulePDF = async () => {
+    try {
+      setIsDownloading(true);
+      
+      const response = await axiosClient.post(
+        `/intramurals/${intrams_id}/events/${event_id}/schedule_pdf`,
+        {},
+        { responseType: 'blob' } // Important for handling binary data
+      );
+      
+      // Create a blob URL for the PDF
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `schedule_${event_id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (err) {
+      console.error("Failed to download schedule PDF", err);
+      setError("Failed to download schedule PDF. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const fetchEventStatus = async () => {
     try {
@@ -188,8 +223,6 @@ export default function GamePage() {
     pagination.currentPage * pagination.perPage
   );
 
-  
-
   // Render the "no bracket" message
   const renderNoBracketMessage = () => {
     return (
@@ -209,7 +242,27 @@ export default function GamePage() {
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Calendar size={20} className="mr-2" /> Bracket Matches
             </h2>
-           
+            
+            {/* Download Schedule Button - Only show when there are schedules */}
+            {allSchedules.length > 0 && tournamentType !== "no bracket" && !loading && eventStatus === "in progress"&& (
+              <button
+                onClick={downloadSchedulePDF}
+                disabled={isDownloading}
+                className={`flex items-center gap-2 text-white bg-[#2A6D3A] hover:bg-[#225E2F] font-medium rounded-lg text-sm px-4 py-2 transition-colors ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader size={16} className="animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <FileText size={16} />
+                    Download Schedule
+                  </>
+                )}
+              </button>
+            )}
           </div>
           
           {eventStatus === "in progress" && tournamentType !== "no bracket" && (
@@ -299,8 +352,6 @@ export default function GamePage() {
                           </span>
                         </div>
                         
-                        
-
                         <div className="flex space-x-2">
                           {/* If match is scheduled but not completed, show both buttons */}
                           {match.date && match.time && !match.is_completed && (

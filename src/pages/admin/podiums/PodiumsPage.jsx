@@ -3,7 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
 import Filter from "../../components/Filter";
 import PaginationControls from "../../components/PaginationControls";
-import { Trophy, Loader, Medal, Award } from "lucide-react";
+import { Trophy, Loader, Medal, Award, FileDown, FileText } from "lucide-react";
 
 export default function PodiumsPage() {
   const { intrams_id } = useParams();
@@ -15,6 +15,7 @@ export default function PodiumsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -48,6 +49,48 @@ export default function PodiumsPage() {
       setError("Failed to fetch podiums");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Function to download all podium results as PDF
+  const downloadPodiumPDF = async () => {
+    try {
+      setIsDownloading(true);
+      
+      const response = await axiosClient.post(
+        `/intramurals/${intrams_id}/podiums_pdf`,
+        {},
+        { responseType: 'blob' } // Important for handling binary data
+      );
+      
+      // Create a blob URL for the PDF
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `podium_results_${intrams_id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      
+      
+      // Clear status after 3 seconds
+      setTimeout(() => setDownloadStatus(null), 3000);
+      
+    } catch (err) {
+      console.error("Failed to download podium results PDF", err);
+      setDownloadStatus({
+        type: 'error',
+        message: 'Failed to download results PDF. Please try again.'
+      });
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -102,10 +145,36 @@ export default function PodiumsPage() {
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
         <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
-          {/* Header section */}
-          <h2 className="text-lg font-semibold text-[#2A6D3A] mb-4 flex items-center">
-            <Medal size={20} className="mr-2" /> Events Results
-          </h2>
+          {/* Header section with title and download button */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+            <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+              <Medal size={20} className="mr-2" /> Events Results
+            </h2>
+            
+            {/* Download PDF button - only shown if there are podiums */}
+            {!loading && podiums.length > 0 && (
+              <button
+                onClick={downloadPodiumPDF}
+                disabled={isDownloading}
+                className={`bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader size={16} className="animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <FileText size={16} />
+                    Download All Results
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+          
+          {/* Download status message */}
+          
           
           {/* Filter section */}
           <div className="mb-4">

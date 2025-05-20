@@ -59,7 +59,7 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
 
   return (
     <div 
-      className={`flex flex-col h-full ${isUmbrella ? 'border-2 border-[#E6F2E8]' : 'cursor-pointer'}`}
+      className={`flex flex-col h-full rounded-xl overflow-hidden bg-gradient-to-b from-amber-50 to-[#f7faf7] border border-[#E6F2E8] shadow-sm hover:shadow-md transition-all duration-300 ${isUmbrella ? '' : 'cursor-pointer'}`}
       onClick={handleCardClick} // Only regular events will respond to this click
     >
       <div className="flex-1 p-4">
@@ -92,26 +92,26 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
             <button
               type="button"
               onClick={toggleActions}
-              className="p-1 rounded-md hover:bg-[#F7FAF7] transition-colors"
+              className="p-1.5 rounded-full hover:bg-[#E6F2E8] text-[#2A6D3A] transition-colors duration-200"
               aria-label="Event actions"
             >
-              <MoreVertical size={18} className="text-gray-500" />
+              <MoreVertical size={18} className="text-[#2A6D3A]" />
             </button>
 
             {showActions && (
-              <div className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              <div className="absolute right-0 z-10 mt-1 w-48 origin-top-right bg-white border border-[#E6F2E8] rounded-lg shadow-lg overflow-hidden">
                 <div className="py-1" role="menu" aria-orientation="vertical">
                   <button
                     onClick={handleEditClick}
-                    className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-[#F7FAF7] transition-colors"
+                    className="flex w-full items-center px-4 py-2.5 text-sm text-[#2A6D3A] hover:bg-[#F7FAF7] transition-colors"
                     role="menuitem"
                   >
                     <Edit size={16} className="mr-2" />
-                    Edit
+                    Update
                   </button>
                   <button
                     onClick={handleDeleteClick}
-                    className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex w-full items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     role="menuitem"
                   >
                     <Trash2 size={16} className="mr-2" />
@@ -159,7 +159,7 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
       {isUmbrella && onUmbrellaClick && (
         <button
           onClick={handleViewSubEventsClick}
-          className="mt-auto w-full py-2 px-3 bg-[#F7FAF7] hover:bg-[#E6F2E8] text-[#2A6D3A] text-sm font-medium rounded-b-lg flex items-center justify-center transition-colors"
+          className="mt-auto w-full py-3 px-4 border-t border-[#E6F2E8] bg-[#f7faf7]/50 text-[#2A6D3A] text-sm font-medium flex items-center justify-center hover:bg-[#E6F2E8] transition-colors"
         >
           View Sub-Events
           <ChevronRight size={16} className="ml-1" />
@@ -174,7 +174,7 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
         >
           <div className="bg-white rounded-lg shadow-lg w-full max-w-sm mx-4">
             <div className="p-4 border-b">
-              <h3 className="text-lg font-medium text-gray-800">Confirm Delete</h3>
+              <h3 className="text-lg font-medium text-gray-800">Delete Event</h3>
             </div>
             <div className="p-4">
               <p className="text-gray-600">

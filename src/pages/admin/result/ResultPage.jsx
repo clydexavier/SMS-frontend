@@ -3,7 +3,7 @@ import axiosClient from "../../../axiosClient";
 import ResultModal from "./modal/ResultModal";
 import EventPodium from "./util/EventPodium";
 import { useParams } from "react-router-dom";
-import { Trophy, Loader } from "lucide-react";
+import { Trophy, Loader, FileDown, Edit, PlusCircle } from "lucide-react";
 
 const ResultPage = () => {
   const { intrams_id, event_id } = useParams();
@@ -14,6 +14,7 @@ const ResultPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [eventName, setEventName] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const fetchPodiumData = async () => {
     try {
@@ -83,6 +84,49 @@ const ResultPage = () => {
     }
   };
 
+  // Download podium PDF function
+  const downloadPodiumPDF = async () => {
+    try {
+      setIsDownloading(true);
+      
+      const response = await axiosClient.post(
+        `/intramurals/${intrams_id}/events/${event_id}/podium_pdf`,
+        {},
+        { responseType: 'blob' } // Important for handling binary data
+      );
+      
+      // Create a blob URL for the PDF
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `podium_${event_id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setSubmitStatus({
+        type: "success",
+        message: "Podium PDF downloaded successfully!"
+      });
+      
+      setTimeout(() => setSubmitStatus(null), 3000);
+    } catch (err) {
+      console.error("Failed to download podium PDF", err);
+      setSubmitStatus({
+        type: "error",
+        message: "Failed to download podium PDF. Please try again."
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   // Determine if we should show the action button based on status
   const showActionButton = eventStatus === "completed" || eventStatus === "in progress";
 
@@ -111,38 +155,48 @@ const ResultPage = () => {
               <Trophy size={20} className="mr-2" /> Event Results {eventName && <span className="ml-2 text-gray-600 font-normal">- {eventName}</span>}
             </h2>
             
-            {showActionButton && (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
-                disabled={loading}
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              {/* Show download button when podium data exists */}
+              {podiumData && (
+                <button
+                  onClick={downloadPodiumPDF}
+                  disabled={isDownloading || loading}
+                  className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader size={16} className="mr-2 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <FileDown size={16} className="mr-2" />
+                      Download Podium
+                    </>
+                  )}
+                </button>
+              )}
+              
+              {showActionButton && (
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                  disabled={loading || isDownloading}
                 >
                   {podiumData ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
+                    <>
+                      <Edit size={16} className="mr-2" />
+                      Update Result
+                    </>
                   ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
+                    <>
+                      <PlusCircle size={16} className="mr-2" />
+                      Submit Result
+                    </>
                   )}
-                </svg>
-                {podiumData ? "Update Result" : "Submit Result"}
-              </button>
-            )}
+                </button>
+              )}
+            </div>
           </div>
 
           {submitStatus && (

@@ -248,7 +248,7 @@ export default function GamePage() {
               <button
                 onClick={downloadSchedulePDF}
                 disabled={isDownloading}
-                className={`flex items-center gap-2 text-white bg-[#2A6D3A] hover:bg-[#225E2F] font-medium rounded-lg text-sm px-4 py-2 transition-colors ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                className={`bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
                 {isDownloading ? (
                   <>

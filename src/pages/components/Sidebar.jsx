@@ -97,7 +97,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
                   ${
                     isActiveRoute(item.route)
                       ? "bg-[#6BBF59] text-white shadow-md"
-                      : "text-[#2A6D3A] hover:bg-[#E6F2E8]"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
                   }`}
                   onClick={() => toggleSubmenu(index)}
                 >
@@ -105,9 +105,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
                     <div className="flex items-center justify-center w-6">
                       {React.cloneElement(item.icon, {
                         size: 18,
-                        color: isActiveRoute(item.route)
-                          ? "currentColor"
-                          : "currentColor",
+                        color: "currentColor"
                       })}
                     </div>
                     {isOpen && (
@@ -136,7 +134,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
                           ${
                             isActiveRoute(subItem.route)
                               ? "bg-[#6BBF59]/70 text-white shadow-md"
-                              : "text-[#2A6D3A] hover:bg-[#E6F2E8]"
+                              : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
                           }`}
                         >
                           <div className="flex items-center justify-center w-5">
@@ -161,7 +159,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
                   ${
                     isActiveRoute(item.route)
                       ? "bg-[#6BBF59] text-white shadow-md"
-                      : "text-[#2A6D3A] hover:bg-[#E6F2E8]"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
                   }`}
               >
                 <div className="flex items-center justify-center w-6">
@@ -185,14 +183,14 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
       {/* User Info & Logout */}
       <div className="border-t border-gray-200 p-4 mt-auto">
         <div 
-          className="px-2 py-2 rounded-md cursor-pointer flex items-center text-gray-700 hover:bg-[#E6F2E8] transition-colors"
+          className="px-2 py-2 rounded-md cursor-pointer flex items-center text-gray-600 hover:bg-gray-100 hover:text-green-600 transition-colors"
           onClick={onLogout}
         >
-          <div className="flex text-[#2A6D3A] items-center justify-center w-6">
+          <div className="flex items-center justify-center w-6">
             <LogOut size={18} color="currentColor" />
           </div>
           {isOpen && (
-            <p className="ml-3 text-[#2A6D3A]  text-sm font-medium">Logout</p>
+            <p className="ml-3 text-sm font-medium">Logout</p>
           )}
         </div>
       </div>

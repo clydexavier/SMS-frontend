@@ -26,10 +26,21 @@ export default function EventModal({
     venue: "",
     is_umbrella: false,
     parent_id: "",
-    has_independent_medaling: true, // Added new field for umbrella event medaling system
+    has_independent_medaling: true, // Default to true
   };
 
   const [formData, setFormData] = useState(initialState);
+  const [selectedParentEvent, setSelectedParentEvent] = useState(null);
+  
+  // Find the selected parent event whenever parent_id changes
+  useEffect(() => {
+    if (formData.parent_id && umbrellaEvents) {
+      const parent = umbrellaEvents.find(event => event.id == formData.parent_id);
+      setSelectedParentEvent(parent);
+    } else {
+      setSelectedParentEvent(null);
+    }
+  }, [formData.parent_id, umbrellaEvents]);
   
   useEffect(() => {
     console.log(umbrellaEvents);
@@ -45,7 +56,8 @@ export default function EventModal({
         venue: existingEvent.venue || "",
         is_umbrella: existingEvent.is_umbrella || false,
         parent_id: existingEvent.parent_id || "",
-        has_independent_medaling: existingEvent.has_independent_medaling || false, // Added for existing events
+        // Fix for boolean handling - properly maintain false values
+        has_independent_medaling: existingEvent.has_independent_medaling === undefined ? true : !!existingEvent.has_independent_medaling,
       });
     } else {
       setFormData(initialState);
@@ -84,9 +96,52 @@ export default function EventModal({
     }));
   };
 
+  // Function to determine if the medal field should be shown
+  const shouldShowMedalField = () => {
+    // Case 1: It's a standalone event (no parent) - show medals
+    if (!formData.parent_id) return true;
+    
+    // Case 2: It's an umbrella event - show medals
+    if (formData.is_umbrella) return true;
+    
+    // Case 3 & 4: It's a sub-event - depends on parent's has_independent_medaling
+    if (selectedParentEvent) {
+      return selectedParentEvent.has_independent_medaling;
+    }
+    
+    // Default - show if we can't determine
+    return true;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    existingEvent ? updateEvent(existingEvent.id, formData) : addEvent(formData);
+    
+    // Create a new object to prepare data for API submission
+    const submissionData = {
+      ...formData,
+      // Convert boolean values to integers (0 or 1) for MySQL
+      is_umbrella: formData.is_umbrella ? 1 : 0,
+      has_independent_medaling: formData.has_independent_medaling ? 1 : 0
+    };
+    
+    // If this is an umbrella event, ensure tournament_type is set properly
+    if (formData.is_umbrella) {
+      submissionData.tournament_type = "N/A";
+    }
+    
+    // If this is a sub-event and parent has independent_medaling=false, 
+    // set medal values to 0 as they won't be used
+    if (formData.parent_id && selectedParentEvent && !selectedParentEvent.has_independent_medaling) {
+      submissionData.gold = 0;
+      submissionData.silver = 0;
+      submissionData.bronze = 0;
+    }
+    
+    console.log("Submitting data:", submissionData);
+    
+    existingEvent 
+      ? updateEvent(existingEvent.id, submissionData) 
+      : addEvent(submissionData);
   };
 
   if (!isModalOpen) return null;
@@ -160,6 +215,11 @@ export default function EventModal({
                           <label htmlFor="has_independent_medaling" className="ml-2 text-sm text-gray-700">
                             Sub-events have independent medaling (not aggregated)
                           </label>
+                          <div className="mt-1 ml-6 text-xs text-gray-500">
+                            {formData.has_independent_medaling 
+                              ? "Each sub-event's medals are counted separately" 
+                              : "Teams are ranked based on sub-event placings"}
+                          </div>
                         </div>
                       )}
 
@@ -183,6 +243,14 @@ export default function EventModal({
                               </option>
                             ))}
                           </select>
+                          
+                          {/* Show medaling information about parent event */}
+                          {selectedParentEvent && (
+                            <p className="mt-1 text-xs text-gray-500">
+                              This parent event has {selectedParentEvent.has_independent_medaling ? 'independent' : 'dependent'} medaling
+                              {!selectedParentEvent.has_independent_medaling && ' (medals will be awarded based on overall rankings)'}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -274,39 +342,41 @@ export default function EventModal({
                     )}
                   </div>
 
-                  {/* Medal Count */}
-                  <div>
-                    <label htmlFor="medalCount" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                      Medal Count (applies to gold, silver, and bronze)
-                    </label>
-                    <input
-                      id="medalCount"
-                      name="medalCount"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={formData.gold} // any of the three will reflect the value
-                      onChange={handleMedalCountChange}
-                      autoComplete="off"
-                      required
-                      className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                      placeholder="Enter number of medals (minimum 1)"
-                      onKeyDown={(e) => {
-                        // Prevent entering negative sign or decimal point
-                        if (e.key === '-' || e.key === '.') {
-                          e.preventDefault();
-                        }
-                      }}
-                      onPaste={(e) => {
-                        // Prevent pasting non-numeric values
-                        const pasteData = e.clipboardData.getData('text');
-                        if (!/^\d+$/.test(pasteData)) {
-                          e.preventDefault();
-                        }
-                      }}
-                    />
-                    <p className="mt-1 text-xs text-gray-500">Only positive integers allowed</p>
-                  </div>
+                  {/* Medal Count - Only shown if it should be based on event type */}
+                  {shouldShowMedalField() === true && (
+                    <div>
+                      <label htmlFor="medalCount" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                        Medal Count (applies to gold, silver, and bronze)
+                      </label>
+                      <input
+                        id="medalCount"
+                        name="medalCount"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={formData.gold} // any of the three will reflect the value
+                        onChange={handleMedalCountChange}
+                        autoComplete="off"
+                        required
+                        className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                        placeholder="Enter number of medals (minimum 1)"
+                        onKeyDown={(e) => {
+                          // Prevent entering negative sign or decimal point
+                          if (e.key === '-' || e.key === '.') {
+                            e.preventDefault();
+                          }
+                        }}
+                        onPaste={(e) => {
+                          // Prevent pasting non-numeric values
+                          const pasteData = e.clipboardData.getData('text');
+                          if (!/^\d+$/.test(pasteData)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Only positive integers allowed</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

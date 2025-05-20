@@ -1,17 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { MoreVertical, Edit, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 
 export default function EventCard({ event, openEditModal, deleteEvent, isUmbrella, onUmbrellaClick }) {
   const [showActions, setShowActions] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowActions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleActions = (e) => {
     e.stopPropagation(); // Prevent triggering card click
     setShowActions(!showActions);
-    setShowConfirmDelete(false);
   };
 
   const handleEditClick = (e) => {
@@ -22,25 +37,25 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
 
   const handleDeleteClick = (e) => {
     e.stopPropagation(); // Prevent triggering card click
+    setShowActions(false);
     setShowConfirmDelete(true);
   };
 
-  const confirmDelete = async (e) => {
-    e.stopPropagation(); // Prevent triggering card click
-    setIsDeleting(true);
+  // Handle the actual deletion after confirmation
+  const handleDelete = async () => {
     try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      
+      // Call the deleteEvent function passed from parent
       await deleteEvent(event);
-      setIsDeleting(false);
-      setShowActions(false);
+      
       setShowConfirmDelete(false);
     } catch (error) {
+      console.error("Error deleting event:", error);
+      setDeleteError("Failed to delete event. Please try again.");
       setIsDeleting(false);
     }
-  };
-
-  const cancelDelete = (e) => {
-    e.stopPropagation(); // Prevent triggering card click
-    setShowConfirmDelete(false);
   };
 
   // Handle the card click for regular events only
@@ -88,7 +103,7 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
           </div>
 
           {/* Actions Menu */}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={toggleActions}
@@ -166,55 +181,17 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
         </button>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showConfirmDelete && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
-          onClick={(e) => e.stopPropagation()} // Prevent clicks from propagating to card
-        >
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-sm mx-4">
-            <div className="p-4 border-b">
-              <h3 className="text-lg font-medium text-gray-800">Delete Event</h3>
-            </div>
-            <div className="p-4">
-              <p className="text-gray-600">
-                Are you sure you want to delete <span className="font-medium">{event.name}</span>?
-                {isUmbrella && (
-                  <span className="block mt-2 text-red-600 font-medium">
-                    Warning: This will also delete all sub-events!
-                  </span>
-                )}
-              </p>
-            </div>
-            <div className="flex justify-end p-4 space-x-3 border-t">
-              <button
-                onClick={cancelDelete}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none"
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none flex items-center"
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Confirmation Modal - Using the same component as IntramuralCard */}
+      <DeleteConfirmationModal
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete Event"
+        itemName={event.name}
+        message={`Are you sure you want to delete "${event.name}"? ${isUmbrella ? "Warning: This will also delete all sub-events!" : "This action cannot be undone."}`}
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
     </div>
   );
 }

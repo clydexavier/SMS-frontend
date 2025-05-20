@@ -85,8 +85,8 @@ export default function PodiumsPage() {
             className="w-8 h-8 rounded-full object-cover border border-gray-200 mr-2" 
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 border border-gray-200">
-            <span className="text-xs text-gray-500">N/A</span>
+          <div className="w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A] flex items-center justify-center mr-2 border border-gray-200">
+            <span className="text-xs text-gray-500">{name.charAt(0)}</span>
           </div>
         )}
         <span className="text-sm font-medium text-gray-800 truncate max-w-[10rem]">

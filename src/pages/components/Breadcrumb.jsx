@@ -3,10 +3,6 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { ChevronRight, Home, Loader } from "lucide-react";
 import axiosClient from "../../axiosClient";
 
-/**
- * Enhanced Breadcrumb component for nested routing navigation
- * with dynamic data fetching for intramural and event names
- */
 const Breadcrumb = () => {
   const location = useLocation();
   const params = useParams();
@@ -40,13 +36,11 @@ const Breadcrumb = () => {
       "secretariat": "Secretariat"
     };
     
-    // Return mapped name or capitalized version of the route segment
     return routeNameMap[name] || name.charAt(0).toUpperCase() + name.slice(1);
   };
   
   // Fetch intramurals data when needed
   useEffect(() => {
-    // Check if we need to fetch intramurals data
     if (location.pathname.includes('/admin/') && params.intrams_id && !intramurals[params.intrams_id]) {
       setLoading(true);
       
@@ -67,61 +61,69 @@ const Breadcrumb = () => {
     }
   }, [location.pathname, params.intrams_id]);
 
-  // Fetch events data when needed
-  useEffect( () => {
-    // Check if we need to fetch events data
-    if (location.pathname.includes('/events/') && params.intrams_id && params.event_id && !events[params.event_id]) {
+  // Extract event_id from URL path segments regardless of route parameter naming
+  const getEventIdFromPath = () => {
+    const pathSegments = location.pathname.split("/").filter(segment => segment !== "");
+    const eventsIndex = pathSegments.findIndex(segment => segment === 'events');
+    
+    // If 'events' is found and there's a segment after it
+    if (eventsIndex !== -1 && eventsIndex + 1 < pathSegments.length) {
+      return pathSegments[eventsIndex + 1];
+    }
+    return null;
+  };
+
+  // Fetch event data
+  useEffect(() => {
+    const eventId = getEventIdFromPath();
+    const intrams_id = params.intrams_id;
+    
+    if (eventId && intrams_id && !events[eventId]) {
       setLoading(true);
       
-      axiosClient.get(`/intramurals/${params.intrams_id}/events`)
+      axiosClient.get(`/intramurals/${intrams_id}/events/${eventId}`)
         .then(response => {
-          const eventsData = {};
-          response.data.data.forEach(event => {
-            eventsData[event.id] = event.name;
-          });
-          setEvents(prev => ({ ...prev, ...eventsData }));
+          const event = response.data;
+          setEvents(prev => ({ 
+            ...prev, 
+            [eventId]: {
+              name: event.name,
+              category: event.category
+            } 
+          }));
         })
         .catch(error => {
-          console.error("Error fetching events:", error);
+          console.error("Error fetching event:", error);
         })
         .finally(() => {
           setLoading(false);
         });
     }
-  }, [location.pathname, params.intrams_id, params.event_id]);
+  }, [location.pathname, params.intrams_id]);
 
   // Generate breadcrumb paths and labels
   const breadcrumbs = useMemo(() => {
-    // Start with home
     const initialCrumbs = [{ path: "/", label: "Home", clickable: true }];
     
-    // Skip if we're at the root
     if (location.pathname === "/") return initialCrumbs;
     
-    // Split the path into segments and build the breadcrumb array
     const pathSegments = location.pathname.split("/").filter(segment => segment !== "");
+    const eventId = getEventIdFromPath();
     
-    // Process the actual URL segments
     const routeCrumbs = pathSegments.reduce((acc, segment, index) => {
-      // Build current path
       const path = `/${pathSegments.slice(0, index + 1).join("/")}`;
-      
-      // Replace parameter values with their actual values
       let label = segment;
       let clickable = true;
       
       // Handle intramural ID
       if (params.intrams_id === segment) {
-        // Use the intramural name if available, otherwise use a placeholder
         label = intramurals[segment] || "Loading...";
-        // Make the breadcrumb for the intramural details clickable
         clickable = true;
       } 
-      // Handle event ID
-      else if (params.event_id === segment) {
-        // Use the event name if available, otherwise use a placeholder
-        label = events[segment] || "Loading...";
-        // Make the breadcrumb for the event details clickable
+      // Check if this segment is the event ID
+      else if (eventId === segment) {
+        const event = events[segment];
+        label = event ? (event.category ? `${event.category} ${event.name}` : event.name) : "Loading...";
         clickable = true;
       } 
       // For regular route segments
@@ -129,7 +131,6 @@ const Breadcrumb = () => {
         label = formatRouteName(segment);
       }
       
-      // Only add non-empty labels to avoid empty breadcrumbs
       if (label) {
         acc.push({ path, label, clickable, segment });
       }
@@ -140,7 +141,6 @@ const Breadcrumb = () => {
     return routeCrumbs;
   }, [location.pathname, params, intramurals, events]);
 
-  // Don't render if there's only the home breadcrumb
   if (breadcrumbs.length <= 1) return null;
 
   return (
@@ -149,7 +149,6 @@ const Breadcrumb = () => {
         {breadcrumbs.map((crumb, index) => (
           <li key={`${crumb.path}-${index}`} className="flex items-center">
             {index === 0 ? (
-              // Home icon for the first item
               <Link 
                 to={crumb.path} 
                 className="flex items-center text-gray-600 hover:text-green-600 transition-colors"
@@ -158,22 +157,18 @@ const Breadcrumb = () => {
                 <span className="hidden sm:inline">{crumb.label}</span>
               </Link>
             ) : (
-              // Regular links for other items
               <>
                 <ChevronRight size={14} className="mx-2 text-gray-400" />
                 {crumb.label === "Loading..." ? (
-                  // Show loading spinner when data is being fetched
                   <span className="flex items-center text-gray-500">
                     <Loader size={12} className="animate-spin mr-1" />
                     Loading...
                   </span>
                 ) : index === breadcrumbs.length - 1 || !crumb.clickable ? (
-                  // Current page or non-clickable item
                   <span className={`${index === breadcrumbs.length - 1 ? "font-medium text-green-700" : "text-gray-600"}`}>
                     {crumb.label}
                   </span>
                 ) : (
-                  // Intermediate clickable pages
                   <Link 
                     to={crumb.path} 
                     className="hover:text-green-600 transition-colors"

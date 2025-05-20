@@ -17,6 +17,7 @@ export default function TeamSeeder() {
   const [eventName, setEventName] = useState("");
   const [eventStatus, setEventStatus] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [tournamentType, setTournamentType] = useState("");
 
   // Added for consistency with PlayersPage
   const [activeTab, setActiveTab] = useState("All");
@@ -42,6 +43,7 @@ export default function TeamSeeder() {
         // Get event status first
         const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/status`);
         setEventStatus(data.status);
+        setTournamentType(data.tournament_type);
         
         // Get event name
         const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);
@@ -49,8 +51,8 @@ export default function TeamSeeder() {
           setEventName(eventResponse.data.name);
         }
         
-        // If event is pending, load teams for seeding
-        if (data.status === "pending") {
+        // If event is pending and not "no bracket", load teams for seeding
+        if (data.status === "pending" && data.tournament_type !== "no bracket") {
           const teamsResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}/team_names`);
           const fetchedTeams = teamsResponse.data;
           setTeams(fetchedTeams);
@@ -330,7 +332,7 @@ export default function TeamSeeder() {
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Trophy size={20} className="mr-2" /> Team Seeder {eventName && <span className="ml-2 text-gray-600 font-normal">- {eventName}</span>}
             </h2>
-            {eventStatus === "pending" && teams.length > 0 && (
+            {eventStatus === "pending" && teams.length > 0 && tournamentType !== "no bracket" && (
               <div className="flex gap-2 w-full sm:w-auto">
                 <button
                   type="button"
@@ -371,7 +373,7 @@ export default function TeamSeeder() {
           )}
 
           {/* Informational message about randomized seeding */}
-          {eventStatus === "pending" && teams.length > 0 && (
+          {eventStatus === "pending" && teams.length > 0 && tournamentType !== "no bracket" && (
             <div className="bg-blue-50 p-4 rounded-lg text-blue-600 text-sm mb-4 border border-blue-100">
               <div className="flex items-start">
                 <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -393,6 +395,12 @@ export default function TeamSeeder() {
             ) : eventStatus !== "pending" ? (
               <div className="flex-1 overflow-auto">
                 {renderStatusMessage()}
+              </div>
+            ) : tournamentType === "no bracket" ? (
+              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-600">This event has no bracket</h3>
+                <p className="text-gray-500 mt-1">This type of event doesn't require seeding or brackets and will be tracked directly in the system.</p>
               </div>
             ) : teams.length === 0 ? (
               <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
@@ -467,8 +475,8 @@ export default function TeamSeeder() {
             )}
           </div>
           
-          {/* Start Tournament Button - Only shown for pending events with teams */}
-          {eventStatus === "pending" && teams.length > 0 && (
+          {/* Start Tournament Button - Only shown for pending events with teams and not "no bracket" type */}
+          {eventStatus === "pending" && teams.length > 0 && tournamentType !== "no bracket" && (
             <div className="mt-6 flex justify-end">
               <button
                 onClick={submitSeeds}

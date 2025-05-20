@@ -78,13 +78,13 @@ export default function BracketPage() {
       );
     }
     
-    if ( !bracketId) {
+    if ( !bracketId || bracketId === "no bracket") {
       return (
         <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
           <Award size={48} className="mx-auto mb-4 text-gray-400" />
           <h3 className="text-lg font-medium text-gray-600">No Bracket Available</h3>
           <p className="text-gray-500 mt-1">
-            The bracket could not be loaded. Please try again later.
+            The bracket could not be loaded or this event has no bracket. 
           </p>
         </div>
       );

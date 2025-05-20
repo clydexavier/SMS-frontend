@@ -13,6 +13,7 @@ export default function GamePage() {
   const [schedules, setSchedules] = useState([]);
   const [allSchedules, setAllSchedules] = useState([]);
   const [eventStatus, setEventStatus] = useState(null);
+  const [tournamentType, setTournamentType] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -44,7 +45,8 @@ export default function GamePage() {
   const fetchEventStatus = async () => {
     try {
       const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/status`);
-      setEventStatus(data);
+      setEventStatus(data.status);
+      setTournamentType(data.tournament_type);
     } catch (err) {
       console.error("Failed to fetch event status", err);
       setError("Could not load event status.");
@@ -54,6 +56,14 @@ export default function GamePage() {
   const fetchSchedules = async () => {
     try {
       setLoading(true);
+      // Skip fetching schedules if tournament type is "no bracket"
+      if (tournamentType === "no bracket") {
+        setAllSchedules([]);
+        setSchedules([]);
+        setLoading(false);
+        return;
+      }
+      
       const { data } = await axiosClient.get(
         `/intramurals/${intrams_id}/events/${event_id}/schedule`
       );
@@ -98,12 +108,17 @@ export default function GamePage() {
   useEffect(() => {
     const loadData = async () => {
       await fetchEventStatus();
-      await fetchSchedules();
     };
     
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [intrams_id, event_id]);
+  
+  useEffect(() => {
+    if (tournamentType !== "") {
+      fetchSchedules();
+    }
+  }, [tournamentType]);
   
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -188,6 +203,17 @@ export default function GamePage() {
     }
   };
 
+  // Render the "no bracket" message
+  const renderNoBracketMessage = () => {
+    return (
+      <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+        <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
+        <h3 className="text-lg font-medium text-gray-600">This event has no bracket</h3>
+        <p className="text-gray-500 mt-1">This type of event doesn't use brackets or match scheduling.</p>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
@@ -196,7 +222,7 @@ export default function GamePage() {
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Calendar size={20} className="mr-2" /> Bracket Matches
             </h2>
-            {eventStatus === "in progress" && (
+            {eventStatus === "in progress" && tournamentType !== "no bracket" && (
               <button
                 type="button"
                 onClick={generateMatches}
@@ -211,7 +237,7 @@ export default function GamePage() {
             )}
           </div>
           
-          {eventStatus === "in progress" && (
+          {eventStatus === "in progress" && tournamentType !== "no bracket" && (
             <div className="mb-4">
               <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
                 <Filter
@@ -243,6 +269,8 @@ export default function GamePage() {
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
+            ) : tournamentType === "no bracket" ? (
+              renderNoBracketMessage()
             ) : eventStatus === "completed" ? (
               <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
                 <Calendar size={48} className="mx-auto mb-4 text-green-400" />

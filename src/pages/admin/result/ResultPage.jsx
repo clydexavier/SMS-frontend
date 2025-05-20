@@ -23,7 +23,7 @@ const ResultPage = () => {
       const eventStatusRes = await axiosClient.get(
         `intramurals/${intrams_id}/events/${event_id}/status`
       );
-      setEventStatus(eventStatusRes.data);
+      setEventStatus(eventStatusRes.data.status);
       
       // Get event name
       const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);
@@ -32,7 +32,7 @@ const ResultPage = () => {
       }
   
       // Only fetch podium data if status is "completed" or "in progress"
-      if (eventStatusRes.data === "completed" ) {
+      if (eventStatusRes.data.status === "completed" ) {
         const podiumRes = await axiosClient.get(
           `/intramurals/${intrams_id}/events/${event_id}/podium`
         );

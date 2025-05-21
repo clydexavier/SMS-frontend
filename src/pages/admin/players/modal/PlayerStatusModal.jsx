@@ -72,8 +72,8 @@ export default function PlayerStatusModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-      <div className="relative w-full max-w-md mx-auto max-h-[90vh] flex flex-col">
-        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto flex flex-col">
+        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] overflow-hidden">
           {/* Header - Fixed at top */}
           <div className="flex items-center justify-between p-5 border-b border-[#E6F2E8] bg-[#F7FAF7]">
             <h3 className="text-lg font-semibold text-[#2A6D3A] flex items-center">

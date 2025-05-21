@@ -29,9 +29,9 @@ export default function DocumentStatusModal({
   const documentDisplayName = getDocumentDisplayName();
 
   return (
-    <div className="fixed rounded-xl inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
       <div className="relative w-full max-w-md mx-auto max-h-[90vh] flex flex-col">
-        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] flex flex-col max-h-[90vh]">
+        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] overflow-hidden">
           {/* Header - Fixed at top */}
           <div className="flex items-center justify-between p-5 border-b border-[#E6F2E8] bg-[#F7FAF7]">
             <h3 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -84,14 +84,6 @@ export default function DocumentStatusModal({
                 Mark as Invalid
               </button>
               
-              <button
-                onClick={() => onUpdate('pending')}
-                disabled={isProcessing}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-yellow-300 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors"
-              >
-                <Clock size={18} />
-                Mark as Pending
-              </button>
             </div>
           </div>
 

@@ -58,7 +58,7 @@ export default function BracketPage() {
       );
     }
     
-    if (eventStatus === "completed") {
+    /*if (eventStatus === "completed") {
       return (
         <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
           <Award size={48} className="mx-auto mb-4 text-green-400" />
@@ -66,7 +66,7 @@ export default function BracketPage() {
           <p className="text-gray-600 mt-1">This event has been completed. Bracket display is for viewing only.</p>
         </div>
       );
-    }
+    }*/
     
     if (eventStatus === "pending") {
       return (
@@ -78,13 +78,13 @@ export default function BracketPage() {
       );
     }
     
-    if (eventStatus !== "in progress" || !bracketId) {
+    if ( !bracketId || bracketId === "no bracket") {
       return (
         <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
           <Award size={48} className="mx-auto mb-4 text-gray-400" />
           <h3 className="text-lg font-medium text-gray-600">No Bracket Available</h3>
           <p className="text-gray-500 mt-1">
-            The bracket could not be loaded. Please try again later.
+            The bracket could not be loaded or this event has no bracket. 
           </p>
         </div>
       );
@@ -92,7 +92,7 @@ export default function BracketPage() {
     
     return (
       <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
           <iframe
             src={`https://challonge.com/${bracketId}/module`}
             width="100%"

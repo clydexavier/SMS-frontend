@@ -17,6 +17,7 @@ export default function TeamSeeder() {
   const [eventName, setEventName] = useState("");
   const [eventStatus, setEventStatus] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [tournamentType, setTournamentType] = useState("");
 
   // Added for consistency with PlayersPage
   const [activeTab, setActiveTab] = useState("All");
@@ -41,7 +42,8 @@ export default function TeamSeeder() {
       try {
         // Get event status first
         const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/status`);
-        setEventStatus(data);
+        setEventStatus(data.status);
+        setTournamentType(data.tournament_type);
         
         // Get event name
         const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);
@@ -49,15 +51,18 @@ export default function TeamSeeder() {
           setEventName(eventResponse.data.name);
         }
         
-        // If event is pending, load teams for seeding
-        if (data === "pending") {
+        // If event is pending and not "no bracket", load teams for seeding
+        if (data.status === "pending" && data.tournament_type !== "no bracket") {
           const teamsResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}/team_names`);
           const fetchedTeams = teamsResponse.data;
           setTeams(fetchedTeams);
 
+          // Ensure team IDs are stored as numbers if they come as numbers
           const initialSeeds = {};
           fetchedTeams.forEach((team, index) => {
-            initialSeeds[team.id] = index + 1;
+            // Store team.id as a number if it's numeric
+            const teamId = typeof team.id === 'string' ? parseInt(team.id, 10) : team.id;
+            initialSeeds[teamId] = index + 1;
           });
           setSeeds(initialSeeds);
           
@@ -85,122 +90,111 @@ export default function TeamSeeder() {
     setPagination((prev) => ({ ...prev, currentPage: page }));
   };
 
-  const handleSeedChange = (teamId, value) => {
-    // Ensure value is a positive integer within the range
-    const seedValue = Math.max(1, parseInt(value) || 1);
-    
-    // Check if this seed value already exists for another team
-    const existingTeamWithSameSeed = Object.entries(seeds).find(
-      ([id, seed]) => seed === seedValue && id !== teamId.toString()
-    );
-    
-    // Create a new seeds object with the updated value
-    const newSeeds = { ...seeds, [teamId]: seedValue };
-    
-    // If there's a conflict, resolve it by shifting other values
-    if (existingTeamWithSameSeed) {
-      const [conflictingTeamId] = existingTeamWithSameSeed;
-      
-      // Find an available seed value
-      let availableSeed = 1;
-      const usedSeeds = new Set(Object.values(newSeeds));
-      
-      while (usedSeeds.has(availableSeed)) {
-        availableSeed++;
-      }
-      
-      // Update the conflicting team with a new seed
-      newSeeds[conflictingTeamId] = availableSeed;
-      
-      // Remove any validation error for this team
-      setValidationErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[teamId];
-        delete newErrors[conflictingTeamId];
-        return newErrors;
-      });
-    } else {
-      // No conflict, just remove any validation error for this team
-      setValidationErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[teamId];
-        return newErrors;
-      });
-    }
-    
-    // Update the seeds state
-    setSeeds(newSeeds);
-  };
-
   const randomizeSeeds = () => {
-    const teamIds = Object.keys(seeds);
-    const positions = Array.from({ length: teamIds.length }, (_, i) => i + 1);
+    try {
+      // Use actual team IDs directly from the teams array to maintain data type consistency
+      const teamIds = teams.map(team => team.id);
+      const positions = Array.from({ length: teamIds.length }, (_, i) => i + 1);
 
-    for (let i = positions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [positions[i], positions[j]] = [positions[j], positions[i]];
+      // Fisher-Yates shuffle algorithm for positions
+      for (let i = positions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [positions[i], positions[j]] = [positions[j], positions[i]];
+      }
+
+      // Create new seeds object
+      const randomSeeds = {};
+      teamIds.forEach((teamId, index) => {
+        randomSeeds[teamId] = positions[index];
+      });
+
+      setSeeds(randomSeeds);
+      // Clear any validation errors after randomizing
+      setValidationErrors({});
+
+      // Debug logging to help troubleshoot
+      console.log("Randomized seeds:", randomSeeds);
+      console.log("All teams have seeds:", teams.every(team => randomSeeds[team.id] !== undefined));
+    } catch (err) {
+      console.error("Error in randomizeSeeds:", err);
+      setError("Failed to randomize seeds. Please try again.");
     }
-
-    const randomSeeds = {};
-    teamIds.forEach((teamId, index) => {
-      randomSeeds[teamId] = positions[index];
-    });
-
-    setSeeds(randomSeeds);
-    // Clear any validation errors after randomizing
-    setValidationErrors({});
   };
 
   const resetSeeds = () => {
-    const initialSeeds = {};
-    teams.forEach((team, index) => {
-      initialSeeds[team.id] = index + 1;
-    });
-    setSeeds(initialSeeds);
-    // Clear any validation errors after resetting
-    setValidationErrors({});
+    try {
+      const initialSeeds = {};
+      teams.forEach((team, index) => {
+        // Ensure consistent data type for team IDs
+        const teamId = typeof team.id === 'string' ? parseInt(team.id, 10) : team.id;
+        initialSeeds[teamId] = index + 1;
+      });
+      setSeeds(initialSeeds);
+      // Clear any validation errors after resetting
+      setValidationErrors({});
+      
+      // Debug logging to help troubleshoot
+      console.log("Reset seeds:", initialSeeds);
+      console.log("All teams have seeds:", teams.every(team => initialSeeds[team.id] !== undefined));
+    } catch (err) {
+      console.error("Error in resetSeeds:", err);
+      setError("Failed to reset seeds. Please try again.");
+    }
   };
 
   const validateSeeds = () => {
-    const values = Object.values(seeds);
-    const allInRange = values.every((seed) => seed >= 1 && seed <= teams.length);
-    const valueSet = new Set(values);
-    const allUnique = valueSet.size === values.length;
-    
-    // If seeds are valid, reset errors and return true
-    if (allInRange && allUnique) {
-      setValidationErrors({});
-      return true;
-    }
-    
-    // Find and set specific validation errors
-    const newErrors = {};
-    
-    // Check for duplicates
-    if (!allUnique) {
-      // Create a map to track count of each seed value
-      const valueCounts = {};
-      values.forEach(seed => {
-        valueCounts[seed] = (valueCounts[seed] || 0) + 1;
-      });
+    try {
+      const values = Object.values(seeds);
+      const allInRange = values.every((seed) => seed >= 1 && seed <= teams.length);
+      const valueSet = new Set(values);
+      const allUnique = valueSet.size === values.length;
       
-      // Find duplicate seeds and their teams
+      // Check if all teams have a seed
+      const allTeamsHaveSeeds = teams.every(team => seeds[team.id] !== undefined);
+      if (!allTeamsHaveSeeds) {
+        setError("Some teams are missing seed values. Please reset and try again.");
+        return false;
+      }
+      
+      // If seeds are valid, reset errors and return true
+      if (allInRange && allUnique && allTeamsHaveSeeds) {
+        setValidationErrors({});
+        return true;
+      }
+      
+      // Find and set specific validation errors
+      const newErrors = {};
+      
+      // Check for duplicates
+      if (!allUnique) {
+        // Create a map to track count of each seed value
+        const valueCounts = {};
+        values.forEach(seed => {
+          valueCounts[seed] = (valueCounts[seed] || 0) + 1;
+        });
+        
+        // Find duplicate seeds and their teams
+        Object.entries(seeds).forEach(([teamId, seed]) => {
+          if (valueCounts[seed] > 1) {
+            newErrors[teamId] = `Duplicate seed ${seed}`;
+          }
+        });
+      }
+      
+      // Check for out of range values
       Object.entries(seeds).forEach(([teamId, seed]) => {
-        if (valueCounts[seed] > 1) {
-          newErrors[teamId] = `Duplicate seed ${seed}`;
+        if (seed < 1 || seed > teams.length) {
+          newErrors[teamId] = `Seed must be between 1 and ${teams.length}`;
         }
       });
+      
+      setValidationErrors(newErrors);
+      return false;
+    } catch (err) {
+      console.error("Error in validateSeeds:", err);
+      setError("Failed to validate seeds. Please try again.");
+      return false;
     }
-    
-    // Check for out of range values
-    Object.entries(seeds).forEach(([teamId, seed]) => {
-      if (seed < 1 || seed > teams.length) {
-        newErrors[teamId] = `Seed must be between 1 and ${teams.length}`;
-      }
-    });
-    
-    setValidationErrors(newErrors);
-    return false;
   };
 
   const submitSeeds = async () => {
@@ -208,22 +202,55 @@ export default function TeamSeeder() {
       setError(`Invalid seeding. Each team must have a unique seed between 1 and ${teams.length}.`);
       return;
     }
-
+  
     setSubmitting(true);
     try {
-      const participants = teams.map((team) => ({
-        name: team.name,
-        seed: seeds[team.id],
-      }));
-      await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/start`, {
-        participants,
+      // Create a sorted array of participants to ensure they're in seed order
+      // This is important as the backend might expect a specific ordering
+      const sortedParticipants = [];
+      
+      // First, create objects with proper team info and seed
+      teams.forEach(team => {
+        sortedParticipants.push({
+          id: team.id,
+          name: team.name,
+          seed: seeds[team.id]
+        });
       });
-
+      
+      // Sort by seed value
+      sortedParticipants.sort((a, b) => a.seed - b.seed);
+      
+      const participants = sortedParticipants.map(team => ({
+        participant: {
+          name: team.name, 
+          seed: team.seed
+        }
+      }));
+  
+      // Verify all participants have seeds
+      console.log("All participants have seeds:", participants.every(p => typeof p.seed === 'number'));
+      console.log("Submission payload:", { participants });
+      
+      // Try with a slightly different payload structure
+      const payload = { 
+        participants: participants
+      };
+      
+      const response = await axiosClient.post(
+        `/intramurals/${intrams_id}/events/${event_id}/start`, 
+        payload
+      );
+  
+      console.log("Tournament start response:", response.data);
       setSuccess(true);
       setEventStatus("in progress");
     } catch (err) {
-      console.error(err);
-      setError("Failed to start tournament. Please try again.");
+      console.error("Error starting tournament:", err);
+      if (err.response?.data) {
+        console.error("Response data:", err.response.data);
+      }
+      setError(`Failed to start tournament: ${err.response?.data?.message || err.message || "Unknown error"}`);
     } finally {
       setSubmitting(false);
     }
@@ -241,7 +268,12 @@ export default function TeamSeeder() {
   });
 
   // Sort teams by seed value
-  const sortedTeams = filteredTeams.length > 0 ? [...filteredTeams].sort((a, b) => seeds[a.id] - seeds[b.id]) : [];
+  const sortedTeams = filteredTeams.length > 0 ? [...filteredTeams].sort((a, b) => {
+    // Handle undefined seeds
+    const seedA = seeds[a.id] !== undefined ? seeds[a.id] : Number.MAX_SAFE_INTEGER;
+    const seedB = seeds[b.id] !== undefined ? seeds[b.id] : Number.MAX_SAFE_INTEGER;
+    return seedA - seedB;
+  }) : [];
   
   // Get paginated teams
   const paginatedTeams = sortedTeams.slice(
@@ -300,18 +332,18 @@ export default function TeamSeeder() {
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Trophy size={20} className="mr-2" /> Team Seeder {eventName && <span className="ml-2 text-gray-600 font-normal">- {eventName}</span>}
             </h2>
-            {eventStatus === "pending" && teams.length > 0 && (
+            {eventStatus === "pending" && teams.length > 0 && tournamentType !== "no bracket" && (
               <div className="flex gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={randomizeSeeds}
-                  className="bg-[#E6F2E8] hover:bg-[#D8EBDB] text-[#2A6D3A] px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                  className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
                   disabled={loading || submitting}
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                   </svg>
-                  Randomize
+                  Randomize Seeds
                 </button>
                 <button
                   type="button"
@@ -340,6 +372,20 @@ export default function TeamSeeder() {
             </div>
           )}
 
+          {/* Informational message about randomized seeding */}
+          {eventStatus === "pending" && teams.length > 0 && tournamentType !== "no bracket" && (
+            <div className="bg-blue-50 p-4 rounded-lg text-blue-600 text-sm mb-4 border border-blue-100">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>
+                  <strong>Note:</strong> Team seeding can only be done using the Randomize button. Click "Randomize Seeds" to automatically assign positions to all teams.
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
             {loading ? (
@@ -349,6 +395,12 @@ export default function TeamSeeder() {
             ) : eventStatus !== "pending" ? (
               <div className="flex-1 overflow-auto">
                 {renderStatusMessage()}
+              </div>
+            ) : tournamentType === "no bracket" ? (
+              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-600">This event has no bracket</h3>
+                <p className="text-gray-500 mt-1">This type of event doesn't require seeding or brackets and will be tracked directly in the system.</p>
               </div>
             ) : teams.length === 0 ? (
               <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
@@ -377,17 +429,9 @@ export default function TeamSeeder() {
                         >
                           <td className="px-6 py-4 w-24">
                             <div className="relative">
-                              <input
-                                type="number"
-                                min="1"
-                                max={teams.length}
-                                className={`border rounded-lg px-3 py-2 w-full text-center focus:ring-2 focus:ring-[#6BBF59] focus:border-[#6BBF59] ${
-                                  validationErrors[team.id] ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                                value={seeds[team.id] || ""}
-                                onChange={(e) => handleSeedChange(team.id, e.target.value)}
-                                disabled={submitting}
-                              />
+                              <div className="border border-gray-200 rounded-lg px-3 py-2 w-full text-center bg-gray-50 font-medium">
+                                {seeds[team.id] !== undefined ? seeds[team.id] : "-"}
+                              </div>
                               {validationErrors[team.id] && (
                                 <div className="absolute right-0 top-0 -mt-1 -mr-1">
                                   <span className="flex h-3 w-3">
@@ -431,8 +475,8 @@ export default function TeamSeeder() {
             )}
           </div>
           
-          {/* Start Tournament Button - Only shown for pending events with teams */}
-          {eventStatus === "pending" && teams.length > 0 && (
+          {/* Start Tournament Button - Only shown for pending events with teams and not "no bracket" type */}
+          {eventStatus === "pending" && teams.length > 0 && tournamentType !== "no bracket" && (
             <div className="mt-6 flex justify-end">
               <button
                 onClick={submitSeeds}

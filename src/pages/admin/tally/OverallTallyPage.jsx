@@ -158,8 +158,8 @@ export default function OverallTallyPage() {
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-full overflow-hidden mr-3 border border-gray-200">
-                                <img 
+                              <div className="w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A] flex items-center justify-center mr-2 border border-gray-200 overflow-hidden">
+                               {team.team_logo ? (<img 
                                   src={team.team_logo} 
                                   alt={team.team_name} 
                                   className="w-full h-full object-cover"
@@ -167,7 +167,7 @@ export default function OverallTallyPage() {
                                     e.target.onerror = null;
                                     e.target.src = "/placeholder-logo.png";
                                   }} 
-                                />
+                                />): (team.team_name.charAt(0).toUpperCase())} 
                               </div>
                               <span className="font-medium text-gray-800">{team.team_name}</span>
                             </div>

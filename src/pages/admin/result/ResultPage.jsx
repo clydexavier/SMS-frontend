@@ -10,7 +10,6 @@ const ResultPage = () => {
   const [podiumData, setPodiumData] = useState(null);
   const [eventStatus, setEventStatus] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [eventName, setEventName] = useState("");
@@ -62,22 +61,11 @@ const ResultPage = () => {
 
       await method(url, resultsData);
 
-      setSubmitStatus({
-        type: "success",
-        message: podiumData
-          ? "Event results updated successfully!"
-          : "Event results submitted successfully!",
-      });
-
-      setTimeout(() => setSubmitStatus(null), 5000);
       fetchPodiumData();
       return true;
     } catch (err) {
       console.error("Failed to submit results:", err);
-      setSubmitStatus({
-        type: "error",
-        message: "Failed to submit results. Please try again.",
-      });
+      
       throw err;
     } finally {
       setLoading(false);
@@ -110,18 +98,10 @@ const ResultPage = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      setSubmitStatus({
-        type: "success",
-        message: "Podium PDF downloaded successfully!"
-      });
       
-      setTimeout(() => setSubmitStatus(null), 3000);
-    } catch (err) {
+      } catch (err) {
       console.error("Failed to download podium PDF", err);
-      setSubmitStatus({
-        type: "error",
-        message: "Failed to download podium PDF. Please try again."
-      });
+      
     } finally {
       setIsDownloading(false);
     }
@@ -199,17 +179,6 @@ const ResultPage = () => {
             </div>
           </div>
 
-          {submitStatus && (
-            <div
-              className={`px-4 py-2 rounded text-sm mb-4 ${
-                submitStatus.type === "success"
-                  ? "bg-green-50 text-green-700"
-                  : "bg-red-50 text-red-700"
-              }`}
-            >
-              {submitStatus.message}
-            </div>
-          )}
 
           {error && (
             <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">

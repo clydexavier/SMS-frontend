@@ -74,7 +74,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
         <div className="flex items-center">
           {/* Circular logo or icon */}
           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A]">
-            {user?.picture ? (<img src={user.picture} alt="User profile" className="w-8 h-8 rounded-full"/>) : 
+            {user?.avatar_url ? (<img src={user.avatar_url} alt="User profile" className="w-8 h-8 rounded-full"/>) : 
             <span className="text-sm font-semibold">{user?.name ? user.name[0] : "U"}</span>}
           </div>
           

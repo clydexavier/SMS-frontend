@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import Sidebar from '../../../components/Sidebar';
 import Breadcrumb from '../../../components/Breadcrumb';
-import logo from '../../../../assets/IHK_logo2.png';
+import logo from '../../../../assets/vsu_logo.png';
 import { useState } from 'react';
 import { MdMenuOpen } from "react-icons/md";
 
@@ -37,7 +37,7 @@ export default function IntramuralPage() {
             <div className="flex items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="IHK Logo" className={`h-8 w-auto rounded-full ${isSidebarOpen? "": "hidden"}`} />
+            <img src={logo} alt="IHK Logo" className={`h-12 w-40 rounded-full ${isSidebarOpen? "": "hidden"}`} />
             
           </Link>
           {/* Menu button */}

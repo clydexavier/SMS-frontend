@@ -100,15 +100,9 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existing
           disabled={submitting}
         >
           <option value="">Select Team</option>
-          {teams
-            .filter(team => 
-              (medal === "Gold" || team.id.toString() !== gold) && 
-              (medal === "Silver" || team.id.toString() !== silver) && 
-              (medal === "Bronze" || team.id.toString() !== bronze)
-            )
-            .map(team => (
-              <option key={team.id} value={team.id}>{team.name}</option>
-            ))}
+          {teams.map(team => (
+            <option key={team.id} value={team.id}>{team.name}</option>
+          ))}
         </select>
       </div>
     );

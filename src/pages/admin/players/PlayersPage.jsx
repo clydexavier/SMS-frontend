@@ -1,11 +1,14 @@
-// PlayersPage.jsx
+// PlayersPage.jsx with automated approval and consistent modals
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
 import Filter from "../../components/Filter";
 import PlayerModal from "./modal/PlayerModal";
 import PaginationControls from "../../components/PaginationControls";
-import { Users, Loader } from "lucide-react";
+import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
+import PlayerStatusModal from "./modal/PlayerStatusModal";
+import DocumentStatusModal from "./modal/DocumentStatusModal";
+import { Users, Loader, CheckCircle, AlertCircle, Clock } from "lucide-react";
 
 export default function PlayersPage() {
   const { intrams_id, event_id } = useParams();
@@ -21,6 +24,25 @@ export default function PlayersPage() {
 
   const [teams, setTeams] = useState([]);
 
+  // Delete confirmation modal states
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  
+  // Document status modal states
+  const [showDocumentStatusModal, setShowDocumentStatusModal] = useState(false);
+  const [documentToUpdate, setDocumentToUpdate] = useState(null);
+  const [isUpdatingDocument, setIsUpdatingDocument] = useState(false);
+  const [documentUpdateError, setDocumentUpdateError] = useState(null);
+  
+  // Player status modal states
+  const [showPlayerStatusModal, setShowPlayerStatusModal] = useState(false);
+  const [playerToUpdateStatus, setPlayerToUpdateStatus] = useState(null);
+  const [statusAction, setStatusAction] = useState("");
+  const [isProcessingStatus, setIsProcessingStatus] = useState(false);
+  const [statusError, setStatusError] = useState(null);
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 12,
@@ -28,6 +50,7 @@ export default function PlayersPage() {
     lastPage: 1,
   });
 
+  // Teams filter options
   const [filterOptions, setFilterOptions] = useState([
     { label: "All", value: "All" },
   ]);
@@ -86,40 +109,108 @@ export default function PlayersPage() {
     }
   };
 
-  const deletePlayer = async (id, name) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
-    if (confirmDelete) {
-      try {
-        setLoading(true);
-        await axiosClient.delete(
-          `/intramurals/${intrams_id}/events/${event_id}/players/${id}`
-        );
-        await fetchPlayers();
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to delete player");
-      } finally {
-        setLoading(false);
-      }
+  // Open delete confirmation modal
+  const confirmDeletePlayer = (player) => {
+    setPlayerToDelete(player);
+    setDeleteError(null);
+    setShowDeleteConfirmation(true);
+  };
+  
+  // Handle the actual deletion after confirmation
+  const handleDeletePlayer = async () => {
+    if (!playerToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      
+      await axiosClient.delete(
+        `/intramurals/${intrams_id}/events/${event_id}/players/${playerToDelete.id}`
+      );
+      
+      // Close modal and refresh data
+      setShowDeleteConfirmation(false);
+      await fetchPlayers();
+    } catch (err) {
+      console.error("Error deleting player:", err);
+      setDeleteError(err.response?.data?.message || "Failed to delete player. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const toggleApproval = async (id, currentStatus, name) => {
-    const confirm = window.confirm(
-      `Are you sure you want to ${currentStatus ? "mark as pending" : "approve"} ${name}?`
-    );
-    if (confirm) {
-      try {
-        setLoading(true);
+  // Open document status modal
+  const openDocumentStatusModal = (player, documentType) => {
+    setDocumentToUpdate({
+      player: player,
+      documentType: documentType
+    });
+    setDocumentUpdateError(null);
+    setShowDocumentStatusModal(true);
+  };
+  
+  // Handle document status update
+  const handleDocumentStatusUpdate = async (status) => {
+    if (!documentToUpdate) return;
+    
+    try {
+      setIsUpdatingDocument(true);
+      setDocumentUpdateError(null);
+      
+      await axiosClient.patch(
+        `/intramurals/${intrams_id}/events/${event_id}/players/${documentToUpdate.player.id}/document-status`,
+        { 
+          document_type: documentToUpdate.documentType,
+          status: status 
+        }
+      );
+      
+      // Close modal and refresh data
+      setShowDocumentStatusModal(false);
+      await fetchPlayers();
+    } catch (err) {
+      console.error("Error updating document status:", err);
+      setDocumentUpdateError("Failed to update document status. Please try again.");
+    } finally {
+      setIsUpdatingDocument(false);
+    }
+  };
+  
+  // Open player status modal
+  const openPlayerStatusModal = (player, action) => {
+    setPlayerToUpdateStatus(player);
+    setStatusAction(action);
+    setStatusError(null);
+    setShowPlayerStatusModal(true);
+  };
+  
+  // Handle player status update
+  const handlePlayerStatusUpdate = async (rejectionReason = null) => {
+    if (!playerToUpdateStatus || !statusAction) return;
+    
+    try {
+      setIsProcessingStatus(true);
+      setStatusError(null);
+      
+      if (statusAction === "reject") {
         await axiosClient.patch(
-          `/intramurals/${intrams_id}/events/${event_id}/players/${id}/edit`,
-          { approved: currentStatus ? 0 : 1 }
+          `/intramurals/${intrams_id}/events/${event_id}/players/${playerToUpdateStatus.id}/reject`,
+          { rejection_reason: rejectionReason }
         );
-        await fetchPlayers();
-      } catch (err) {
-        setError("Failed to update approval status");
-      } finally {
-        setLoading(false);
+      } else if (statusAction === "clear-rejection") {
+        await axiosClient.patch(
+          `/intramurals/${intrams_id}/events/${event_id}/players/${playerToUpdateStatus.id}/clear-rejection`
+        );
       }
+      
+      // Close modal and refresh data
+      setShowPlayerStatusModal(false);
+      await fetchPlayers();
+    } catch (err) {
+      console.error("Error updating player status:", err);
+      setStatusError(err.response?.data?.message || "Failed to update player status. Please try again.");
+    } finally {
+      setIsProcessingStatus(false);
     }
   };
 
@@ -129,7 +220,11 @@ export default function PlayersPage() {
       const { data } = await axiosClient.get(
         `/intramurals/${intrams_id}/events/${event_id}/players`,
         {
-          params: { page, activeTab, search },
+          params: { 
+            page, 
+            activeTab,  // for team filtering
+            search
+          },
         }
       );
 
@@ -192,19 +287,39 @@ export default function PlayersPage() {
     return () => clearTimeout(delayDebounce);
   }, [search, activeTab, pagination.currentPage, intrams_id]);
 
-  const renderDownloadLink = (url) =>
-    url ? (
-      <a
-        href={url}
-        className="text-[#2A6D3A] hover:text-[#6BBF59] hover:underline"
-        target="_blank"
-        rel="noopener noreferrer"
+  // Helper function to render document status
+  const renderDocumentStatus = (status, player, documentType) => {
+    if (!status) status = 'pending';
+    
+    let statusIcon, statusText, statusClass;
+    
+    switch(status) {
+      case 'valid':
+        statusIcon = <CheckCircle size={16} className="text-green-600" />;
+        statusText = "Valid";
+        statusClass = "bg-green-100 text-green-800 border-green-200";
+        break;
+      case 'invalid':
+        statusIcon = <AlertCircle size={16} className="text-red-600" />;
+        statusText = "Invalid";
+        statusClass = "bg-red-100 text-red-800 border-red-200";
+        break;
+      default:
+        statusIcon = <Clock size={16} className="text-yellow-600" />;
+        statusText = "Pending";
+        statusClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
+    }
+    
+    return (
+      <button
+        onClick={() => openDocumentStatusModal(player, documentType)}
+        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border ${statusClass} hover:opacity-80 transition-opacity`}
       >
-        View
-      </a>
-    ) : (
-      <span className="text-gray-400">N/A</span>
+        {statusIcon}
+        {statusText}
+      </button>
     );
+  };
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -229,7 +344,7 @@ export default function PlayersPage() {
             </button>
           </div>
           
-          {/* Filter section */}
+          {/* Filter section - only team filter and search */}
           <div className="mb-4">
             <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
               <Filter
@@ -245,7 +360,24 @@ export default function PlayersPage() {
                 }}
                 placeholder="Search player name"
                 filterOptions={filterOptions}
+                label="Team"
               />
+            </div>
+          </div>
+
+          {/* Information about automated approval */}
+          <div className="mb-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="flex items-start text-blue-800">
+              <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <p className="font-medium">Automated Approval System</p>
+                <p className="text-sm mt-1">
+                  Players are automatically approved when all three documents are marked as valid. 
+                  If any document is marked as invalid or pending, the player's status will be changed to pending.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -282,7 +414,6 @@ export default function PlayersPage() {
                         <th className="px-6 py-3 font-medium tracking-wider">COR</th>
                         <th className="px-6 py-3 font-medium tracking-wider">Status</th>
                         <th className="px-6 py-3 font-medium tracking-wider text-right">Actions</th>
-                        <th className="px-6 py-3 font-medium tracking-wider text-right">Approval</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -306,45 +437,73 @@ export default function PlayersPage() {
                           </td>
                           <td className="px-6 py-4">{player.name}</td>
                           <td className="px-6 py-4">{player.id_number}</td>
-                          <td className="px-6 py-4">{renderDownloadLink(player.medical_certificate)}</td>
-                          <td className="px-6 py-4">{renderDownloadLink(player.parents_consent)}</td>
-                          <td className="px-6 py-4">{renderDownloadLink(player.cor)}</td>
                           <td className="px-6 py-4">
-                            <div 
-                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                                player.approved 
-                                  ? "bg-green-100 text-green-800" 
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {player.approved ? "Approved" : "Pending"}
+                            {renderDocumentStatus(player.medical_certificate_status, player, 'medical_certificate')}
+                          </td>
+                          <td className="px-6 py-4">
+                            {renderDocumentStatus(player.parents_consent_status, player, 'parents_consent')}
+                          </td>
+                          <td className="px-6 py-4">
+                            {renderDocumentStatus(player.cor_status, player, 'cor')}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col gap-2">
+                              <div 
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                  player.approval_status === 'approved' 
+                                    ? "bg-green-100 text-green-800" 
+                                    : player.approval_status === 'rejected'
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-yellow-100 text-yellow-800"
+                                }`}
+                              >
+                                {player.approval_status === 'approved' ? (
+                                  <><CheckCircle size={16} /> Approved</>
+                                ) : player.approval_status === 'rejected' ? (
+                                  <><AlertCircle size={16} /> Rejected</>
+                                ) : (
+                                  <><Clock size={16} /> Pending</>
+                                )}
+                              </div>
+                              {player.approval_status === 'rejected' && player.rejection_reason && (
+                                <div className="text-xs text-red-600 italic">
+                                  Reason: {player.rejection_reason}
+                                </div>
+                              )}
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right whitespace-nowrap">
-                            <button
-                              onClick={() => openEditModal(player)}
-                              className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors mr-2"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => deletePlayer(player.id, player.name)}
-                              className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </td>
-                          <td className="px-6 py-4 text-right whitespace-nowrap">
-                            <button
-                              onClick={() => toggleApproval(player.id, player.approved, player.name)}
-                              className={`${
-                                player.approved
-                                  ? "text-yellow-600 border-yellow-200 hover:bg-yellow-50"
-                                  : "text-green-600 border-green-200 hover:bg-green-50"
-                              } bg-white border font-medium rounded-lg text-xs px-4 py-2 transition-colors`}
-                            >
-                              {player.approved ? "Mark Pending" : "Approve"}
-                            </button>
+                            <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                              <button
+                                onClick={() => openEditModal(player)}
+                                className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-3 py-1.5 transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => confirmDeletePlayer(player)}
+                                className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-3 py-1.5 transition-colors"
+                              >
+                                Delete
+                              </button>
+                              
+                              {/* Reject/Clear Rejection buttons */}
+                              {player.approval_status !== 'rejected' ? (
+                                <button
+                                  onClick={() => openPlayerStatusModal(player, "reject")}
+                                  className="text-red-600 bg-white border border-red-200 hover:bg-red-50 font-medium rounded-lg text-xs px-3 py-1.5 transition-colors"
+                                >
+                                  Reject
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => openPlayerStatusModal(player, "clear-rejection")}
+                                  className="text-yellow-600 bg-white border border-yellow-200 hover:bg-yellow-50 font-medium rounded-lg text-xs px-3 py-1.5 transition-colors"
+                                >
+                                  Clear Rejection
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -365,6 +524,7 @@ export default function PlayersPage() {
         </div>
       </div>
 
+      {/* Player Modal */}
       <PlayerModal
         isModalOpen={isModalOpen}
         closeModal={closeModal}
@@ -374,6 +534,43 @@ export default function PlayersPage() {
         isLoading={loading}
         error={error}
         teams={teams}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleDeletePlayer}
+        title="Delete Player"
+        itemName={playerToDelete ? playerToDelete.name : ""}
+        message={playerToDelete ? 
+          `Are you sure you want to delete ${playerToDelete.name}? This action cannot be undone.` 
+          : "Are you sure you want to delete this player? This action cannot be undone."
+        }
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
+
+      {/* Document Status Modal using the new component */}
+      <DocumentStatusModal 
+        isOpen={showDocumentStatusModal}
+        onClose={() => setShowDocumentStatusModal(false)}
+        onUpdate={handleDocumentStatusUpdate}
+        player={documentToUpdate?.player}
+        documentType={documentToUpdate?.documentType}
+        isProcessing={isUpdatingDocument}
+        error={documentUpdateError}
+      />
+
+      {/* Player Status Modal - for rejecting or clearing rejection */}
+      <PlayerStatusModal
+        isOpen={showPlayerStatusModal}
+        onClose={() => setShowPlayerStatusModal(false)}
+        onConfirm={handlePlayerStatusUpdate}
+        player={playerToUpdateStatus}
+        action={statusAction}
+        isProcessing={isProcessingStatus}
+        error={statusError}
       />
     </div>
   );

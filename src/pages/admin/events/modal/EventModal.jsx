@@ -10,7 +10,8 @@ export default function EventModal({
   updateEvent, 
   existingEvent,
   isLoading,
-  error
+  error,
+  umbrellaEvents // New prop for umbrella events list
 }) {
   const { intrams_id } = useParams();
 
@@ -18,28 +19,45 @@ export default function EventModal({
     name: "",
     tournament_type: "",
     category: "",
-    intrams_id: intrams_id,
     type: "",
     gold: "",
     silver: "",
     bronze: "",
     venue: "",
+    is_umbrella: false,
+    parent_id: "",
+    has_independent_medaling: true, // Default to true
   };
 
   const [formData, setFormData] = useState(initialState);
+  const [selectedParentEvent, setSelectedParentEvent] = useState(null);
+  
+  // Find the selected parent event whenever parent_id changes
+  useEffect(() => {
+    if (formData.parent_id && umbrellaEvents) {
+      const parent = umbrellaEvents.find(event => event.id == formData.parent_id);
+      setSelectedParentEvent(parent);
+    } else {
+      setSelectedParentEvent(null);
+    }
+  }, [formData.parent_id, umbrellaEvents]);
   
   useEffect(() => {
+    console.log(umbrellaEvents);
     if (existingEvent) {
       setFormData({
         name: existingEvent.name || "",
         tournament_type: existingEvent.tournament_type || "",
         category: existingEvent.category || "",
-        intrams_id: intrams_id,
         type: existingEvent.type || "",
         gold: existingEvent.gold || "",
         silver: existingEvent.silver || "",
         bronze: existingEvent.bronze || "",
         venue: existingEvent.venue || "",
+        is_umbrella: existingEvent.is_umbrella || false,
+        parent_id: existingEvent.parent_id || "",
+        // Fix for boolean handling - properly maintain false values
+        has_independent_medaling: existingEvent.has_independent_medaling === undefined ? true : !!existingEvent.has_independent_medaling,
       });
     } else {
       setFormData(initialState);
@@ -49,6 +67,11 @@ export default function EventModal({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
   const handleMedalCountChange = (e) => {
@@ -73,18 +96,61 @@ export default function EventModal({
     }));
   };
 
+  // Function to determine if the medal field should be shown
+  const shouldShowMedalField = () => {
+    // Case 1: It's a standalone event (no parent) - show medals
+    if (!formData.parent_id) return true;
+    
+    // Case 2: It's an umbrella event - show medals
+    if (formData.is_umbrella) return true;
+    
+    // Case 3 & 4: It's a sub-event - depends on parent's has_independent_medaling
+    if (selectedParentEvent) {
+      return selectedParentEvent.has_independent_medaling;
+    }
+    
+    // Default - show if we can't determine
+    return true;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    existingEvent ? updateEvent(existingEvent.id, formData) : addEvent(formData);
+    
+    // Create a new object to prepare data for API submission
+    const submissionData = {
+      ...formData,
+      // Convert boolean values to integers (0 or 1) for MySQL
+      is_umbrella: formData.is_umbrella ? 1 : 0,
+      has_independent_medaling: formData.has_independent_medaling ? 1 : 0
+    };
+    
+    // If this is an umbrella event, ensure tournament_type is set properly
+    if (formData.is_umbrella) {
+      submissionData.tournament_type = "N/A";
+    }
+    
+    // If this is a sub-event and parent has independent_medaling=false, 
+    // set medal values to 0 as they won't be used
+    if (formData.parent_id && selectedParentEvent && !selectedParentEvent.has_independent_medaling) {
+      submissionData.gold = 0;
+      submissionData.silver = 0;
+      submissionData.bronze = 0;
+    }
+    
+    console.log("Submitting data:", submissionData);
+    
+    existingEvent 
+      ? updateEvent(existingEvent.id, submissionData) 
+      : addEvent(submissionData);
   };
 
   if (!isModalOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-      <div className="relative w-full max-w-md mx-auto">
-        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] overflow-hidden">
-          {/* Header */}
+      <div className="relative w-full max-w-md mx-auto max-h-[90vh] flex flex-col">
+        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] flex flex-col max-h-[90vh]">
+          {/* Header - Fixed at top */}
           <div className="flex items-center justify-between p-5 border-b border-[#E6F2E8] bg-[#F7FAF7]">
             <h3 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               {existingEvent ? "Update Event" : "Add New Event"}
@@ -99,137 +165,224 @@ export default function EventModal({
             </button>
           </div>
 
-          {/* Form */}
-          <form className="p-5" onSubmit={handleSubmit}>
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            {isLoading ? (
-              <div className="space-y-4 animate-pulse">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-10 bg-gray-200 rounded" />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Name */}
-                <div>
-                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Event Name
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleChange}
-                    autoComplete="off"
-                    required
-                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                    placeholder="Enter event name"
-                  />
+          {/* Form - Scrollable content */}
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+            <div className="p-5 overflow-y-auto flex-1">
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                  {error}
                 </div>
+              )}
 
-                {/* Tournament Type */}
-                <div>
-                  <label htmlFor="tournament_type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Tournament Type
-                  </label>
-                  <select
-                    id="tournament_type"
-                    name="tournament_type"
-                    value={formData.tournament_type}
-                    onChange={handleChange}
-                    required
-                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  >
-                    <option value="" disabled>Select tournament type</option>
-                    <option value="single elimination">Single Elimination</option>
-                    <option value="double elimination">Double Elimination</option>
-                  </select>
+              {isLoading ? (
+                <div className="space-y-4 animate-pulse">
+                  {[...Array(7)].map((_, i) => (
+                    <div key={i} className="h-10 bg-gray-200 rounded" />
+                  ))}
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Event Structure Fields - New Section */}
+                  <div className="p-3 bg-[#F7FAF7] rounded-lg border border-[#E6F2E8]">
+                    <h4 className="mb-2 text-sm font-medium text-[#2A6D3A]">Event Structure</h4>
+                    <div className="space-y-3">
+                      {/* Umbrella Event Checkbox */}
+                      <div className="flex items-center">
+                        <input
+                          id="is_umbrella"
+                          name="is_umbrella"
+                          type="checkbox"
+                          checked={formData.is_umbrella}
+                          onChange={handleCheckboxChange}
+                          className="h-4 w-4 text-[#6BBF59] focus:ring-[#6BBF59] rounded"
+                        />
+                        <label htmlFor="is_umbrella" className="ml-2 text-sm text-gray-700">
+                          This is an umbrella event (contains sub-events)
+                        </label>
+                      </div>
 
-                {/* Category */}
-                <div>
-                  <label htmlFor="category" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Category
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    required
-                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  >
-                    <option value="" disabled>Select category</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Mixed">Mixed</option>
-                  </select>
+                      {/* Independent Medaling Checkbox - only shown for umbrella events */}
+                      {formData.is_umbrella && (
+                        <div className="flex items-center mt-2">
+                          <input
+                            id="has_independent_medaling"
+                            name="has_independent_medaling"
+                            type="checkbox"
+                            checked={formData.has_independent_medaling}
+                            onChange={handleCheckboxChange}
+                            className="h-4 w-4 text-[#6BBF59] focus:ring-[#6BBF59] rounded"
+                          />
+                          <label htmlFor="has_independent_medaling" className="ml-2 text-sm text-gray-700">
+                            Sub-events have independent medaling (not aggregated)
+                          </label>
+                          <div className="mt-1 ml-6 text-xs text-gray-500">
+                            {formData.has_independent_medaling 
+                              ? "Each sub-event's medals are counted separately" 
+                              : "Teams are ranked based on sub-event placings"}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Parent Event Selection (only shown if not an umbrella event) */}
+                      {!formData.is_umbrella && (
+                        <div>
+                          <label htmlFor="parent_id" className="block mb-1 text-sm font-medium text-[#2A6D3A]">
+                            Parent Event (if this is a sub-event)
+                          </label>
+                          <select
+                            id="parent_id"
+                            name="parent_id"
+                            value={formData.parent_id}
+                            onChange={handleChange}
+                            className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                          >
+                            <option value="">Standalone Event (No Parent)</option>
+                            {umbrellaEvents && umbrellaEvents.map(event => (
+                              <option key={event.id} value={event.id}>
+                                {event.name}
+                              </option>
+                            ))}
+                          </select>
+                          
+                          {/* Show medaling information about parent event */}
+                          {selectedParentEvent && (
+                            <p className="mt-1 text-xs text-gray-500">
+                              This parent event has {selectedParentEvent.has_independent_medaling ? 'independent' : 'dependent'} medaling
+                              {!selectedParentEvent.has_independent_medaling && ' (medals will be awarded based on overall rankings)'}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Name */}
+                  <div>
+                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      Event Name
+                    </label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                      autoComplete="off"
+                      required
+                      className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                      placeholder="Enter event name"
+                    />
+                  </div>
+
+                  {/* Tournament Type - Only for non-umbrella events */}
+                  {!formData.is_umbrella && (
+                    <div>
+                      <label htmlFor="tournament_type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                        Tournament Type
+                      </label>
+                      <select
+                        id="tournament_type"
+                        name="tournament_type"
+                        value={formData.tournament_type}
+                        onChange={handleChange}
+                        required={!formData.is_umbrella}
+                        className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                      >
+                        <option value="" disabled>Select tournament type</option>
+                        <option value="single elimination">Single Elimination</option>
+                        <option value="double elimination">Double Elimination</option>
+                        <option value="round robin">Round Robin</option>
+                        <option value="no bracket">No bracket</option>
+                        
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Category */}
+                  <div>
+                    <label htmlFor="category" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      Category
+                    </label>
+                    <select
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      required
+                      className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    >
+                      <option value="" disabled>Select category</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Mixed">Mixed</option>
+                    </select>
+                  </div>
+
+                  {/* Type */}
+                  <div>
+                    <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                      Type
+                    </label>
+                    <select
+                      id="type"
+                      name="type"
+                      value={formData.type}
+                      onChange={handleChange}
+                      required
+                      disabled={formData.parent_id} // Disabled if it's a sub-event
+                      className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    >
+                      <option value="" disabled>Select type</option>
+                      <option value="sports">Sports</option>
+                      <option value="music">Music</option>
+                      <option value="dance">Dance</option>
+                    </select>
+                    {formData.parent_id && (
+                      <p className="mt-1 text-xs text-gray-500">Type is inherited from parent event</p>
+                    )}
+                  </div>
+
+                  {/* Medal Count - Only shown if it should be based on event type */}
+                  {shouldShowMedalField() === true && (
+                    <div>
+                      <label htmlFor="medalCount" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                        Medal Count (applies to gold, silver, and bronze)
+                      </label>
+                      <input
+                        id="medalCount"
+                        name="medalCount"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={formData.gold} // any of the three will reflect the value
+                        onChange={handleMedalCountChange}
+                        autoComplete="off"
+                        required
+                        className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                        placeholder="Enter number of medals (minimum 1)"
+                        onKeyDown={(e) => {
+                          // Prevent entering negative sign or decimal point
+                          if (e.key === '-' || e.key === '.') {
+                            e.preventDefault();
+                          }
+                        }}
+                        onPaste={(e) => {
+                          // Prevent pasting non-numeric values
+                          const pasteData = e.clipboardData.getData('text');
+                          if (!/^\d+$/.test(pasteData)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Only positive integers allowed</p>
+                    </div>
+                  )}
                 </div>
+              )}
+            </div>
 
-                {/* Type */}
-                <div>
-                  <label htmlFor="type" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Type
-                  </label>
-                  <select
-                    id="type"
-                    name="type"
-                    value={formData.type}
-                    onChange={handleChange}
-                    required
-                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                  >
-                    <option value="" disabled>Select type</option>
-                    <option value="sports">Sports</option>
-                    <option value="music">Music</option>
-                    <option value="dance">Dance</option>
-                  </select>
-                </div>
-
-                {/* Medal Count */}
-                <div>
-                  <label htmlFor="medalCount" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Medal Count (applies to gold, silver, and bronze)
-                  </label>
-                  <input
-                    id="medalCount"
-                    name="medalCount"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={formData.gold} // any of the three will reflect the value
-                    onChange={handleMedalCountChange}
-                    autoComplete="off"
-                    required
-                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                    placeholder="Enter number of medals (minimum 1)"
-                    onKeyDown={(e) => {
-                      // Prevent entering negative sign or decimal point
-                      if (e.key === '-' || e.key === '.') {
-                        e.preventDefault();
-                      }
-                    }}
-                    onPaste={(e) => {
-                      // Prevent pasting non-numeric values
-                      const pasteData = e.clipboardData.getData('text');
-                      if (!/^\d+$/.test(pasteData)) {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                  <p className="mt-1 text-xs text-gray-500">Only positive integers allowed</p>
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex justify-end mt-6 space-x-3">
+            {/* Action Buttons - Fixed at bottom */}
+            <div className="flex justify-end p-5 space-x-3 border-t border-[#E6F2E8] bg-white">
               <button
                 type="button"
                 onClick={closeModal}

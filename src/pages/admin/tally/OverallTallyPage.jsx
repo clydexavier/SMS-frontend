@@ -11,13 +11,26 @@ export default function OverallTallyPage() {
   const [loading, setLoading] = useState(true);
   const [tallyData, setTallyData] = useState([]);
   const [error, setError] = useState("");
+  const [activeFilter, setActiveFilter] = useState("overall");
+  const [intramsName, setIntramsName] = useState("");
 
-  const fetchTallyData = async () => {
+  // Filter categories
+  const filterOptions = [
+    { value: "overall", label: "Overall" },
+    { value: "sports", label: "Sports" },
+    { value: "dance", label: "Dance" },
+    { value: "music", label: "Music" }
+  ];
+
+  const fetchTallyData = async (type = "overall") => {
     try {
       setLoading(true);
-      const { data } = await axiosClient.get(`/intramurals/${intrams_id}/overall_tally`);
+      const { data } = await axiosClient.get(`/intramurals/${intrams_id}/overall_tally`, {
+        params: { type }
+      });
       
       setTallyData(data.data);
+      setIntramsName(data.intrams_name);
     } catch (err) {
       console.error("Error fetching tally data:", err);
       setError("Failed to fetch medal tally");
@@ -28,9 +41,9 @@ export default function OverallTallyPage() {
 
   useEffect(() => {
     if (intrams_id) {
-      fetchTallyData();
+      fetchTallyData(activeFilter);
     }
-  }, [intrams_id]);
+  }, [intrams_id, activeFilter]);
 
   // Calculate total medals for each team
   const calculateTotal = (team) => {
@@ -51,6 +64,11 @@ export default function OverallTallyPage() {
     }
   };
 
+  // Handle filter change
+  const handleFilterChange = (value) => {
+    setActiveFilter(value);
+  };
+
   return (
     <div className="flex flex-1 flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
@@ -58,8 +76,28 @@ export default function OverallTallyPage() {
         <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
-              <Medal size={20} className="mr-2" /> Medal Table
+              <Medal size={20} className="mr-2" />  Medal Table
             </h2>
+          </div>
+
+          {/* Filter tabs */}
+          <div className="bg-white rounded-lg shadow-sm border border-[#E6F2E8] p-2 mb-4">
+            <div className="flex flex-wrap gap-1">
+              {filterOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleFilterChange(option.value)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeFilter === option.value
+                      ? "bg-[#2A6D3A] text-white"
+                      : "bg-[#F0F8F2] text-[#2A6D3A] hover:bg-[#E6F2E8]"
+                  }`}
+                  aria-label={`Filter by ${option.label}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {error && (
@@ -120,8 +158,8 @@ export default function OverallTallyPage() {
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-full overflow-hidden mr-3 border border-gray-200">
-                                <img 
+                              <div className="w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A] flex items-center justify-center mr-2 border border-gray-200 overflow-hidden">
+                               {team.team_logo ? (<img 
                                   src={team.team_logo} 
                                   alt={team.team_name} 
                                   className="w-full h-full object-cover"
@@ -129,7 +167,7 @@ export default function OverallTallyPage() {
                                     e.target.onerror = null;
                                     e.target.src = "/placeholder-logo.png";
                                   }} 
-                                />
+                                />): (team.team_name.charAt(0).toUpperCase())} 
                               </div>
                               <span className="font-medium text-gray-800">{team.team_name}</span>
                             </div>

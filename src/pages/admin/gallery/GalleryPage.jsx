@@ -61,8 +61,6 @@ export default function GalleryPage() {
 
   const deleteGallery = async (id) => {
     try {
-      const confirm = window.confirm("Are you sure you want to delete this gallery item?");
-      if (!confirm) return;
       
       // Optimistically update the UI first
       const updatedGalleriesByTeam = galleriesByTeam.map(teamGallery => ({

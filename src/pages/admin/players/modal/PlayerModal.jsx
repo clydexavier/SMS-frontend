@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { IoMdClose } from "react-icons/io";
 import { FaTimesCircle } from "react-icons/fa";
-import { FaFilePdf, FaFileWord, FaFileAlt, FaFile } from "react-icons/fa";
-import { Loader } from "lucide-react";
+import { InfoIcon, Loader } from "lucide-react";
 
 export default function PlayerModal({
   isModalOpen,
@@ -23,39 +22,15 @@ export default function PlayerModal({
     year: "",
     contact: "",
     picture: null,
-    medical_certificate: null,
-    parents_consent: null,
-    cor: null,
     previews: {
       picture: "",
-      medical_certificate: "",
-      parents_consent: "",
-      cor: "",
     },
   };
 
   const [formData, setFormData] = useState(initialState);
-
-  const fileInputRefs = {
-    picture: useRef(null),
-    medical_certificate: useRef(null),
-    parents_consent: useRef(null),
-    cor: useRef(null),
-  };
-
-  const [uploadedFiles, setUploadedFiles] = useState({
-    picture: false,
-    medical_certificate: false,
-    parents_consent: false,
-    cor: false,
-  });
-
-  const [removeFiles, setRemoveFiles] = useState({
-    picture: false,
-    medical_certificate: false,
-    parents_consent: false,
-    cor: false,
-  });
+  const pictureInputRef = useRef(null);
+  const [pictureUploaded, setPictureUploaded] = useState(false);
+  const [removePicture, setRemovePicture] = useState(false);
 
   useEffect(() => {
     if (existingPlayer) {
@@ -70,12 +45,6 @@ export default function PlayerModal({
         }
       }
 
-      const previews = {
-        picture: existingPlayer.picture || "",
-        medical_certificate: existingPlayer.medical_certificate || "",
-        parents_consent: existingPlayer.parents_consent || "",
-        cor: existingPlayer.cor || "",
-      };
       setFormData({
         name: existingPlayer.name || "",
         id_number: existingPlayer.id_number || "",
@@ -83,40 +52,19 @@ export default function PlayerModal({
         birthdate: existingPlayer.birthdate || "",
         degree: degree,
         year: year,
-        contact: existingPlayer.contact || "", // Match the backend field name
+        contact: existingPlayer.contact || "", 
         picture: null,
-        medical_certificate: null,
-        parents_consent: null,
-        cor: null,
-        previews,
+        previews: {
+          picture: existingPlayer.picture || "",
+        },
       });
 
-      setUploadedFiles({
-        picture: false,
-        medical_certificate: false,
-        parents_consent: false,
-        cor: false,
-      });
-      setRemoveFiles({
-        picture: false,
-        medical_certificate: false,
-        parents_consent: false,
-        cor: false,
-      });
+      setPictureUploaded(false);
+      setRemovePicture(false);
     } else {
       setFormData(initialState);
-      setUploadedFiles({
-        picture: false,
-        medical_certificate: false,
-        parents_consent: false,
-        cor: false,
-      });
-      setRemoveFiles({
-        picture: false,
-        medical_certificate: false,
-        parents_consent: false,
-        cor: false,
-      });
+      setPictureUploaded(false);
+      setRemovePicture(false);
     }
   }, [existingPlayer, isModalOpen]);
 
@@ -149,56 +97,53 @@ export default function PlayerModal({
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
-  const uploadFile = (files, field) => {
-    if (!files || files.length === 0) return;
-    const file = files[0];
+  const handlePictureChange = (e) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
     setFormData((prev) => ({
       ...prev,
-      [field]: file,
+      picture: file,
       previews: {
         ...prev.previews,
-        [field]: URL.createObjectURL(file),
+        picture: URL.createObjectURL(file),
       },
     }));
-    setUploadedFiles((prev) => ({ ...prev, [field]: true }));
-    setRemoveFiles((prev) => ({ ...prev, [field]: false }));
+    setPictureUploaded(true);
+    setRemovePicture(false);
   };
 
-  const handleFileChange = (e, field) => uploadFile(e.target.files, field);
-
-  const handleDrop = (e, field) => {
+  const handlePictureDrop = (e) => {
     e.preventDefault();
-    uploadFile(e.dataTransfer.files, field);
-  };
-
-  const handleRemoveFile = (field) => {
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    
+    const file = e.dataTransfer.files[0];
     setFormData((prev) => ({
       ...prev,
-      [field]: null,
+      picture: file,
       previews: {
         ...prev.previews,
-        [field]: "",
+        picture: URL.createObjectURL(file),
       },
     }));
-    setUploadedFiles((prev) => ({ ...prev, [field]: false }));
-    setRemoveFiles((prev) => ({ ...prev, [field]: true }));
-    if (fileInputRefs[field]?.current) {
-      fileInputRefs[field].current.value = null;
-    }
+    setPictureUploaded(true);
+    setRemovePicture(false);
   };
 
-  const getFileIcon = (url) => {
-    const ext = url.split(".").pop().toLowerCase();
-    switch (ext) {
-      case "pdf":
-        return <FaFilePdf size={40} className="text-red-500" />;
-      case "doc":
-      case "docx":
-        return <FaFileWord size={40} className="text-blue-500" />;
-      case "txt":
-        return <FaFileAlt size={40} className="text-gray-500" />;
-      default:
-        return <FaFile size={40} className="text-[#2A6D3A]" />;
+  const handleRemovePicture = () => {
+    setFormData((prev) => ({
+      ...prev,
+      picture: null,
+      previews: {
+        ...prev.previews,
+        picture: "",
+      },
+    }));
+    setPictureUploaded(false);
+    setRemovePicture(true);
+    
+    if (pictureInputRef.current) {
+      pictureInputRef.current.value = null;
     }
   };
 
@@ -209,20 +154,19 @@ export default function PlayerModal({
     playerData.append("id_number", formData.id_number);
     playerData.append("team_id", formData.team_id);
     playerData.append("birthdate", formData.birthdate);
-    playerData.append("contact", formData.contact); // Changed from "contact" to "contact_no" to match backend
+    playerData.append("contact", formData.contact);
     
     // Combine degree and year into course_year
     const course_year = `${formData.degree} - ${formData.year}`;
     playerData.append("course_year", course_year);
 
-    ["picture", "medical_certificate", "parents_consent", "cor"].forEach((field) => {
-      if (formData[field]) {
-        playerData.append(field, formData[field]);
-      }
-      if (removeFiles[field]) {
-        playerData.append(`remove_${field}`, "1");
-      }
-    });
+    // Handle picture upload
+    if (formData.picture) {
+      playerData.append("picture", formData.picture);
+    }
+    if (removePicture) {
+      playerData.append("remove_picture", "1");
+    }
 
     if (existingPlayer) {
       playerData.append("_method", "PATCH");
@@ -232,44 +176,40 @@ export default function PlayerModal({
     }
   };
 
-  const renderFileUpload = (label, field) => {
-    const showPreview =
-      (uploadedFiles[field] ||
-        (existingPlayer && existingPlayer[`${field}`] && !removeFiles[field])) &&
-      formData.previews[field];
+  const renderPictureUpload = () => {
+    const showPreview = 
+      (pictureUploaded || 
+        (existingPlayer && existingPlayer.picture && !removePicture)) &&
+      formData.previews.picture;
 
     return (
       <div className="mb-4">
-        <label htmlFor={field} className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-          {label}
+        <label htmlFor="picture" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+          Picture
         </label>
 
         {showPreview ? (
           <div className="relative p-4 border rounded bg-gray-50 flex items-center space-x-3">
-            <div className=" bg-[#F7FAF7] border-[#E6F2E8] p-3 flex items-center space-x-3 min-w-0 flex-1">
-              {field === "picture" ? (
-                <img
-                  src={formData.previews[field]}
-                  alt="Preview"
-                  className="w-16 h-16 rounded object-cover border"
-                />
-              ) : (
-                getFileIcon(formData.previews[field])
-              )}
+            <div className="bg-[#F7FAF7] border-[#E6F2E8] p-3 flex items-center space-x-3 min-w-0 flex-1">
+              <img
+                src={formData.previews.picture}
+                alt="Preview"
+                className="w-16 h-16 rounded object-cover border"
+              />
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-sm font-medium text-gray-800 truncate">
-                  {formData[field]?.name || formData.previews[field].split("/").pop()}
+                  {formData.picture?.name || "Profile Picture"}
                 </span>
-                {formData[field] && (
+                {formData.picture && (
                   <span className="text-xs text-gray-500">
-                    {(formData[field].size / 1024 / 1024).toFixed(2)} MB
+                    {(formData.picture.size / 1024 / 1024).toFixed(2)} MB
                   </span>
                 )}
               </div>
             </div>
             <button
               type="button"
-              onClick={() => handleRemoveFile(field)}
+              onClick={handleRemovePicture}
               className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-white rounded-full"
             >
               <FaTimesCircle size={20} />
@@ -279,22 +219,22 @@ export default function PlayerModal({
           <div
             className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 border-[#E6F2E8]"
             onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, field)}
+            onDrop={handlePictureDrop}
           >
             <input
-              id={field}
+              id="picture"
               type="file"
-              accept={field === "picture" ? "image/*" : undefined}
-              onChange={(e) => handleFileChange(e, field)}
-              ref={fileInputRefs[field]}
+              accept="image/*"
+              onChange={handlePictureChange}
+              ref={pictureInputRef}
               className="hidden"
             />
-            <label htmlFor={field} className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+            <label htmlFor="picture" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
               <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
               <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
-              <span className="text-xs text-gray-400">{field === "picture" ? "JPG, PNG, etc." : "PDF, DOCX, TXT, etc."}</span>
+              <span className="text-xs text-gray-400">JPG, PNG, etc.</span>
             </label>
           </div>
         )}
@@ -330,6 +270,27 @@ export default function PlayerModal({
                 {error}
               </div>
             )}
+
+            {/* Document Requirements Notice */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start">
+                <InfoIcon className="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-blue-700">Physical Document Requirements</h4>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Players must submit physical copies of the following documents:
+                  </p>
+                  <ul className="mt-1 text-sm text-blue-600 list-disc pl-5">
+                    <li>Medical Certificate</li>
+                    <li>Parent's Consent (if applicable)</li>
+                    <li>Certificate of Registration (COR)</li>
+                  </ul>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Submit these documents to your team GAM for verification.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {isLoading ? (
               <div className="space-y-4 animate-pulse">
@@ -558,11 +519,8 @@ export default function PlayerModal({
                   </select>
                 </div>
 
-                {/* File Upload Fields */}
-                {renderFileUpload("Picture", "picture")}
-                {renderFileUpload("Medical Certificate", "medical_certificate")}
-                {renderFileUpload("Parent's Consent", "parents_consent")}
-                {renderFileUpload("Certificate of Registration (COR)", "cor")}
+                {/* Picture Upload Field - Keep only this file upload */}
+                {renderPictureUpload()}
               </div>
             )}
 

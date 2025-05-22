@@ -44,6 +44,7 @@ export default function TeamSeeder() {
         const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/status`);
         setEventStatus(data.status);
         setTournamentType(data.tournament_type);
+        console.log(data);
         
         // Get event name
         const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);
@@ -392,17 +393,17 @@ export default function TeamSeeder() {
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
-            ) : eventStatus !== "pending" ? (
-              <div className="flex-1 overflow-auto">
-                {renderStatusMessage()}
-              </div>
             ) : tournamentType === "no bracket" ? (
               <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                 <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600">This event has no bracket</h3>
                 <p className="text-gray-500 mt-1">This type of event doesn't require seeding or brackets and will be tracked directly in the system.</p>
               </div>
-            ) : teams.length === 0 ? (
+            ): eventStatus !== "pending" ? (
+              <div className="flex-1 overflow-auto">
+                {renderStatusMessage()}
+              </div>
+            )  : teams.length === 0 ? (
               <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                 <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600">No teams found</h3>

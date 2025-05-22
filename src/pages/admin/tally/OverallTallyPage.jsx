@@ -76,7 +76,7 @@ export default function OverallTallyPage() {
         <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
-              <Medal size={20} className="mr-2" />  Medal Table
+              <Medal size={20} className="mr-2" />  {intramsName} Medal Table
             </h2>
           </div>
 
@@ -159,8 +159,8 @@ export default function OverallTallyPage() {
                           <td className="py-3 px-4">
                             <div className="flex items-center">
                               <div className="w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A] flex items-center justify-center mr-2 border border-gray-200 overflow-hidden">
-                               {team.team_logo ? (<img 
-                                  src={team.team_logo} 
+                               {team.team_logo_path ? (<img 
+                                  src={team.team_logo_path} 
                                   alt={team.team_name} 
                                   className="w-full h-full object-cover"
                                   onError={(e) => {

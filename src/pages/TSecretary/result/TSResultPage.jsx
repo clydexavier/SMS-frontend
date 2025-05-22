@@ -2,18 +2,21 @@ import React, { useState, useEffect } from "react";
 import axiosClient from "../../../axiosClient";
 import TSResultModal from "./modal/TSResultModal";
 import TSEventPodium from "./util/TSEventPodium";
-import { useParams } from "react-router-dom";
-import { Trophy, Loader } from "lucide-react";
+import { Trophy, Loader, FileDown, Edit, PlusCircle } from "lucide-react";
+import { useAuth } from "../../../auth/AuthContext";
 
-const ResultPage = () => {
-  const { intrams_id, event_id } = useParams();
+const TSResultPage = () => {
+  const {user } = useAuth();
+  const intrams_id = user.intrams_id;
+  const event_id = user.event_id;
+
   const [podiumData, setPodiumData] = useState(null);
   const [eventStatus, setEventStatus] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [eventName, setEventName] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const fetchPodiumData = async () => {
     try {
@@ -21,20 +24,20 @@ const ResultPage = () => {
       
       // First, fetch the event status
       const eventStatusRes = await axiosClient.get(
-        `tsecretary/event/status`
+        `intramurals/${intrams_id}/events/${event_id}/status`
       );
-      setEventStatus(eventStatusRes.data);
+      setEventStatus(eventStatusRes.data.status);
       
       // Get event name
-      const eventResponse = await axiosClient.get(`/tsecretary/event`);
+      const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);
       if (eventResponse.data && eventResponse.data.name) {
         setEventName(eventResponse.data.name);
       }
   
       // Only fetch podium data if status is "completed" or "in progress"
-      if (eventStatusRes.data === "completed" ) {
+      if (eventStatusRes.data.status === "completed" ) {
         const podiumRes = await axiosClient.get(
-          `/tsecretary/event/podium`
+          `/intramurals/${intrams_id}/events/${event_id}/podium`
         );
         setPodiumData(podiumRes.data);
       } else {
@@ -51,34 +54,59 @@ const ResultPage = () => {
   // Use effect hook to fetch data when component mounts
   useEffect(() => {
     fetchPodiumData();
-  }, []);
+  }, [intrams_id, event_id]);
 
   const handleSubmitResults = async (resultsData) => {
     try {
       setLoading(true);
-      const url = `/tsecretary/result/${podiumData ? "update" : "create"}`;
+      const url = `/intramurals/${intrams_id}/events/${event_id}/podium/${podiumData ? "update" : "create"}`;
       const method = podiumData ? axiosClient.patch : axiosClient.post;
 
       await method(url, resultsData);
 
-      setSubmitStatus({
-        type: "success",
-        message: podiumData
-          ? "Event results updated successfully!"
-          : "Event results submitted successfully!",
-      });
-
-      await fetchPodiumData(); // Wait for data to be fetched again
-      setTimeout(() => setSubmitStatus(null), 5000);
+      fetchPodiumData();
       return true;
     } catch (err) {
       console.error("Failed to submit results:", err);
-      setSubmitStatus({
-        type: "error",
-        message: "Failed to submit results. Please try again.",
-      });
-      setLoading(false); // Set loading to false in case of error
+      
       throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Download podium PDF function
+  const downloadPodiumPDF = async () => {
+    try {
+      setIsDownloading(true);
+      
+      const response = await axiosClient.post(
+        `/intramurals/${intrams_id}/events/${event_id}/podium_pdf`,
+        {},
+        { responseType: 'blob' } // Important for handling binary data
+      );
+      
+      // Create a blob URL for the PDF
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `podium_${event_id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      
+      } catch (err) {
+      console.error("Failed to download podium PDF", err);
+      
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -89,7 +117,7 @@ const ResultPage = () => {
     if (eventStatus !== "pending" || loading) return null;
     
     return (
-      <div className="bg-yellow-50 border-yellow-200 flex flex-col w-full h-full border rounded-xl shadow-md p-8 text-center">
+      <div className="flex-1 bg-yellow-50 border-yellow-200 flex flex-col w-full h-full border rounded-xl shadow-md p-8 text-center">
         <svg className="w-12 h-12 mx-auto mb-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
         </svg>
@@ -110,51 +138,50 @@ const ResultPage = () => {
               <Trophy size={20} className="mr-2" /> Event Results {eventName && <span className="ml-2 text-gray-600 font-normal">- {eventName}</span>}
             </h2>
             
-            {showActionButton && (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
-                disabled={loading}
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              {/* Show download button when podium data exists */}
+              {podiumData && (
+                <button
+                  onClick={downloadPodiumPDF}
+                  disabled={isDownloading || loading}
+                  className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader size={16} className="mr-2 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <FileDown size={16} className="mr-2" />
+                      Download Podium
+                    </>
+                  )}
+                </button>
+              )}
+              
+              {showActionButton && (
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                  disabled={loading || isDownloading}
                 >
                   {podiumData ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
+                    <>
+                      <Edit size={16} className="mr-2" />
+                      Update Result
+                    </>
                   ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
+                    <>
+                      <PlusCircle size={16} className="mr-2" />
+                      Submit Result
+                    </>
                   )}
-                </svg>
-                {podiumData ? "Update Result" : "Submit Result"}
-              </button>
-            )}
+                </button>
+              )}
+            </div>
           </div>
 
-          {submitStatus && (
-            <div
-              className={`px-4 py-2 rounded text-sm mb-4 ${
-                submitStatus.type === "success"
-                  ? "bg-green-50 text-green-700"
-                  : "bg-red-50 text-red-700"
-              }`}
-            >
-              {submitStatus.message}
-            </div>
-          )}
 
           {error && (
             <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
@@ -175,7 +202,7 @@ const ResultPage = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 overflow-auto">
+              <div className="flex-1 overflow-hidden flex flex-col min-h-0">
                 {renderStatusMessage() || (
                   <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                     <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
@@ -208,4 +235,4 @@ const ResultPage = () => {
   );
 };
 
-export default ResultPage;
+export default TSResultPage;

@@ -114,6 +114,7 @@ const routes = [
           { path: "result", element: <TSResultPage /> },
           { path: "podiums", element: <TSPodiumsPage /> },
           { path: "tally", element: <TSOverallTallyPage /> },
+          {path: "games", element: <TSGamesPage/>},
         ],
       },
       {

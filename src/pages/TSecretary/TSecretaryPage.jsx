@@ -6,10 +6,9 @@ import axiosClient from '../../axiosClient';
 
 import { LiaSitemapSolid } from "react-icons/lia";
 import { MdOutlineScoreboard, MdMenuOpen } from "react-icons/md";
-import { GiPodium } from "react-icons/gi";
-import logo from '../../assets/IHK_logo2.png';
+import logo from '../../assets/vsu_logo.png';
 
-import { Trophy, Medal, Clipboard, ChartBarIcon, ListChecks, Volleyball } from "lucide-react";
+import { Trophy, Medal, Volleyball, House } from "lucide-react";
 
 export default function TSecretaryPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -19,13 +18,62 @@ export default function TSecretaryPage() {
   
   const isize = 20;
   
+  // Skeleton loader component for the page
+  const SkeletonLoader = () => (
+    <div className="flex flex-1 w-full">
+      {/* Skeleton Sidebar */}
+      <div className="hidden md:block w-64 bg-white shadow-md">
+        <div className="p-4">
+          <div className="h-8 bg-gray-200 rounded w-24 mb-6"></div>
+        </div>
+        <div className="px-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-2 py-3 px-2 mb-2">
+              <div className="h-5 w-5 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-24"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Skeleton Content */}
+      <div className="flex-auto p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+          <div className="shadow-md rounded-xl border border-[#E6F2E8]">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-[#F7FAF7]">
+                <tr>
+                  {[...Array(5)].map((_, i) => (
+                    <th key={i} className="px-6 py-3">
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {[...Array(5)].map((_, row) => (
+                  <tr key={row}>
+                    {[...Array(5)].map((_, col) => (
+                      <td key={col} className="px-6 py-4">
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+  
   // Fetch current user data
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-
         const { data } = await axiosClient.get('/user');
-        console.log(data);
         setUser(data);
         if (data.intrams_id && data.event_id) {
           fetchEvent(data.intrams_id, data.event_id);
@@ -45,9 +93,7 @@ export default function TSecretaryPage() {
       const { data } = await axiosClient.get(
         `tsecretary/event`
       );
-      console.log(data);
       setEvent(data);
-      console.log("Event data:", data);
     } catch (err) {
       console.error("Error fetching event:", err);
     } finally {
@@ -58,17 +104,16 @@ export default function TSecretaryPage() {
   const menuItems = [
     { 
       icon: <Volleyball size={isize} color="black" />, 
-      label: loading ? "Loading..." : (event.category + " " +event.name || "Event"), 
+      label: loading ? "Loading..." : (event.category + " " + event.name || "Event"), 
       route: "/tsecretary",
       submenu: [
         { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
         { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
-        { icon: <Medal size={isize} color="black" />, label: 'Result', route: 'result' },
+        { icon: <Medal size={isize} color="black" />, label: 'Event Result', route: 'result' },
       ],
     },       
-    { icon: <GiPodium size={isize} color="black" />, label: 'Podiums', route: 'podiums' },
-    { icon: <ChartBarIcon size={isize} color="black" />, label: 'Tally', route: 'tally' },
-
+    { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
+    { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
   ];
 
   return (
@@ -84,7 +129,7 @@ export default function TSecretaryPage() {
         <div className="flex items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="IHK Logo" className={`h-8 w-auto rounded-full ${isSidebarOpen? "": "hidden"}`} />
+            <img src={logo} alt="IHK Logo" className={`h-12 w-40 rounded-full ${isSidebarOpen? "": "hidden"}`} />
           </Link>
           {/* Menu button */}
           <button
@@ -117,7 +162,8 @@ export default function TSecretaryPage() {
 
         <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-10 bg-white">
           <Breadcrumb/>
-          <Outlet />
+          <Outlet 
+          />
         </div>
       </main>
     </div>

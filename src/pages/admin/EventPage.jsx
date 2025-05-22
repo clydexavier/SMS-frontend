@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, Link, useLocation, useParams } from 'react-router-dom';
+import { Outlet, Link, useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Breadcrumb from '../components/Breadcrumb';
 import axiosClient from '../../axiosClient';
 
-import { GrTrophy, GrHistory} from "react-icons/gr";
-import { IoDocumentsOutline, IoMedalOutline } from "react-icons/io5";
 import { LiaSitemapSolid } from "react-icons/lia";
 import { MdOutlineScoreboard } from "react-icons/md";
-import { TbUsersGroup } from "react-icons/tb";
-import { GiPodium } from "react-icons/gi";
 import logo from '../../assets/vsu_logo.png';
 import { MdMenuOpen } from "react-icons/md";
 

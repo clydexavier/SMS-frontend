@@ -98,19 +98,24 @@ export default function EventModal({
 
   // Function to determine if the medal field should be shown
   const shouldShowMedalField = () => {
-    // NEW: If it's an umbrella event with independent medaling - DON'T show medals
-    // (because each sub-event handles its own medals independently)
-    if (formData.is_umbrella && formData.has_independent_medaling) return false;
+    // Case 1: Umbrella event
+    if (formData.is_umbrella) {
+      // If independent medaling is checked → DON'T show medal field
+      // If independent medaling is NOT checked → SHOW medal field
+      return !formData.has_independent_medaling;
+    }
     
-    // Case 1: It's a standalone event (no parent) - show medals
-    if (!formData.parent_id) return true;
+    // Case 2: Sub-event (has a parent)
+    if (formData.parent_id && selectedParentEvent) {
+      // If parent has independent medaling → SHOW medal field for sub-event
+      // If parent does NOT have independent medaling → DON'T SHOW medal field for sub-event
+      // Handle both boolean (true/false) and integer (1/0) values from database
+      return !!selectedParentEvent.has_independent_medaling;
+    }
     
-    // Case 2: It's an umbrella event (without independent medaling) - show medals
-    if (formData.is_umbrella) return true;
-    
-    // Case 3 & 4: It's a sub-event - depends on parent's has_independent_medaling
-    if (selectedParentEvent) {
-      return selectedParentEvent.has_independent_medaling;
+    // Case 3: Standalone event (no parent, not umbrella) → SHOW medal field
+    if (!formData.parent_id && !formData.is_umbrella) {
+      return true;
     }
     
     // Default - show if we can't determine
@@ -159,7 +164,7 @@ export default function EventModal({
   if (!isModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-9999">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-[9999]">
       <div className="relative w-full max-w-md mx-auto max-h-[90vh] flex flex-col">
         <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] flex flex-col max-h-[90vh] overflow-hidden">
           {/* Header - Fixed at top */}

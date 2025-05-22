@@ -98,10 +98,14 @@ export default function EventModal({
 
   // Function to determine if the medal field should be shown
   const shouldShowMedalField = () => {
+    // NEW: If it's an umbrella event with independent medaling - DON'T show medals
+    // (because each sub-event handles its own medals independently)
+    if (formData.is_umbrella && formData.has_independent_medaling) return false;
+    
     // Case 1: It's a standalone event (no parent) - show medals
     if (!formData.parent_id) return true;
     
-    // Case 2: It's an umbrella event - show medals
+    // Case 2: It's an umbrella event (without independent medaling) - show medals
     if (formData.is_umbrella) return true;
     
     // Case 3 & 4: It's a sub-event - depends on parent's has_independent_medaling
@@ -137,6 +141,14 @@ export default function EventModal({
       submissionData.bronze = 0;
     }
     
+    // If this is an umbrella event with independent medaling, set medal values to 0
+    // since medals are handled by individual sub-events
+    if (formData.is_umbrella && formData.has_independent_medaling) {
+      submissionData.gold = 0;
+      submissionData.silver = 0;
+      submissionData.bronze = 0;
+    }
+    
     console.log("Submitting data:", submissionData);
     
     existingEvent 
@@ -147,9 +159,9 @@ export default function EventModal({
   if (!isModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-9999">
       <div className="relative w-full max-w-md mx-auto max-h-[90vh] flex flex-col">
-        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] flex flex-col max-h-[90vh]">
+        <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] flex flex-col max-h-[90vh] overflow-hidden">
           {/* Header - Fixed at top */}
           <div className="flex items-center justify-between p-5 border-b border-[#E6F2E8] bg-[#F7FAF7]">
             <h3 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -217,8 +229,8 @@ export default function EventModal({
                           </label>
                           <div className="mt-1 ml-6 text-xs text-gray-500">
                             {formData.has_independent_medaling 
-                              ? "Each sub-event's medals are counted separately" 
-                              : "Teams are ranked based on sub-event placings"}
+                              ? "Each sub-event's medals are counted separately (umbrella event won't have medal count)" 
+                              : "Teams are ranked based on sub-event placings (umbrella event will have medal count)"}
                           </div>
                         </div>
                       )}

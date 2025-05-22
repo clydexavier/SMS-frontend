@@ -15,6 +15,8 @@ export default function VarsityPlayerModal({
     name: "",
     id_number: "",
     sport: "",
+    degree: "",
+    year: "",
     is_varsity: true,
     team_id: null,
   };
@@ -23,7 +25,26 @@ export default function VarsityPlayerModal({
 
   useEffect(() => {
     if (existingPlayer) {
-      setFormData(existingPlayer);
+      // Parse course_year if it exists in the format "Degree - Year"
+      let degree = "";
+      let year = "";
+      if (existingPlayer.course_year) {
+        const parts = existingPlayer.course_year.split(" - ");
+        if (parts.length === 2) {
+          degree = parts[0];
+          year = parts[1];
+        }
+      }
+
+      setFormData({
+        name: existingPlayer.name || "",
+        id_number: existingPlayer.id_number || "",
+        sport: existingPlayer.sport || "",
+        degree: degree,
+        year: year,
+        is_varsity: existingPlayer.is_varsity ?? true,
+        team_id: existingPlayer.team_id || null,
+      });
     } else {
       setFormData(initialState);
     }
@@ -48,16 +69,27 @@ export default function VarsityPlayerModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Create submission data with course_year combined
+    const submissionData = {
+      ...formData,
+      course_year: `${formData.degree} - ${formData.year}`,
+    };
+    
+    // Remove the separate degree and year fields from submission
+    delete submissionData.degree;
+    delete submissionData.year;
+    console.log(submissionData);
     existingPlayer
-      ? updatePlayer(existingPlayer.id, formData)
-      : addPlayer(formData);
+      ? updatePlayer(existingPlayer.id, submissionData)
+      : addPlayer(submissionData);
   };
 
   if (!isModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-      <div className="relative w-full max-w-md mx-auto">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-[9999]">
+      <div className="relative w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto">
         <div className="relative bg-white rounded-xl shadow-lg border border-[#E6F2E8] overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-[#E6F2E8] bg-[#F7FAF7]">
@@ -84,7 +116,7 @@ export default function VarsityPlayerModal({
 
             {isLoading ? (
               <div className="space-y-4 animate-pulse">
-                {[...Array(3)].map((_, i) => (
+                {[...Array(5)].map((_, i) => (
                   <div key={i} className="h-10 bg-gray-200 rounded" />
                 ))}
               </div>
@@ -141,6 +173,49 @@ export default function VarsityPlayerModal({
                     placeholder="Enter player sport"
                     required
                   />
+                </div>
+
+                {/* Course/Degree Program */}
+                <div>
+                  <label htmlFor="degree" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Degree Program
+                  </label>
+                  <input
+                    type="text"
+                    name="degree"
+                    id="degree"
+                    autoComplete="off"
+                    value={formData.degree}
+                    onChange={handleChange}
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                    placeholder="e.g. BS Computer Science"
+                    required
+                  />
+                </div>
+                
+                {/* Year Level */}
+                <div>
+                  <label htmlFor="year" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Year Level
+                  </label>
+                  <select
+                    name="year"
+                    id="year"
+                    value={formData.year}
+                    onChange={handleChange}
+                    required
+                    className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
+                  >
+                    <option value="" disabled>
+                      Select year level
+                    </option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                    <option value="5">5th Year</option>
+                    <option value="6">6th Year</option>
+                  </select>
                 </div>
               </div>
             )}

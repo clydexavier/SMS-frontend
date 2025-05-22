@@ -46,6 +46,14 @@ import TSResultPage from "./pages/TSecretary/result/TSResultPage";
 import TSPodiumsPage from "./pages/TSecretary/podiums/TSPodiumsPage";
 import TSOverallTallyPage from "./pages/TSecretary/tally/TSOverallTallyPage";
 
+//GAM Pages
+import GAMEventsPage from "./pages/GAM/events/GAMEventsPage";
+import GAMGalleryPage from "./pages/GAM/gallery/GAMGalleryPage";
+import GAMOverallTallyPage from "./pages/GAM/tally/GAMOverallTallyPage";
+import GAMPlayersPage from "./pages/GAM/players/GAMPlayersPage";
+import GAMPodiumsPage from "./pages/GAM/podiums/GAMPodiumsPage";
+import GAMEventPage from "./pages/GAM/events/parent/GAMEventPage";
+
 const routes = [
   {
     path: "/",
@@ -124,6 +132,25 @@ const routes = [
             <GAMPage />
           </ProtectedRoute>
         ),
+        children: [
+          { index: true, element: <Navigate to="events" replace /> },
+          { path: "events", element: <GAMEventsPage /> },
+          { path: "podiums", element: <GAMPodiumsPage/> },
+          { path: "tally", element: <GAMOverallTallyPage/> },
+        ],
+      },
+      {
+        path: "GAM/events/:event_id",
+        element: (
+          <ProtectedRoute roles={["GAM"]}>
+            <GAMEventPage />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="players" replace /> },
+          { path: "players", element: <GAMPlayersPage /> },
+          { path: "gallery", element: <GAMGalleryPage /> },
+        ],
       },
       {
         path: "/secretariat",

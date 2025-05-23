@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
 import Filter from "../../components/Filter";
 import PaginationControls from "../../components/PaginationControls";
-import { Trophy, Loader, Medal, Award, FileDown, FileText } from "lucide-react";
+import { Trophy, Loader, Medal, Award, FileText } from "lucide-react";
 import { useAuth } from "../../../auth/AuthContext";
 
-export default function TSPodiumsPage() {
+export default function GAMPodiumsPage() {  
   const {user} = useAuth();
-  const intrams_id = user.intrams_id;
+  // FIX 1: Correct destructuring of intrams_id
+  const intrams_id = user?.intrams_id;
 
   const [loading, setLoading] = useState(true);
   const [podiums, setPodiums] = useState([]);
@@ -31,12 +32,22 @@ export default function TSPodiumsPage() {
     { label: "Dance", value: "dance" },
   ];
 
-  const fetchPodiums = async (page = 1) => {
+  // FIX 2: Memoize fetchPodiums function with useCallback
+  const fetchPodiums = useCallback(async (page = 1) => {
+    // FIX 3: Early return if required data is not available
+    if (!intrams_id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
+      setError(""); // Clear previous errors
+      
       const { data } = await axiosClient.get(`/intramurals/${intrams_id}/podiums`, {
         params: { page, type: activeTab, search },
       });
+      
       setPodiums(data.data);
       setPagination({
         currentPage: data.meta.current_page,
@@ -48,14 +59,16 @@ export default function TSPodiumsPage() {
       console.error("Error fetching podiums:", err);
       setError("Failed to fetch podiums");
     } finally {
+      // FIX 4: Always ensure loading is set to false
       setLoading(false);
     }
-  };
+  }, [intrams_id, activeTab, search]); // FIX 5: Add dependencies
 
   // Function to download all podium results as PDF
-  const downloadPodiumPDF = async () => {
+  const downloadPodiumPDF = useCallback(async () => {
     try {
       setIsDownloading(true);
+      setError(""); // Clear previous errors
       
       const response = await axiosClient.post(
         `/intramurals/${intrams_id}/podiums_pdf`,
@@ -77,42 +90,72 @@ export default function TSPodiumsPage() {
       // Clean up
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
-      
-      
-      
     } catch (err) {
       console.error("Failed to download podium results PDF", err);
-      
+      setError("Failed to download PDF.");
     } finally {
       setIsDownloading(false);
     }
-  };
+  }, [intrams_id]);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = useCallback((page) => {
     setPagination((prev) => ({ ...prev, currentPage: page }));
-  };
+  }, []);
 
+  const handleFilterChange = useCallback((value, type) => {
+    // Reset pagination to first page when filters change
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    
+    if (type === 'tab') {
+      setActiveTab(value);
+    } else if (type === 'search') {
+      setSearch(value);
+    }
+  }, []);
+
+  // FIX 6: Better useEffect management with proper dependencies
   useEffect(() => {
+    if (!intrams_id) {
+      setLoading(false);
+      return;
+    }
+    
+    // FIX 7: Reduce debounce time for better UX
     const delayDebounce = setTimeout(() => {
-      if (intrams_id) {
-        fetchPodiums(pagination.currentPage);
-      }
-    }, 1000);
+      fetchPodiums(pagination.currentPage);
+    }, search ? 500 : 0); // Only debounce for search, immediate for other changes
+    
     return () => clearTimeout(delayDebounce);
-  }, [search, activeTab, pagination.currentPage]);
+  }, [fetchPodiums, pagination.currentPage]);
+
+  // FIX 8: Show loading message if user is not available
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center py-16">
+        <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+        <span className="ml-2 text-gray-600">Loading user data...</span>
+      </div>
+    );
+  }
+
+  // FIX 9: Show error if intrams_id is not available
+  if (!intrams_id) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="bg-red-50 p-4 rounded-lg text-red-600 mb-4">
+          <p>Unable to load podiums: No intramurals ID found.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Medal component to display team logo and name
   const MedalWinner = ({ logo, name, count, icon: Icon, color }) => (
     <div className="flex items-center space-x-2">
-      
       {count && (
-      
-      <div className={`p-1 ${color} rounded-full w-8 h-8 text-center`}>
-        
-          {count}
-        
-       </div>
+        <div className={`p-1 ${color} rounded-full w-8 h-8 text-center flex items-center justify-center`}>
+          <span className="text-xs font-medium text-white">{count}</span>
+        </div>
       )}
       
       <div className="flex items-center">
@@ -121,17 +164,22 @@ export default function TSPodiumsPage() {
             src={logo} 
             alt={`${name} logo`} 
             className="w-8 h-8 rounded-full object-cover border border-gray-200 mr-2" 
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
           />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A] flex items-center justify-center mr-2 border border-gray-200">
-            <span className="text-xs text-gray-500">{name.charAt(0)}</span>
-          </div>
-        )}
+        ) : null}
+        <div 
+          className="w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A] flex items-center justify-center mr-2 border border-gray-200"
+          style={{display: logo ? 'none' : 'flex'}}
+        >
+          <span className="text-xs text-gray-500">{name?.charAt(0) || '?'}</span>
+        </div>
         <span className="text-sm font-medium text-gray-800 truncate max-w-[10rem]">
           {name || "—"}
         </span>
       </div>
-      
     </div>
   );
 
@@ -151,16 +199,16 @@ export default function TSPodiumsPage() {
               <button
                 onClick={downloadPodiumPDF}
                 disabled={isDownloading}
-                className={`bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isDownloading ? (
                   <>
-                    <Loader size={16} className="animate-spin" />
+                    <Loader size={16} className="mr-2 animate-spin" />
                     Downloading...
                   </>
                 ) : (
                   <>
-                    <FileText size={16} />
+                    <FileText size={16} className="mr-2" />
                     Download All Results
                   </>
                 )}
@@ -168,23 +216,14 @@ export default function TSPodiumsPage() {
             )}
           </div>
           
-          {/* Download status message */}
-          
-          
           {/* Filter section */}
           <div className="mb-4">
             <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
               <Filter
                 activeTab={activeTab}
-                setActiveTab={(value) => {
-                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
-                  setActiveTab(value);
-                }}
+                setActiveTab={(value) => handleFilterChange(value, 'tab')}
                 search={search}
-                setSearch={(value) => {
-                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
-                  setSearch(value);
-                }}
+                setSearch={(value) => handleFilterChange(value, 'search')}
                 placeholder="Search event name"
                 filterOptions={filterOptions}
               />
@@ -192,8 +231,14 @@ export default function TSPodiumsPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
-              {error}
+            <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4 flex justify-between items-center">
+              <span>{error}</span>
+              <button 
+                onClick={() => setError("")}
+                className="text-red-400 hover:text-red-600"
+              >
+                ×
+              </button>
             </div>
           )}
 
@@ -202,6 +247,7 @@ export default function TSPodiumsPage() {
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+                <span className="ml-2 text-gray-600">Loading podiums...</span>
               </div>
             ) : podiums.length === 0 ? (
               <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
@@ -233,7 +279,7 @@ export default function TSPodiumsPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {podiums.map((podium, index) => (
                         <tr 
-                          key={index}
+                          key={podium.id || index}
                           className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                         >
                           {/* Event Name */}
@@ -244,10 +290,10 @@ export default function TSPodiumsPage() {
                               </div>
                               <div>
                                 <div className="text-sm font-medium text-gray-900 max-w-[14rem] truncate">
-                                  {podium.event.name}
+                                  {podium.event?.name || 'Unknown Event'}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  {podium.event.category} • {podium.event.type}
+                                  {podium.event?.category || 'Unknown'} • {podium.event?.type || 'Unknown'}
                                 </div>
                               </div>
                             </div>

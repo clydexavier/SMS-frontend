@@ -19,7 +19,7 @@ const TSResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existi
       setLoading(true);
       try {
         const res = await axiosClient.get(
-          `/tsecretary/event/team_names`
+          `/intramurals/${intrams_id}/events/${event_id}/team_names`
         );
         setTeams(res.data || []);
         setError(null);
@@ -100,15 +100,9 @@ const TSResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existi
           disabled={submitting}
         >
           <option value="">Select Team</option>
-          {teams
-            .filter(team => 
-              (medal === "Gold" || team.id.toString() !== gold) && 
-              (medal === "Silver" || team.id.toString() !== silver) && 
-              (medal === "Bronze" || team.id.toString() !== bronze)
-            )
-            .map(team => (
-              <option key={team.id} value={team.id}>{team.name}</option>
-            ))}
+          {teams.map(team => (
+            <option key={team.id} value={team.id}>{team.name}</option>
+          ))}
         </select>
       </div>
     );
@@ -147,7 +141,7 @@ const TSResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existi
               onClick={onClose}
               className="cursor-pointer text-[#2A6D3A]/70 hover:bg-[#F7FAF7] hover:text-[#2A6D3A] rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center transition-colors duration-200"
               aria-label="Close modal"
-              disabled={submitting}
+              disabled={submitting || loading}
             >
               <IoMdClose size={22} />
             </button>
@@ -162,8 +156,16 @@ const TSResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existi
             )}
 
             {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader size={32} className="animate-spin text-[#2A6D3A]" />
+              <div className="space-y-4 animate-pulse">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-10 bg-gray-200 rounded" />
+                ))}
+              </div>
+            ) : submitting ? (
+              <div className="space-y-4 animate-pulse">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-10 bg-gray-200 rounded" />
+                ))}
               </div>
             ) : (
               <div className="space-y-4">
@@ -179,7 +181,7 @@ const TSResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existi
                 type="button"
                 onClick={onClose}
                 className="text-[#2A6D3A] bg-white border border-[#E6F2E8] hover:bg-[#F7FAF7] font-medium rounded-lg text-sm px-5 py-2.5 transition-colors duration-200"
-                disabled={submitting}
+                disabled={submitting || loading}
               >
                 Cancel
               </button>

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
-import { Loader, Medal, Trophy } from "lucide-react";
+import {  Loader, Medal, Trophy } from "lucide-react";
 import { useAuth } from "../../../auth/AuthContext";
 
-
-export default function TSOverallTallyPage() {
+export default function GAMOverallTallyPage() {
   const {user} = useAuth();
-  const intrams_id = user.intrams_id;
-
+  const intrams_id = user?.intrams_id;
+  
   const [loading, setLoading] = useState(true);
   const [tallyData, setTallyData] = useState([]);
   const [error, setError] = useState("");

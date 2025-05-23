@@ -1,7 +1,7 @@
 import React from "react";
 import { Trophy, Medal, Award } from "lucide-react";
 
-const TSPodiumCard = ({ podium }) => {
+const PodiumCard = ({ podium }) => {
   // Helper component for medal display
   const MedalPosition = ({ 
     type, 
@@ -98,4 +98,4 @@ const TSPodiumCard = ({ podium }) => {
   );
 };
 
-export default TSPodiumCard;
+export default PodiumCard;

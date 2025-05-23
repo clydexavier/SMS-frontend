@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useParams } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Breadcrumb from '../components/Breadcrumb';
-import axiosClient from '../../axiosClient';
+import Sidebar from '../../../components/Sidebar';
+import Breadcrumb from '../../../components/Breadcrumb';
+import axiosClient from '../../../../axiosClient';
 
-import { LiaSitemapSolid } from "react-icons/lia";
-import { MdOutlineScoreboard } from "react-icons/md";
-import logo from '../../assets/vsu_logo.png';
+import logo from '../../../../assets/vsu_logo.png'
 import { MdMenuOpen } from "react-icons/md";
-
 import { Volleyball,Trophy , Medal, House, Users, Shuffle  , FileUser} from "lucide-react";
+import { useAuth } from '../../../../auth/AuthContext';
 
 export default function EventPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [event, setEvent] = useState("");
   const [loading, setLoading] = useState(true);
+  const {event_id } = useParams();
+  const {user} = useAuth();
+  const intrams_id = user.intrams_id;
+  
 
-  const { intrams_id, event_id } = useParams();
+
   const isize = 20;
   const menuItems = [
     { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
@@ -28,15 +30,11 @@ export default function EventPage() {
       submenu: [
         { icon: <Users size={isize} color="black" />, label: 'Players', route: 'players' },
         { icon: <FileUser size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },
-        { icon: <Shuffle size={isize} color="black" />, label: 'Team Seeder', route: 'seeder' },
-
-        { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
-        { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
-        { icon: <Medal size={isize} color="black" />, label: 'Event Result', route: 'result' },
-
       ]
     },
-    { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/admin/${intrams_id}/tally` },    
+    { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: '/GAM/podiums' },
+
+    { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/GAM/tally` },    
     
   ];
 

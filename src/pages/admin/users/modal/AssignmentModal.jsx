@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Trophy, Users, Flag, X, Loader } from "lucide-react";
+import { Trophy, Users, Flag, X, Loader, Search } from "lucide-react";
 import axiosClient from "../../../../axiosClient";
 
 export default function AssignmentModal({ 
@@ -13,6 +13,8 @@ export default function AssignmentModal({
   const [intramurals, setIntramurals] = useState([]);
   const [teams, setTeams] = useState([]);
   const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [eventSearchTerm, setEventSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [assignmentData, setAssignmentData] = useState({
     intrams_id: null,
@@ -31,8 +33,22 @@ export default function AssignmentModal({
         event_id: null
       });
       setValidationErrors({});
+      setEventSearchTerm("");
     }
   }, [show]);
+
+  // Filter events based on search term
+  useEffect(() => {
+    if (events.length > 0) {
+      const filtered = events.filter(event => {
+        const eventName = (event.name || event.title || "").toLowerCase();
+        return eventName.includes(eventSearchTerm.toLowerCase());
+      });
+      setFilteredEvents(filtered);
+    } else {
+      setFilteredEvents([]);
+    }
+  }, [events, eventSearchTerm]);
 
   // Fetch intramurals for initial assignment selection
   const fetchIntramurals = async () => {
@@ -68,8 +84,10 @@ export default function AssignmentModal({
     
     setIsLoading(true);
     try {
-      const response = await axiosClient.get(`/intramurals/${intrams_id}/events`);
-      setEvents(response.data.data || []);
+      const response = await axiosClient.get(`/intramurals/${intrams_id}/useful_events`);
+      const eventsData = response.data.data || [];
+      setEvents(eventsData);
+      setEventSearchTerm(""); // Reset search when new events are loaded
     } catch (error) {
       console.error("Error fetching events:", error);
     } finally {
@@ -116,6 +134,10 @@ export default function AssignmentModal({
         [name]: null
       }));
     }
+  };
+
+  const handleEventSearchChange = (e) => {
+    setEventSearchTerm(e.target.value);
   };
 
   const validateAssignments = () => {
@@ -252,7 +274,29 @@ export default function AssignmentModal({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Event Assignment
+                  {events.length > 0 && (
+                    <span className="text-xs text-gray-500 ml-2">
+                      ({filteredEvents.length} of {events.length} events)
+                    </span>
+                  )}
                 </label>
+                
+                {/* Event Search Input */}
+                {events.length > 0 && (
+                  <div className="relative mb-2">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search size={16} className="text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search events..."
+                      value={eventSearchTerm}
+                      onChange={handleEventSearchChange}
+                      className="pl-9 pr-4 py-2 block w-full text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#6BBF59] focus:border-transparent"
+                    />
+                  </div>
+                )}
+
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Flag size={18} className="text-gray-400" />
@@ -263,17 +307,33 @@ export default function AssignmentModal({
                     onChange={handleInputChange}
                     className={`pl-10 pr-4 py-2 block w-full rounded-lg border ${
                       validationErrors.event_id ? "border-red-300" : "border-gray-300"
-                    } focus:ring-2 focus:ring-[#6BBF59] focus:border-transparent`}
+                    } focus:ring-2 focus:ring-[#6BBF59] focus:border-transparent ${
+                      filteredEvents.length > 8 ? 'max-h-48 overflow-y-auto' : ''
+                    }`}
                     disabled={isLoading || events.length === 0}
+                    size={filteredEvents.length > 8 ? 8 : undefined}
                   >
-                    <option value="">Select Event</option>
-                    {events.map(event => (
+                    <option value="">
+                      {eventSearchTerm && filteredEvents.length === 0 
+                        ? "No events match your search" 
+                        : "Select Event"
+                      }
+                    </option>
+                    {filteredEvents.map(event => (
                       <option key={event.id} value={event.id}>
                         {event.name || event.title}
                       </option>
                     ))}
                   </select>
                 </div>
+                
+                {/* Helper text for large number of events */}
+                {events.length > 10 && !eventSearchTerm && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Tip: Use the search box above to quickly find specific events
+                  </p>
+                )}
+                
                 {validationErrors.event_id && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.event_id}</p>
                 )}
@@ -300,7 +360,7 @@ export default function AssignmentModal({
                 "Save Assignment"
               )}
             </button>
-          </div>
+            </div>
         </form>
       </div>
     </div>

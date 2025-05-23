@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../../../axiosClient";
 import PaginationControls from "../../components/PaginationControls";
-import TSGameModal from "./modal/TSGamesModal";
+import TSMatchScheduleModal from "./modal/TSMatchScheduleModal";
+import TSScoreSubmissionModal from "./modal/TSScoreSubmissionModal";
 import Filter from "../../components/Filter";
-import { Calendar, Loader } from "lucide-react";
-
-export default function TSGamePage() {
+import { Calendar, Loader, Award, FileText } from "lucide-react";
+import { useAuth } from "../../../auth/AuthContext";
+export default function GamePage() {
+  const { user } = useAuth();
+  
   const [schedules, setSchedules] = useState([]);
-  const [allSchedules, setAllSchedules] = useState([]); // Store all schedules for filtering
+  const [allSchedules, setAllSchedules] = useState([]);
   const [eventStatus, setEventStatus] = useState(null);
+  const [tournamentType, setTournamentType] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -19,24 +24,63 @@ export default function TSGamePage() {
     lastPage: 1,
   });
 
+  // Schedule modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   
-  // Filter state - similar to PlayersPage
+  // Score submission modal state
+  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false);
+  const [selectedScoreMatch, setSelectedScoreMatch] = useState(null);
+  
+  // Filter state with added "Completed" option
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
   const [filterOptions, setFilterOptions] = useState([
     { label: "All", value: "All" },
     { label: "Scheduled", value: "Scheduled" },
     { label: "Unscheduled", value: "Unscheduled" },
+    { label: "Completed", value: "Completed" },
   ]);
+
+  // Download schedule function
+  const downloadSchedulePDF = async () => {
+    try {
+      setIsDownloading(true);
+      
+      const response = await axiosClient.post(
+        `/intramurals/${user.intrams_id}/events/${user.event_id}/schedule_pdf`,
+        {},
+        { responseType: 'blob' } // Important for handling binary data
+      );
+      
+      // Create a blob URL for the PDF
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `schedule_${user.event_id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (err) {
+      console.error("Failed to download schedule PDF", err);
+      setError("Failed to download schedule PDF. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const fetchEventStatus = async () => {
     try {
-      const { data } = await axiosClient.get(`/tsecretary/event/status`);
-      console.log("Event status:", data);
-
-      setEventStatus(data); // expected to be 'pending', 'in_progress', or 'completed'
+      const { data } = await axiosClient.get(`/intramurals/${user.intrams_id}/events/${user.event_id}/status`);
+      setEventStatus(data.status);
+      setTournamentType(data.tournament_type);
     } catch (err) {
       console.error("Failed to fetch event status", err);
       setError("Could not load event status.");
@@ -46,14 +90,19 @@ export default function TSGamePage() {
   const fetchSchedules = async () => {
     try {
       setLoading(true);
+      // Skip fetching schedules if tournament type is "no bracket"
+      if (tournamentType === "no bracket") {
+        setAllSchedules([]);
+        setSchedules([]);
+        setLoading(false);
+        return;
+      }
+      
       const { data } = await axiosClient.get(
-        `/tsecretary/event/schedules`
+        `/intramurals/${user.intrams_id}/events/${user.event_id}/schedule`
       );
       
-      // Store all schedules in a separate state
       setAllSchedules(data);
-      
-      // Initial filter will be applied in the useEffect
       applyFilters(data);
     } catch (err) {
       console.error("Failed to load schedules", err);
@@ -63,17 +112,16 @@ export default function TSGamePage() {
     }
   };
 
-  // Separate function to apply filters, doesn't fetch data
   const applyFilters = (data) => {
-    // Apply filters
     let filteredData = data;
     if (activeTab === "Scheduled") {
-      filteredData = data.filter(match => match.date && match.time);
+      filteredData = data.filter(match => match.date && match.time && !match.is_completed);
     } else if (activeTab === "Unscheduled") {
-      filteredData = data.filter(match => !match.date || !match.time);
+      filteredData = data.filter(match => (!match.date || !match.time) && !match.is_completed);
+    } else if (activeTab === "Completed") {
+      filteredData = data.filter(match => match.is_completed);
     }
     
-    // Apply search if needed
     if (search) {
       const searchLower = search.toLowerCase();
       filteredData = filteredData.filter(match => 
@@ -91,22 +139,25 @@ export default function TSGamePage() {
     }));
   };
 
-  // Load data once when component mounts
   useEffect(() => {
     const loadData = async () => {
       await fetchEventStatus();
-      await fetchSchedules();
     };
     
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only re-run if IDs change
+  }, [user.intrams_id, user.event_id]);
   
-  // Apply filtering without refetching data
+  useEffect(() => {
+    if (tournamentType !== "") {
+      fetchSchedules();
+    }
+  }, [tournamentType]);
+  
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       applyFilters(allSchedules);
-    }, 300); // Reduced from 1000ms as we're not making API calls
+    }, 300);
     
     return () => clearTimeout(delayDebounce);
   }, [search, activeTab, allSchedules]);
@@ -115,27 +166,53 @@ export default function TSGamePage() {
     setPagination((prev) => ({ ...prev, currentPage: page }));
   };
 
-  const openScoreModal = (match) => {
+  // Schedule modal handlers
+  const openScheduleModal = (match) => {
     setSelectedMatch(match);
     setIsModalOpen(true);
   };
 
-  const closeModal = () => {
+  const closeScheduleModal = () => {
     setIsModalOpen(false);
     setSelectedMatch(null);
+  };
+
+  // Score modal handlers
+  const openScoreModal = (match) => {
+    setSelectedScoreMatch(match);
+    setIsScoreModalOpen(true);
+  };
+
+  const closeScoreModal = () => {
+    setIsScoreModalOpen(false);
+    setSelectedScoreMatch(null);
   };
 
   const submitSchedule = async (id, scheduleData) => {
     try {
       await axiosClient.patch(
-        `/intramurals/${intrams_id}/events/${event_id}/schedule/${id}/edit`,
+        `/intramurals/${user.intrams_id}/events/${user.event_id}/schedule/${id}/edit`,
         scheduleData
       );
-      // Only fetch the schedules again, not the status
       await fetchSchedules();
     } catch (err) {
       console.error("Failed to update match schedule", err);
-      setError("Failed to update match schedule."); // Use consistent error handling
+      setError("Failed to update match schedule.");
+    }
+  };
+
+  // Score submission handler
+  const submitScore = async (matchId, scoreData) => {
+    try {
+      await axiosClient.post(
+        `/intramurals/${user.intrams_id}/events/${user.event_id}/matches/${matchId}/score`,
+        scoreData
+      );
+      await fetchSchedules();
+    } catch (err) {
+      console.error("Failed to submit match score", err);
+      setError("Failed to submit match score.");
+      throw err;
     }
   };
 
@@ -144,50 +221,49 @@ export default function TSGamePage() {
     pagination.currentPage * pagination.perPage
   );
 
-  const generateMatches = async () => {
-    try {
-      setLoading(true);
-      setError(null); // Clear any previous errors
-      // Replace with your actual API endpoint for generating matches
-      await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/generate_matches`);
-      // Refetch all data since status might change too
-      await fetchEventStatus();
-      await fetchSchedules();
-    } catch (err) {
-      console.error("Failed to generate matches", err);
-      setError("Failed to generate matches. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  // Render the "no bracket" message
+  const renderNoBracketMessage = () => {
+    return (
+      <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+        <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
+        <h3 className="text-lg font-medium text-gray-600">This event has no bracket</h3>
+        <p className="text-gray-500 mt-1">This type of event doesn't use brackets or match scheduling.</p>
+      </div>
+    );
   };
 
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
         <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
-          {/* Header section with responsive layout */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Calendar size={20} className="mr-2" /> Bracket Matches
             </h2>
-            {eventStatus === "in_progress" && (
+            
+            {/* Download Schedule Button - Only show when there are schedules */}
+            {allSchedules.length > 0 && tournamentType !== "no bracket" && !loading && eventStatus === "in progress"&& (
               <button
-                type="button"
-                onClick={generateMatches}
-                disabled={loading}
-                className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                onClick={downloadSchedulePDF}
+                disabled={isDownloading}
+                className={`bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Generate Matches
+                {isDownloading ? (
+                  <>
+                    <Loader size={16} className="animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <FileText size={16} />
+                    Download Schedule
+                  </>
+                )}
               </button>
             )}
           </div>
           
-          {/* Filter section */}
-          {eventStatus === "in_progress" && (
+          {eventStatus === "in progress" && tournamentType !== "no bracket" && (
             <div className="mb-4">
               <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
                 <Filter
@@ -214,71 +290,120 @@ export default function TSGamePage() {
             </div>
           )}
 
-          {/* Scrollable content area */}
           <div className="flex-1 overflow-hidden flex flex-col min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
+            ) : tournamentType === "no bracket" ? (
+              renderNoBracketMessage()
             ) : eventStatus === "completed" ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">Event Completed</h3>
-                <p className="text-gray-500 mt-1">This event has been completed. No matches to show.</p>
+              <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
+                <Calendar size={48} className="mx-auto mb-4 text-green-400" />
+                <h3 className="text-lg font-medium text-green-800">Event Completed</h3>
+                <p className="text-gray-600 mt-1">This event has been completed. No matches to show.</p>
               </div>
             ) : eventStatus === "pending" ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">Event Pending</h3>
-                <p className="text-gray-500 mt-1">This event is pending. Matches will appear once the event begins.</p>
+              <div className="flex-1 bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
+                <Calendar size={48} className="mx-auto mb-4 text-yellow-400" />
+                <h3 className="text-lg font-medium text-yellow-800">Event Pending</h3>
+                <p className="text-gray-600 mt-1">This event is pending. Matches will appear once the event begins.</p>
               </div>
             ) : currentItems.length === 0 ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-600">No matches found</h3>
-                {eventStatus === "in_progress" && (
-                  <p className="text-gray-500 mt-1">Click "Generate Matches" to create brackets</p>
+              <div className="flex-1 bg-blue-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-blue-200">
+                <Calendar size={48} className="mx-auto mb-4 text-blue-400" />
+                <h3 className="text-lg font-medium text-blue-800">No matches found</h3>
+                {eventStatus === "in progress" && (
+                  <p className="text-gray-600 mt-1">Click "Generate Matches" to create brackets</p>
                 )}
               </div>
             ) : (
               <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-                {/* Matches grid with scrolling */}
                 <div className="flex-1 overflow-auto p-4">
-                  <div className="grid gap-4">
+                  <div className="grid gap-3">
                     {currentItems.map((match) => (
                       <div
                         key={match.id}
-                        className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm p-4 flex flex-col sm:flex-row justify-between items-center gap-4 hover:bg-[#F7FAF7] transition"
+                        className={`bg-white rounded-xl border ${match.is_completed ? "border-green-200" : "border-[#E6F2E8]"} shadow-sm p-4 flex flex-col sm:flex-row justify-between items-center gap-4 hover:bg-[#F7FAF7] transition`}
                       >
                         <div className="text-sm text-gray-500 font-medium">
-                          Match ID: {match.match_id}
-                        </div>
-                        <div className="flex items-center gap-2 font-medium text-base text-gray-800">
-                          <span>{match.team1_name || "TBD"}</span>
-                          <span className="text-gray-400">vs</span>
-                          <span>{match.team2_name || "TBD"}</span>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {match.date && match.time
+                          <span>
+                        {match.date && match.time
                             ? new Date(`${match.date}T${match.time}`).toLocaleString("en-US", {
                                 dateStyle: "medium",
                                 timeStyle: "short",
                               })
                             : "TBA"}
+                            </span>
+                             
                         </div>
-
-                        <button
-                          onClick={() => openScoreModal(match)}
-                          className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                        >
-                          Set Schedule
-                        </button>
+                        
+                        <div className="flex items-center gap-2 font-medium text-base text-gray-800">
+                          {/* Show winner in green if completed */}
+                          <span className={match.winner_id === match.team_1 ? "font-bold text-green-600" : ""}>
+                            {match.team1_name || "TBD"}
+                          </span>
+                              vs.
+                          
+                          <span className={match.winner_id === match.team_2 ? "font-bold text-green-600" : ""}>
+                            {match.team2_name || "TBD"}
+                          </span>
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          {/* If match is scheduled but not completed, show both buttons */}
+                          {match.date && match.time && !match.is_completed && (
+                            <>
+                              <button
+                                onClick={() => openScheduleModal(match)}
+                                className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+                              >
+                                Edit Schedule
+                              </button>
+                              <button
+                                onClick={() => openScoreModal(match)}
+                                className="text-white bg-[#2A6D3A] hover:bg-[#225E2F] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+                              >
+                                <Award size={12} className="inline mr-1" />
+                                Submit Score
+                              </button>
+                            </>
+                          )}
+                          
+                          {/* If match is not scheduled yet, only show schedule button */}
+                          {(!match.date || !match.time) && !match.is_completed && (
+                            <>
+                            <button
+                              onClick={() => openScheduleModal(match)}
+                              className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+                            >
+                              Set Schedule
+                            </button>
+                            <button
+                                onClick={() => openScoreModal(match)}
+                                className="text-white bg-[#2A6D3A] hover:bg-[#225E2F] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
+                              >
+                                <Award size={12} className="inline mr-1" />
+                                Submit Score
+                              </button>
+                          </> 
+                          )}
+                         
+                          {/* If match is completed, show completed status */}
+                          {match.is_completed === 1 && (
+                            <div className="text-green-600 flex items-center">
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                              </svg>
+                              Completed
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
                 
-                {/* Pagination with horizontal scroll if needed */}
                 <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
                   <PaginationControls
                     pagination={pagination}
@@ -291,12 +416,23 @@ export default function TSGamePage() {
         </div>
       </div>
 
+      {/* Schedule Modal */}
       {isModalOpen && selectedMatch && (
-        <TSGameModal
+        <TSMatchScheduleModal
           isOpen={isModalOpen}
           selectedMatch={selectedMatch}
-          onClose={closeModal}
+          onClose={closeScheduleModal}
           submitSchedule={submitSchedule}
+        />
+      )}
+
+      {/* Score Submission Modal */}
+      {isScoreModalOpen && selectedScoreMatch && (
+        <TSScoreSubmissionModal
+          isOpen={isScoreModalOpen}
+          match={selectedScoreMatch}
+          onClose={closeScoreModal}
+          submitScore={submitScore}
         />
       )}
     </div>

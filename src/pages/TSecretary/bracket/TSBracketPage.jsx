@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../../../axiosClient";
 import { Award, Loader } from "lucide-react";
+import { useAuth } from "../../../auth/AuthContext";
 
 export default function TSBracketPage() {
+  const {user} = useAuth();
   const [bracketId, setBracketId] = useState(null);
   const [eventStatus, setEventStatus] = useState(null);
   const [error, setError] = useState(null);
@@ -14,18 +16,20 @@ export default function TSBracketPage() {
       setLoading(true);
       
       // Get event info
-      const eventResponse = await axiosClient.get('/tsecretary/event');
+      const eventResponse = await axiosClient.get(`intramurals/${user.intrams_id}/events/${user.event_id}/bracket`);
       if (eventResponse.data && eventResponse.data.name) {
         setEventName(eventResponse.data.category+" "+eventResponse.data.name);
-        setEventStatus(eventResponse.data.status);
+      //
       }
+      setEventStatus(eventResponse.data.status);
+      setBracketId(eventResponse.data.bracket_id);
+      //console.log(eventResponse.data);
       
       // Get bracket data
-      const bracketResponse = await axiosClient.get('/tsecretary/bracket');
-      console.log(bracketResponse.data);
-      if (bracketResponse.data && bracketResponse.data.bracket_id) {
-        setBracketId(bracketResponse.data.bracket_id);
-      }
+      //const bracketResponse = await axiosClient.get('/tsecretary/bracket');
+      //if (bracketResponse.data && bracketResponse.data.bracket_id) {
+       // setBracketId(bracketResponse.data.bracket_id);
+      //}
       
       setError(null);
     } catch (err) {
@@ -57,33 +61,33 @@ export default function TSBracketPage() {
       );
     }
     
-    if (eventStatus === "completed") {
+    /*if (eventStatus === "completed") {
       return (
-        <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-          <Award size={48} className="mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-600">Event Completed</h3>
-          <p className="text-gray-500 mt-1">This event has been completed. Bracket display is for viewing only.</p>
+        <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
+          <Award size={48} className="mx-auto mb-4 text-green-400" />
+          <h3 className="text-lg font-medium text-green-800">Event Completed</h3>
+          <p className="text-gray-600 mt-1">This event has been completed. Bracket display is for viewing only.</p>
         </div>
       );
-    }
+    }*/
     
     if (eventStatus === "pending") {
       return (
-        <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-          <Award size={48} className="mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-600">Event Pending</h3>
-          <p className="text-gray-500 mt-1">The bracket will be available once the event begins.</p>
+        <div className="flex-1 bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
+          <Award size={48} className="mx-auto mb-4 text-yellow-400" />
+          <h3 className="text-lg font-medium text-yellow-800">Event Pending</h3>
+          <p className="text-gray-600 mt-1">The bracket has not started yet. Please wait for the event to begin.</p>
         </div>
       );
     }
     
-    if ( !bracketId) {
+    if ( !bracketId || bracketId === "no bracket") {
       return (
         <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
           <Award size={48} className="mx-auto mb-4 text-gray-400" />
           <h3 className="text-lg font-medium text-gray-600">No Bracket Available</h3>
           <p className="text-gray-500 mt-1">
-            The bracket could not be loaded. Please try again later.
+            The bracket could not be loaded or this event has no bracket.
           </p>
         </div>
       );
@@ -91,7 +95,7 @@ export default function TSBracketPage() {
     
     return (
       <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
           <iframe
             src={`https://challonge.com/${bracketId}/module`}
             width="100%"
@@ -124,13 +128,13 @@ export default function TSBracketPage() {
               <div className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium ${
                 eventStatus === "pending" 
                   ? "bg-yellow-100 text-yellow-800" 
-                  : eventStatus === "in_progress"
+                  : eventStatus === "in progress"
                     ? "bg-blue-100 text-blue-800"
                     : "bg-green-100 text-green-800"
               }`}>
                 {eventStatus === "pending" 
                   ? "Pending" 
-                  : eventStatus === "in_progress"
+                  : eventStatus === "in progress"
                     ? "In Progress"
                     : "Completed"}
               </div>

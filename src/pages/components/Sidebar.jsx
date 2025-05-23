@@ -60,7 +60,42 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
   };
 
   const isActiveRoute = (route) => {
-    return location.pathname.split("/").pop() === route;
+    // Special case for tsecretary parent route - only highlight if exactly on /tsecretary
+    if (route === '/tsecretary' && location.pathname !== '/tsecretary') {
+      return false;
+    }
+
+    // For exact matches (complete URL match)
+    if (location.pathname === route) {
+      return true;
+    }
+
+    // For parent routes (e.g., /admin is active when on /admin/users)
+    // Skip this check for tsecretary parent route
+    if (route !== '/' && route !== '/tsecretary' && location.pathname.startsWith(route + '/')) {
+      return true;
+    }
+
+    // For just the last segment of the URL (original behavior)
+    const lastSegment = location.pathname.split('/').pop();
+    if (lastSegment === route) {
+      return true;
+    }
+
+    // For dynamic routes with parameters (e.g., /admin/:intrams_id/events)
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const routeSegments = route.split('/').filter(Boolean);
+    
+    // If route has fewer segments than path (might be a parent route with parameters)
+    if (routeSegments.length < pathSegments.length) {
+      // Check if all route segments match the beginning of path segments
+      // or are parameter placeholders (starting with ':')
+      return routeSegments.every((segment, i) => {
+        return segment.startsWith(':') || segment === pathSegments[i];
+      });
+    }
+
+    return false;
   };
 
   return (

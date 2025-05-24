@@ -146,7 +146,7 @@ export default function TSecretaryPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-1 w-full overflow-hidden">
+      <main className="flex flex-1 w-full overflow-y-auto">
         {/* Mobile Overlay - Only cover the sidebar area when it's open */}
         {isSidebarOpen && (
           <div

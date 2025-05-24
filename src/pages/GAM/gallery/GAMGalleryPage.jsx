@@ -53,6 +53,12 @@ export default function GAMGalleryPage() {
       setFilterOptions([{ label: "All", value: "All" }, ...teamOptions]);
     } catch (err) {
       console.error("Error fetching galleries:", err);
+      if(err.response.status === 400) {
+        console.log("xd");
+        setError("xd");
+        setLoading(false);
+        return;
+      }
       setError("Failed to load gallery items");
     } finally {
       // FIX 4: Always ensure loading is set to false
@@ -198,12 +204,6 @@ export default function GAMGalleryPage() {
             </button>
           </div>
           
-          {/* Team ID info for debugging - remove in production */}
-          {team_id && (
-            <div className="mb-2 text-xs text-gray-500">
-              Generating gallery for Team ID: {team_id}
-            </div>
-          )}
           
           {/* Filter section */}
           <div className="mb-4">

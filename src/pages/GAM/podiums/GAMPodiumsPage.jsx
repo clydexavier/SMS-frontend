@@ -152,10 +152,14 @@ export default function GAMPodiumsPage() {
   // Medal component to display team logo and name
   const MedalWinner = ({ logo, name, count, icon: Icon, color }) => (
     <div className="flex items-center space-x-2">
+      
       {count && (
-        <div className={`p-1 ${color} rounded-full w-8 h-8 text-center flex items-center justify-center`}>
-          <span className="text-xs font-medium text-white">{count}</span>
-        </div>
+      
+      <div className={`p-1 ${color} rounded-full w-8 h-8 text-center`}>
+        
+          {count}
+        
+       </div>
       )}
       
       <div className="flex items-center">
@@ -164,30 +168,25 @@ export default function GAMPodiumsPage() {
             src={logo} 
             alt={`${name} logo`} 
             className="w-8 h-8 rounded-full object-cover border border-gray-200 mr-2" 
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
           />
-        ) : null}
-        <div 
-          className="w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A] flex items-center justify-center mr-2 border border-gray-200"
-          style={{display: logo ? 'none' : 'flex'}}
-        >
-          <span className="text-xs text-gray-500">{name?.charAt(0) || '?'}</span>
-        </div>
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-[#E6F2E8] text-[#2A6D3A] flex items-center justify-center mr-2 border border-gray-200">
+            <span className="text-xs text-gray-500">{name.charAt(0)}</span>
+          </div>
+        )}
         <span className="text-sm font-medium text-gray-800 truncate max-w-[10rem]">
           {name || "—"}
         </span>
       </div>
+      
     </div>
   );
 
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Main container - removed overflow-hidden to allow parent scrolling */}
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           {/* Header section with title and download button */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -199,16 +198,16 @@ export default function GAMPodiumsPage() {
               <button
                 onClick={downloadPodiumPDF}
                 disabled={isDownloading}
-                className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
                 {isDownloading ? (
                   <>
-                    <Loader size={16} className="mr-2 animate-spin" />
+                    <Loader size={16} className="animate-spin" />
                     Downloading...
                   </>
                 ) : (
                   <>
-                    <FileText size={16} className="mr-2" />
+                    <FileText size={16} />
                     Download All Results
                   </>
                 )}
@@ -221,9 +220,15 @@ export default function GAMPodiumsPage() {
             <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
               <Filter
                 activeTab={activeTab}
-                setActiveTab={(value) => handleFilterChange(value, 'tab')}
+                setActiveTab={(value) => {
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                  setActiveTab(value);
+                }}
                 search={search}
-                setSearch={(value) => handleFilterChange(value, 'search')}
+                setSearch={(value) => {
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                  setSearch(value);
+                }}
                 placeholder="Search event name"
                 filterOptions={filterOptions}
               />
@@ -231,23 +236,16 @@ export default function GAMPodiumsPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4 flex justify-between items-center">
-              <span>{error}</span>
-              <button 
-                onClick={() => setError("")}
-                className="text-red-400 hover:text-red-600"
-              >
-                ×
-              </button>
+            <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
+              {error}
             </div>
           )}
 
-          {/* Table container */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {/* Content area - removed overflow and let parent handle scrolling */}
+          <div className="flex flex-1  flex-col">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
-                <span className="ml-2 text-gray-600">Loading podiums...</span>
               </div>
             ) : podiums.length === 0 ? (
               <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
@@ -256,10 +254,10 @@ export default function GAMPodiumsPage() {
                 <p className="text-gray-500 mt-1">Try adjusting your search or filter criteria</p>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-                {/* Table with horizontal and vertical scrolling */}
-                <div className="flex-1 overflow-auto">
-                  <table className="min-w-full flex-1 divide-y divide-gray-200">
+              <div className="flex flex-1 flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+                {/* Table with horizontal scrolling only */}
+                <div className="overflow-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-[#F7FAF7] sticky top-0">
                       <tr>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[#2A6D3A] uppercase tracking-wider">
@@ -279,7 +277,7 @@ export default function GAMPodiumsPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {podiums.map((podium, index) => (
                         <tr 
-                          key={podium.id || index}
+                          key={index}
                           className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                         >
                           {/* Event Name */}
@@ -290,10 +288,10 @@ export default function GAMPodiumsPage() {
                               </div>
                               <div>
                                 <div className="text-sm font-medium text-gray-900 max-w-[14rem] truncate">
-                                  {podium.event?.name || 'Unknown Event'}
+                                  {podium.event.name}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  {podium.event?.category || 'Unknown'} • {podium.event?.type || 'Unknown'}
+                                  {podium.event.category} • {podium.event.type}
                                 </div>
                               </div>
                             </div>
@@ -338,17 +336,18 @@ export default function GAMPodiumsPage() {
                 </div>
                 
                 {/* Pagination */}
-                {!loading && podiums.length > 0 && (
-                  <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
+                
+              </div>
+            )}
+          </div>
+          {!loading && podiums.length > 0 && (
+                  <div className="p-2 border-t border-[#E6F2E8] bg-white">
                     <PaginationControls
                       pagination={pagination}
                       handlePageChange={handlePageChange}
                     />
                   </div>
-                )}
-              </div>
             )}
-          </div>
         </div>
       </div>
     </div>

@@ -73,7 +73,7 @@ export default function GAMOverallTallyPage() {
     <div className="flex flex-1 flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div className="flex flex-1 flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Medal size={20} className="mr-2" />  {intramsName} Medal Table

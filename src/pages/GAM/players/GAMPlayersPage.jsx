@@ -313,8 +313,8 @@ export default function GAMPlayersPage() {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Main container - matches EventsPage structure */}
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           {/* Header section with responsive layout */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -376,22 +376,22 @@ export default function GAMPlayersPage() {
             </div>
           )}
 
-          {/* Scrollable content area */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {/* Content area - matches EventsPage structure */}
+          <div className="flex flex-1 mt-4 flex flex-col">
             {loading ? (
-              <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+              <div className="flex justify-center items-center py-16 flex-1">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
             ) : players.length === 0 ? (
-              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8] flex flex-col justify-center">
                 <Users size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600">No players found</h3>
                 <p className="text-gray-500 mt-1">Click "Add Player" to create one</p>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-                {/* Table with horizontal and vertical scrolling */}
-                <div className="flex-1 overflow-auto">
+              <div className="flex flex-1 flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+                {/* Table with horizontal scrolling only */}
+                <div className="overflow-auto">
                   <table className="min-w-full text-sm text-left text-gray-700">
                     <thead className="bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8] sticky top-0">
                       <tr>
@@ -500,13 +500,11 @@ export default function GAMPlayersPage() {
                   </table>
                 </div>
                 
-                {/* Pagination with horizontal scroll if needed */}
-                <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
+                {/* Pagination */}
                   <PaginationControls
                     pagination={pagination}
                     handlePageChange={handlePageChange}
                   />
-                </div>
               </div>
             )}
           </div>

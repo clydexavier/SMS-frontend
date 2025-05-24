@@ -138,8 +138,8 @@ export default function TSPodiumsPage() {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Main container - removed overflow-hidden to allow parent scrolling */}
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           {/* Header section with title and download button */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -168,9 +168,6 @@ export default function TSPodiumsPage() {
             )}
           </div>
           
-          {/* Download status message */}
-          
-          
           {/* Filter section */}
           <div className="mb-4">
             <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-[#E6F2E8]">
@@ -197,8 +194,8 @@ export default function TSPodiumsPage() {
             </div>
           )}
 
-          {/* Table container */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {/* Content area - removed overflow and let parent handle scrolling */}
+          <div className="flex flex-1  flex-col">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
@@ -210,9 +207,9 @@ export default function TSPodiumsPage() {
                 <p className="text-gray-500 mt-1">Try adjusting your search or filter criteria</p>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-                {/* Table with horizontal and vertical scrolling */}
-                <div className="flex-1 overflow-auto">
+              <div className="flex flex-1 flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+                {/* Table with horizontal scrolling only */}
+                <div className="overflow-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-[#F7FAF7] sticky top-0">
                       <tr>
@@ -292,17 +289,18 @@ export default function TSPodiumsPage() {
                 </div>
                 
                 {/* Pagination */}
-                {!loading && podiums.length > 0 && (
-                  <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
+                
+              </div>
+            )}
+          </div>
+          {!loading && podiums.length > 0 && (
+                  <div className="p-2 border-t border-[#E6F2E8] bg-white">
                     <PaginationControls
                       pagination={pagination}
                       handlePageChange={handlePageChange}
                     />
                   </div>
-                )}
-              </div>
             )}
-          </div>
         </div>
       </div>
     </div>

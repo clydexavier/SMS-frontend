@@ -23,7 +23,6 @@ export default function TSBracketPage() {
       }
       setEventStatus(eventResponse.data.status);
       setBracketId(eventResponse.data.bracket_id);
-      //console.log(eventResponse.data);
       
       // Get bracket data
       //const bracketResponse = await axiosClient.get('/tsecretary/bracket');

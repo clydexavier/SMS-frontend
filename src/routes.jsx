@@ -15,8 +15,9 @@ import RegisterPage from "./pages/public/RegisterPage";
 // Role-specific pages
 import AdminPage from "./pages/admin/intramurals/parent/AdminPage";
 import GAMPage from "./pages/GAM/GAMPage";
-import SecretariatPage from "./pages/Secretariat/SecretariatPage";
+import SecretariatPage from "./pages/secretariat/intramurals/parent/SecretariatPage";
 import TSecretaryPage from "./pages/TSecretary/TSecretaryPage";
+import SchedulerPage from "./pages/scheduler/intramurals/parent/SchedulerPage";
 
 // Admin child components
 import IntramuralsPage from "./pages/admin/intramurals/IntramuralsPage";
@@ -53,6 +54,28 @@ import GAMOverallTallyPage from "./pages/GAM/tally/GAMOverallTallyPage";
 import GAMPlayersPage from "./pages/GAM/players/GAMPlayersPage";
 import GAMPodiumsPage from "./pages/GAM/podiums/GAMPodiumsPage";
 import GAMEventPage from "./pages/GAM/events/parent/GAMEventPage";
+
+//Secretariat Pages
+import SecIntramuralsPage from "./pages/secretariat/intramurals/SecIntramuralsPage";
+import SecIntramuralPage from "./pages/secretariat/events/parent/SecIntramuralPage";
+import SecEventsPage from "./pages/secretariat/events/SecEventsPage";
+import SecEventPage from "./pages/secretariat/SecEventPage";
+import SecBracketPage from "./pages/secretariat/bracket/SecBracketPage";
+import SecGamePage from "./pages/secretariat/games/SecGamePage";
+import SecResultPage from "./pages/secretariat/result/SecResultPage";
+import SecPodiumsPage from "./pages/secretariat/podiums/SecPodiumsPage";
+import SecOverallTallyPage from "./pages/secretariat/tally/SecOverallTallyPage";
+
+//Scheduler Pages
+import SchedIntramuralPage from "./pages/scheduler/events/parent/SchedIntramuralPage";
+import SchedIntramuralsPage from "./pages/scheduler/intramurals/SchedIntramuralsPage";
+import SchedEventsPage from "./pages/scheduler/events/SchedEventsPage";
+import SchedOverallTallyPage from "./pages/scheduler/tally/SecOverallTallyPage";
+import SchedPodiumsPage from "./pages/scheduler/podiums/SecPodiumsPage";
+import SchedTeamSeeder from "./pages/scheduler/seeder/SchedTeamSeeder";
+import SchedBracketPage from "./pages/scheduler/bracket/SchedBracketPage";
+import SchedGamePage from "./pages/scheduler/games/SchedGamePage";
+import SchedEventPage from "./pages/scheduler/SchedEventPage";
 
 const routes = [
   {
@@ -159,6 +182,81 @@ const routes = [
             <SecretariatPage />
           </ProtectedRoute>
         ),
+        children: [
+          { index: true, element: <Navigate to="intramurals" replace /> },
+          { path: "intramurals", element: <SecIntramuralsPage /> },
+        ],
+      },
+      {
+        path:"/secretariat/:intrams_id",
+        element: (
+          <ProtectedRoute roles={["secretariat"]}>
+            <SecIntramuralPage/>
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="events" replace /> },
+          { path: "events", element: <SecEventsPage /> },
+          { path: "podiums", element: <SecPodiumsPage/>},
+          { path: "tally", element: <SecOverallTallyPage/>},
+        ],
+      },
+      
+      {
+        path:"/secretariat/:intrams_id/events/:event_id",
+        element: (
+          <ProtectedRoute roles={["secretariat"]}>
+            <SecEventPage/>
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="bracket" replace /> },
+          { path: "bracket", element: <SecBracketPage /> },
+          { path: "games", element: <SecGamePage/>},
+          { path: "result", element: <SecResultPage/>},
+        ],
+      },
+      {
+        path: "/scheduler",
+        element: (
+          <ProtectedRoute roles={["scheduler"]}>
+            <SchedulerPage />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="intramurals" replace /> },
+          { path: "intramurals", element: <SchedIntramuralsPage /> },
+        ],
+      },
+      {
+        path: "/scheduler/:intrams_id",
+        element: (
+          <ProtectedRoute roles={["scheduler"]}>
+            <SchedIntramuralPage />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="events" replace /> },
+          { path: "events", element: <SchedEventsPage /> },
+          { path: "podiums", element: <SchedPodiumsPage /> },
+          { path: "tally", element: <SchedOverallTallyPage /> },
+
+        ],
+      },
+      {
+        path: "/scheduler/:intrams_id/events/:event_id",
+        element: (
+          <ProtectedRoute roles={["scheduler"]}>
+            <SchedEventPage />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="seeder" replace /> },
+          { path: "seeder", element: <SchedTeamSeeder /> },
+          { path: "bracket", element: <SchedBracketPage /> },
+          { path: "games", element: <SchedGamePage /> },
+
+        ],
       },
       
     ],

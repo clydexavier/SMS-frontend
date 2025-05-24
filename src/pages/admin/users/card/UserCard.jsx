@@ -20,7 +20,9 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
     admin: "bg-purple-100 text-purple-800 border-purple-200",
     GAM: "bg-blue-100 text-blue-800 border-blue-200",
     tsecretary: "bg-green-100 text-green-800 border-green-200",
-    secretariat: "bg-amber-100 text-amber-800 border-amber-200",
+    secretariat: "bg-yellow-100 text-amber-800 border-amber-200",
+    scheduler: "bg-amber-100 text-amber-800 border-amber-200",
+
     user: "bg-gray-100 text-gray-800 border-gray-200",
   };
 
@@ -40,7 +42,7 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
   const handleRoleChange = async (newRole) => {
     setShowRoleDropdown(false);
     
-    if (newRole === 'admin' || newRole === 'secretariat' || newRole === 'user') {
+    if (newRole === 'admin' || newRole === 'secretariat' || newRole === 'user' || newRole  === 'scheduler') {
       // Directly update role for admin, secretariat, and user
       await updateUserRole(user.id, { role: newRole });
     } else {
@@ -243,6 +245,13 @@ export default function UserCard({ user, updateUserRole, deleteUser }) {
             >
               <Shield size={16} className="mr-2 text-amber-600" />
               Secretariat
+            </button>
+            <button
+              onClick={() => handleRoleChange('scheduler')}
+              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+            >
+              <Shield size={16} className="mr-2 text-yellow-600" />
+              Scheduler
             </button>
             <button
               onClick={() => handleRoleChange('user')}

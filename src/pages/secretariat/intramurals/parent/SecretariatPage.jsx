@@ -1,44 +1,40 @@
-import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import Sidebar from '../../../components/Sidebar';
-import Breadcrumb from '../../../components/Breadcrumb';
+import React, { useState } from "react";
+import Sidebar from "../../../components/Sidebar";
+import { Outlet, Link } from "react-router-dom";
 import logo from '../../../../assets/vsu_logo.png';
-import { useState } from 'react';
+import Breadcrumb from "../../../components/Breadcrumb"; // Import the Breadcrumb component
+
+// Admin Icons
+import { GrTrophy, GrHistory } from "react-icons/gr";
 import { MdMenuOpen } from "react-icons/md";
-
-
-import { Volleyball,Trophy , Medal, House, Users, UserPlus } from "lucide-react";
-
-
-const isize = 20;
+import {  House, ShieldUser} from "lucide-react";
 
 const menuItems = [
-  { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
-  { icon: <Volleyball size={isize} color="black" />, label: 'Events', route: 'events' },
-  { icon: <Users size={isize} color="black" />, label: 'Teams', route: 'teams' },
-  { icon: <UserPlus size={isize} color="black" />, label: 'Varsity Players', route: 'vplayers' },
-  //{ icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
-  { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
-  { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
+  {
+    icon: <House className="text-[20px] sm:text-[15px]" color="black" />,
+    label: "Intramurals",
+    route: "intramurals",
+  },
+  // Add more menu items as needed
 ];
 
-export default function IntramuralPage() {
+export default function SecretariatPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">
+    <div className="flex flex-col w-screen h-screen overflow-hidden bg-gray-200">
       <noscript>
         <strong className="text-sm sm:text-xs md:text-sm lg:text-sm">
           We're sorry but the frontend doesn't work properly without JavaScript enabled. Please enable it to continue.
         </strong>
       </noscript>
+
       {/* Header */}
       <header className="bg-[#1E4D2B] shadow-md h-16 px-4 flex items-center justify-between z-30 relative">
-            <div className="flex items-center">
+        <div className="flex items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img src={logo} alt="IHK Logo" className={`h-12 w-40 rounded-full ${isSidebarOpen? "": "hidden"}`} />
-            
           </Link>
           {/* Menu button */}
           <button
@@ -52,7 +48,7 @@ export default function IntramuralPage() {
           </button>
         </div>
       </header>
-      
+
       {/* Main Content */}
       <main className="flex flex-1 w-full overflow-hidden">
         {/* Mobile Overlay - Only cover the sidebar area when it's open */}
@@ -70,7 +66,9 @@ export default function IntramuralPage() {
         />
 
         <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-10 bg-white">
-        <Breadcrumb/>
+          {/* Add Breadcrumb component here */}
+          <Breadcrumb />
+          
           <Outlet />
         </div>
       </main>

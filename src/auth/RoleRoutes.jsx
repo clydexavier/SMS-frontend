@@ -5,6 +5,8 @@ export const ROLE_ROUTES = {
     GAM: "/GAM",
     secretariat: "/secretariat",
     tsecretary: "/tsecretary",
+    scheduler: "/scheduler",
+
   };
   
   // Default path after authentication if no specific role route exists

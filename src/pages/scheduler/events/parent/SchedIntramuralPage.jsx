@@ -13,16 +13,14 @@ import { Volleyball,Trophy , Medal, House, Users, UserPlus } from "lucide-react"
 const isize = 20;
 
 const menuItems = [
-  { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
+  { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/scheduler/intramurals" },
   { icon: <Volleyball size={isize} color="black" />, label: 'Events', route: 'events' },
-  { icon: <Users size={isize} color="black" />, label: 'Teams', route: 'teams' },
-  { icon: <UserPlus size={isize} color="black" />, label: 'Varsity Players', route: 'vplayers' },
   //{ icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
   { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
   { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
 ];
 
-export default function IntramuralPage() {
+export default function SchedIntramuralPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (

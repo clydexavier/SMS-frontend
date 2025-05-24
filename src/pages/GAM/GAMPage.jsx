@@ -19,7 +19,7 @@ const menuItems = [
 ];
 
 export default function GAMPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">

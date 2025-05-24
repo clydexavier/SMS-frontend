@@ -11,7 +11,7 @@ import { MdMenuOpen } from "react-icons/md";
 
 import { Volleyball,Trophy , Medal, House, Users, Shuffle  , FileUser} from "lucide-react";
 
-export default function EventPage() {
+export default function SchedEventPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [event, setEvent] = useState("");
@@ -20,25 +20,22 @@ export default function EventPage() {
   const { intrams_id, event_id } = useParams();
   const isize = 20;
   const menuItems = [
-    { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
+    { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/scheduler/intramurals" },
     { 
       icon: <Volleyball size={isize} color="black" />, 
       label: `${event}`, 
       route: `/${intrams_id}/events`,
       submenu: [
-        { icon: <Users size={isize} color="black" />, label: 'Players', route: 'players' },
-        { icon: <FileUser size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },
         { icon: <Shuffle size={isize} color="black" />, label: 'Team Seeder', route: 'seeder' },
 
         { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
         { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' },
-        { icon: <Medal size={isize} color="black" />, label: 'Event Result', route: 'result' },
-
+       
       ]
     },
-    { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: `/admin/${intrams_id}/podiums` },
+    { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: `/scheduler/${intrams_id}/podiums` },
 
-    { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/admin/${intrams_id}/tally` },    
+    { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/scheduler/${intrams_id}/tally` },    
     
   ];
 

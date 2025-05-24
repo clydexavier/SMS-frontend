@@ -75,7 +75,6 @@ export default function GAMGalleryPage() {
         team_id: team_id,
       };
       
-      console.log("Generating gallery for team:", galleryData);
       await axiosClient.post(`/intramurals/${intrams_id}/events/${event_id}/galleries/create`, galleryData);
       
       // Refresh the gallery list after generation

@@ -44,7 +44,6 @@ export default function TeamSeeder() {
         const { data } = await axiosClient.get(`/intramurals/${intrams_id}/events/${event_id}/status`);
         setEventStatus(data.status);
         setTournamentType(data.tournament_type);
-        console.log(data);
         
         // Get event name
         const eventResponse = await axiosClient.get(`intramurals/${intrams_id}/events/${event_id}`);
@@ -113,9 +112,6 @@ export default function TeamSeeder() {
       // Clear any validation errors after randomizing
       setValidationErrors({});
 
-      // Debug logging to help troubleshoot
-      console.log("Randomized seeds:", randomSeeds);
-      console.log("All teams have seeds:", teams.every(team => randomSeeds[team.id] !== undefined));
     } catch (err) {
       console.error("Error in randomizeSeeds:", err);
       setError("Failed to randomize seeds. Please try again.");
@@ -134,9 +130,6 @@ export default function TeamSeeder() {
       // Clear any validation errors after resetting
       setValidationErrors({});
       
-      // Debug logging to help troubleshoot
-      console.log("Reset seeds:", initialSeeds);
-      console.log("All teams have seeds:", teams.every(team => initialSeeds[team.id] !== undefined));
     } catch (err) {
       console.error("Error in resetSeeds:", err);
       setError("Failed to reset seeds. Please try again.");
@@ -229,9 +222,6 @@ export default function TeamSeeder() {
         }
       }));
   
-      // Verify all participants have seeds
-      console.log("All participants have seeds:", participants.every(p => typeof p.seed === 'number'));
-      console.log("Submission payload:", { participants });
       
       // Try with a slightly different payload structure
       const payload = { 
@@ -243,7 +233,6 @@ export default function TeamSeeder() {
         payload
       );
   
-      console.log("Tournament start response:", response.data);
       setSuccess(true);
       setEventStatus("in progress");
     } catch (err) {

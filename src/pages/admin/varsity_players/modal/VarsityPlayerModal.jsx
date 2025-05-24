@@ -79,7 +79,6 @@ export default function VarsityPlayerModal({
     // Remove the separate degree and year fields from submission
     delete submissionData.degree;
     delete submissionData.year;
-    console.log(submissionData);
     existingPlayer
       ? updatePlayer(existingPlayer.id, submissionData)
       : addPlayer(submissionData);

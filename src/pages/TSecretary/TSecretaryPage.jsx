@@ -107,6 +107,7 @@ export default function TSecretaryPage() {
       label: loading ? "Loading..." : (event.category + " " + event.name || "Event"), 
       route: "/tsecretary",
       submenu: 
+[
        { icon: <LiaSitemapSolid size={isize} color="black" />, label: 'Bracket', route: 'bracket' },
         { icon: <MdOutlineScoreboard size={isize} color="black" />, label: 'Games', route: 'games' }, 
         { icon: <Medal size={isize} color="black" />, label: 'Event Result', route: 'result' },

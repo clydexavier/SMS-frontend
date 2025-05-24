@@ -17,7 +17,7 @@ const Breadcrumb = () => {
     
     // Handle specific routes with custom names
     const routeNameMap = {
-      "admin": "Admin Dashboard",
+      "admin": "Admin",
       "intramurals": "Intramurals",
       "events": "Events",
       "teams": "Teams",
@@ -31,10 +31,10 @@ const Breadcrumb = () => {
       "result": "Results",
       "logs": "Logs",
       "seeder": "Team Seeder",
-      "tsecretary": "Tournament Secretary Dashboard",
-      "GAM": "General Activity Manager Dashboard",
-      "secretariat": "Secretariat Dashboard",
-      "scheduler": "Scheduler Dashboard"
+      "tsecretary": "Tournament Secretary",
+      "GAM": "General Athletics Manager",
+      "secretariat": "Secretariat",
+      "scheduler": "Scheduler"
     };
     
     return routeNameMap[name] || name.charAt(0).toUpperCase() + name.slice(1);

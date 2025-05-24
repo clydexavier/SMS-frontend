@@ -20,7 +20,7 @@ export default function SecEventPage() {
   const { intrams_id, event_id } = useParams();
   const isize = 20;
   const menuItems = [
-    { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
+    { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/secretariat/intramurals" },
     { 
       icon: <Volleyball size={isize} color="black" />, 
       label: `${event}`, 
@@ -32,7 +32,9 @@ export default function SecEventPage() {
 
       ]
     },
-    { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/admin/${intrams_id}/tally` },    
+    
+  { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: `/secretariat/${intrams_id}/podiums` },
+    { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/secretariat/${intrams_id}/tally` },    
     
   ];
 

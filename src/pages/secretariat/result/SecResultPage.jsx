@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../../../axiosClient";
-import ResultModal from "./modal/ResultModal";
 import EventPodium from "./util/EventPodium";
 import { useParams } from "react-router-dom";
 import { Trophy, Loader, FileDown, Edit, PlusCircle } from "lucide-react";
@@ -9,7 +8,6 @@ const SecResultPage = () => {
   const { intrams_id, event_id } = useParams();
   const [podiumData, setPodiumData] = useState(null);
   const [eventStatus, setEventStatus] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [eventName, setEventName] = useState("");
@@ -53,24 +51,6 @@ const SecResultPage = () => {
     fetchPodiumData();
   }, [intrams_id, event_id]);
 
-  const handleSubmitResults = async (resultsData) => {
-    try {
-      setLoading(true);
-      const url = `/intramurals/${intrams_id}/events/${event_id}/podium/${podiumData ? "update" : "create"}`;
-      const method = podiumData ? axiosClient.patch : axiosClient.post;
-
-      await method(url, resultsData);
-
-      fetchPodiumData();
-      return true;
-    } catch (err) {
-      console.error("Failed to submit results:", err);
-      
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Download podium PDF function
   const downloadPodiumPDF = async () => {
@@ -157,25 +137,6 @@ const SecResultPage = () => {
                 </button>
               )}
               
-              {showActionButton && (
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
-                  disabled={loading || isDownloading}
-                >
-                  {podiumData ? (
-                    <>
-                      <Edit size={16} className="mr-2" />
-                      Update Result
-                    </>
-                  ) : (
-                    <>
-                      <PlusCircle size={16} className="mr-2" />
-                      Submit Result
-                    </>
-                  )}
-                </button>
-              )}
             </div>
           </div>
 
@@ -217,17 +178,6 @@ const SecResultPage = () => {
         </div>
       </div>
 
-      <ResultModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setError(null);
-        }}
-        onSubmit={handleSubmitResults}
-        event_id={event_id}
-        intrams_id={intrams_id}
-        existingData={podiumData}
-      />
     </div>
   );
 };

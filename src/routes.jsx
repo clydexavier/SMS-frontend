@@ -15,7 +15,7 @@ import RegisterPage from "./pages/public/RegisterPage";
 // Role-specific pages
 import AdminPage from "./pages/admin/intramurals/parent/AdminPage";
 import GAMPage from "./pages/GAM/GAMPage";
-import SecretariatPage from "./pages/Secretariat/SecretariatPage";
+import SecretariatPage from "./pages/secretariat/intramurals/parent/SecretariatPage";
 import TSecretaryPage from "./pages/TSecretary/TSecretaryPage";
 
 // Admin child components
@@ -53,6 +53,17 @@ import GAMOverallTallyPage from "./pages/GAM/tally/GAMOverallTallyPage";
 import GAMPlayersPage from "./pages/GAM/players/GAMPlayersPage";
 import GAMPodiumsPage from "./pages/GAM/podiums/GAMPodiumsPage";
 import GAMEventPage from "./pages/GAM/events/parent/GAMEventPage";
+
+//Secretariat Pages
+import SecIntramuralsPage from "./pages/secretariat/intramurals/SecIntramuralsPage";
+import SecIntramuralPage from "./pages/secretariat/events/parent/SecIntramuralPage";
+import SecEventsPage from "./pages/secretariat/events/SecEventsPage";
+import SecEventPage from "./pages/secretariat/SecEventPage";
+import SecBracketPage from "./pages/secretariat/bracket/SecBracketPage";
+import SecGamePage from "./pages/secretariat/games/SecGamePage";
+import SecResultPage from "./pages/secretariat/result/SecResultPage";
+import SecPodiumsPage from "./pages/secretariat/podiums/SecPodiumsPage";
+import SecOverallTallyPage from "./pages/secretariat/tally/SecOverallTallyPage";
 
 const routes = [
   {
@@ -159,7 +170,40 @@ const routes = [
             <SecretariatPage />
           </ProtectedRoute>
         ),
+        children: [
+          { index: true, element: <Navigate to="intramurals" replace /> },
+          { path: "intramurals", element: <SecIntramuralsPage /> },
+        ],
       },
+      {
+        path:"/secretariat/:intrams_id",
+        element: (
+          <ProtectedRoute roles={["secretariat"]}>
+            <SecIntramuralPage/>
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="events" replace /> },
+          { path: "events", element: <SecEventsPage /> },
+          { path: "podiums", element: <SecPodiumsPage/>},
+          { path: "tally", element: <SecOverallTallyPage/>},
+        ],
+      },
+      
+      {
+        path:"/secretariat/:intrams_id/events/:event_id",
+        element: (
+          <ProtectedRoute roles={["secretariat"]}>
+            <SecEventPage/>
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="bracket" replace /> },
+          { path: "bracket", element: <SecBracketPage /> },
+          { path: "games", element: <SecGamePage/>},
+          { path: "result", element: <SecResultPage/>},
+        ],
+      }
       
     ],
   },

@@ -25,13 +25,6 @@ export default function SecGamePage() {
     lastPage: 1,
   });
 
-  // Schedule modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  
-  // Score submission modal state
-  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false);
-  const [selectedScoreMatch, setSelectedScoreMatch] = useState(null);
   
   // Filter state with added "Completed" option
   const [activeTab, setActiveTab] = useState("All");
@@ -165,57 +158,6 @@ export default function SecGamePage() {
 
   const handlePageChange = (page) => {
     setPagination((prev) => ({ ...prev, currentPage: page }));
-  };
-
-  // Schedule modal handlers
-  const openScheduleModal = (match) => {
-    setSelectedMatch(match);
-    setIsModalOpen(true);
-  };
-
-  const closeScheduleModal = () => {
-    setIsModalOpen(false);
-    setSelectedMatch(null);
-  };
-
-  // Score modal handlers
-  const openScoreModal = (match) => {
-    setSelectedScoreMatch(match);
-    setIsScoreModalOpen(true);
-  };
-
-  const closeScoreModal = () => {
-    setIsScoreModalOpen(false);
-    setSelectedScoreMatch(null);
-  };
-
-  const submitSchedule = async (id, scheduleData) => {
-    try {
-      await axiosClient.patch(
-        `/intramurals/${intrams_id}/events/${event_id}/schedule/${id}/edit`,
-        scheduleData
-      );
-      await fetchSchedules();
-    } catch (err) {
-      console.error("Failed to update match schedule", err);
-      setError("Failed to update match schedule.");
-    }
-  };
-
-  // Score submission handler
-  const submitScore = async (matchId, scoreData) => {
-    try {
-      await axiosClient.post(
-        `/intramurals/${intrams_id}/events/${event_id}/matches/${matchId}/score`,
-        scoreData
-      );
-      console.log(scoreData); 
-      await fetchSchedules();
-    } catch (err) {
-      console.error("Failed to submit match score", err);
-      setError("Failed to submit match score.");
-      throw err;
-    }
   };
 
   const currentItems = schedules.slice(
@@ -353,44 +295,6 @@ export default function SecGamePage() {
                         </div>
                         
                         <div className="flex space-x-2">
-                          {/* If match is scheduled but not completed, show both buttons */}
-                          {match.date && match.time && !match.is_completed && (
-                            <>
-                              <button
-                                onClick={() => openScheduleModal(match)}
-                                className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                              >
-                                Edit Schedule
-                              </button>
-                              <button
-                                onClick={() => openScoreModal(match)}
-                                className="text-white bg-[#2A6D3A] hover:bg-[#225E2F] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                              >
-                                <Award size={12} className="inline mr-1" />
-                                Submit Score
-                              </button>
-                            </>
-                          )}
-                          
-                          {/* If match is not scheduled yet, only show schedule button */}
-                          {(!match.date || !match.time) && !match.is_completed && (
-                            <>
-                            <button
-                              onClick={() => openScheduleModal(match)}
-                              className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                            >
-                              Set Schedule
-                            </button>
-                            <button
-                                onClick={() => openScoreModal(match)}
-                                className="text-white bg-[#2A6D3A] hover:bg-[#225E2F] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                              >
-                                <Award size={12} className="inline mr-1" />
-                                Submit Score
-                              </button>
-                          </> 
-                          )}
-                         
                           {/* If match is completed, show completed status */}
                           {match.is_completed === 1 && (
                             <div className="text-green-600 flex items-center">
@@ -418,25 +322,7 @@ export default function SecGamePage() {
         </div>
       </div>
 
-      {/* Schedule Modal */}
-      {isModalOpen && selectedMatch && (
-        <MatchScheduleModal
-          isOpen={isModalOpen}
-          selectedMatch={selectedMatch}
-          onClose={closeScheduleModal}
-          submitSchedule={submitSchedule}
-        />
-      )}
-
-      {/* Score Submission Modal */}
-      {isScoreModalOpen && selectedScoreMatch && (
-        <ScoreSubmissionModal
-          isOpen={isScoreModalOpen}
-          match={selectedScoreMatch}
-          onClose={closeScoreModal}
-          submitScore={submitScore}
-        />
-      )}
+      
     </div>
   );
 }

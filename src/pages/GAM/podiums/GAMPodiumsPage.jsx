@@ -259,7 +259,7 @@ export default function GAMPodiumsPage() {
               <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
                 {/* Table with horizontal and vertical scrolling */}
                 <div className="flex-1 overflow-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="min-w-full flex-1 divide-y divide-gray-200">
                     <thead className="bg-[#F7FAF7] sticky top-0">
                       <tr>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[#2A6D3A] uppercase tracking-wider">

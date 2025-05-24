@@ -288,17 +288,18 @@ export default function PodiumsPage() {
                 </div>
                 
                 {/* Pagination */}
-                {!loading && podiums.length > 0 && (
+                
+              </div>
+            )}
+          </div>
+          {!loading && podiums.length > 0 && (
                   <div className="p-2 border-t border-[#E6F2E8] bg-white">
                     <PaginationControls
                       pagination={pagination}
                       handlePageChange={handlePageChange}
                     />
                   </div>
-                )}
-              </div>
             )}
-          </div>
         </div>
       </div>
     </div>

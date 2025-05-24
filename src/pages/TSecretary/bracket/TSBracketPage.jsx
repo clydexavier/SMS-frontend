@@ -112,55 +112,55 @@ export default function TSBracketPage() {
 
   return (
     <div className="flex flex-col w-full h-full">
-      <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
-          {/* Header section with responsive layout */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
-            <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
-              <Award size={20} className="mr-2" /> Event Bracket
-              {eventName && <span className="ml-2 text-gray-600 font-normal">- {eventName}</span>}
-            </h2>
-            
-            {/* Status indicator */}
-            {eventStatus && (
-              <div className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium ${
-                eventStatus === "pending" 
-                  ? "bg-yellow-100 text-yellow-800" 
-                  : eventStatus === "in progress"
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-green-100 text-green-800"
-              }`}>
-                {eventStatus === "pending" 
-                  ? "Pending" 
-                  : eventStatus === "in progress"
-                    ? "In Progress"
-                    : "Completed"}
-              </div>
-            )}
+  <div className="w-full h-full flex-1 flex flex-col">
+    {/* Main container - matches BracketPage structure */}
+    <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
+      {/* Header section with responsive layout */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
+        <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
+          <Award size={20} className="mr-2" /> Event Bracket
+          {eventName && <span className="ml-2 text-gray-600 font-normal">- {eventName}</span>}
+        </h2>
+        
+        {/* Status indicator */}
+        {eventStatus && (
+          <div className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium ${
+            eventStatus === "pending" 
+              ? "bg-yellow-100 text-yellow-800" 
+              : eventStatus === "in progress"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-green-100 text-green-800"
+          }`}>
+            {eventStatus === "pending" 
+              ? "Pending" 
+              : eventStatus === "in progress"
+                ? "In Progress"
+                : "Completed"}
           </div>
+        )}
+      </div>
 
-          {/* Manual refresh button (if needed) */}
-          {error && (
-            <div className="mb-4 flex justify-end">
-              <button
-                onClick={fetchBracket}
-                className="bg-[#E6F2E8] hover:bg-[#D8EBDB] text-[#2A6D3A] px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
-                Refresh
-              </button>
-            </div>
-          )}
-
-          {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
-            {renderBracketContent()}
-          </div>
+      {/* Manual refresh button (if needed) */}
+      {error && (
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={fetchBracket}
+            className="bg-[#E6F2E8] hover:bg-[#D8EBDB] text-[#2A6D3A] px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Refresh
+          </button>
         </div>
+      )}
+
+      {/* Content area - matches BracketPage structure */}
+      <div className="flex flex-1 mt-4 flex-col">
+        {renderBracketContent()}
       </div>
     </div>
+  </div>
+</div>
   );
 }

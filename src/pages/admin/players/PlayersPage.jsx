@@ -400,7 +400,7 @@ export default function PlayersPage() {
                 <p className="text-gray-500 mt-1">Click "Add Player" to create one</p>
               </div>
             ) : (
-              <div className="flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+              <div className="flex flex-1 flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 {/* Table with horizontal scrolling only */}
                 <div className="overflow-auto">
                   <table className="min-w-full text-sm text-left text-gray-700">
@@ -512,12 +512,10 @@ export default function PlayersPage() {
                 </div>
                 
                 {/* Pagination */}
-                <div className="p-2 border-t border-[#E6F2E8] bg-white">
                   <PaginationControls
                     pagination={pagination}
                     handlePageChange={handlePageChange}
                   />
-                </div>
               </div>
             )}
           </div>

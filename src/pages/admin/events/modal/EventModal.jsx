@@ -43,7 +43,6 @@ export default function EventModal({
   }, [formData.parent_id, umbrellaEvents]);
   
   useEffect(() => {
-    console.log(umbrellaEvents);
     if (existingEvent) {
       setFormData({
         name: existingEvent.name || "",
@@ -153,8 +152,6 @@ export default function EventModal({
       submissionData.silver = 0;
       submissionData.bronze = 0;
     }
-    
-    console.log("Submitting data:", submissionData);
     
     existingEvent 
       ? updateEvent(existingEvent.id, submissionData) 

@@ -209,7 +209,6 @@ export default function GamePage() {
         `/intramurals/${intrams_id}/events/${event_id}/matches/${matchId}/score`,
         scoreData
       );
-      console.log(scoreData); 
       await fetchSchedules();
     } catch (err) {
       console.error("Failed to submit match score", err);

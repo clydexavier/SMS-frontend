@@ -112,7 +112,6 @@ export default function LoginPage() {
       // Handle specific error cases based on status codes
       if (err.response) {
         const status = err.response.status;
-        console.log("Status:", status);
         
         if (status === 422) {
           // Validation error

@@ -39,22 +39,6 @@ export default function SecEventsPage() {
     lastPage: 1,
   });
 
-  const openModal = useCallback(() => {
-    setSelectedEvent(null);
-    setIsModalOpen(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedEvent(null);
-    setError(null);
-  }, []);
-
-  const openEditModal = useCallback((event) => {
-    setSelectedEvent(event);
-    setIsModalOpen(true);
-  }, []);
-
   const handlePageChange = useCallback((page) => {
     setPagination(prev => ({
       ...prev,
@@ -83,52 +67,7 @@ export default function SecEventsPage() {
     setPagination(prev => ({ ...prev, currentPage: 1 }));
   }, []);
 
-  // Instead of calling fetchEvents directly, we trigger a refetch
-  const addEvent = useCallback(async (newEvent) => {
-    try {
-      setLoading(true);
-      await axiosClient.post(
-        `/intramurals/${intrams_id}/events/create`,
-        newEvent
-      );
-      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
-      closeModal();
-    } catch (err) {
-      setError("Failed to create event");
-      console.error("Error creating event:", err);
-      setLoading(false);
-    }
-  }, [intrams_id, closeModal]);
-
-  const updateEvent = useCallback(async (id, updatedData) => {
-    try {
-      setLoading(true);
-      console.log(updatedData);
-      await axiosClient.patch(
-        `/intramurals/${intrams_id}/events/${id}/edit`,
-        updatedData
-      );
-      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
-      closeModal();
-    } catch (err) {
-      setError("Failed to update event");
-      console.error("Error updating event:", err);
-      setLoading(false);
-    }
-  }, [intrams_id, closeModal]);
-
-  const deleteEvent = useCallback(async (event) => {
-    try {
-      await axiosClient.delete(`/intramurals/${intrams_id}/events/${event.id}`);
-      setShouldRefetch(prev => !prev); // Toggle to trigger refetch
-      return true;
-    } catch (err) {
-      setError("Failed to delete event");
-      console.error("Error deleting event:", err);
-      throw err;
-    }
-  }, [intrams_id]);
-
+  
   // Single source of truth for data fetching
   useEffect(() => {
     if (!intrams_id) return;
@@ -200,18 +139,7 @@ export default function SecEventsPage() {
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <CalendarClock size={20} className="mr-2" /> {intramsName} Events
             </h2>
-            <button
-              type="button"
-              className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
-              onClick={openModal}
-              disabled={loading}
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              Add Event
-            </button>
-          </div>
+           </div>
 
           {error && (
             <div className="bg-red-50 p-4 rounded-lg text-red-600 text-center mb-4">
@@ -284,8 +212,6 @@ export default function SecEventsPage() {
                   <div key={event.id} className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm">
                     <EventCard
                       event={event}
-                      openEditModal={openEditModal}
-                      deleteEvent={deleteEvent}
                       isUmbrella={event.is_umbrella}
                       onUmbrellaClick={event.is_umbrella ? () => handleUmbrellaClick(event) : null}
                     />
@@ -307,16 +233,7 @@ export default function SecEventsPage() {
         </div>
       </div>
 
-      <EventModal
-        isModalOpen={isModalOpen}
-        closeModal={closeModal}
-        addEvent={addEvent}
-        updateEvent={updateEvent}
-        existingEvent={selectedEvent}
-        isLoading={loading}
-        error={error}
-        umbrellaEvents={umbrellaEvents}
-      />
+      
     </div>
   );
 }

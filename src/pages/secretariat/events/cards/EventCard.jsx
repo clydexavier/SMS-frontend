@@ -3,7 +3,7 @@ import { MoreVertical, Edit, Trash2, ChevronDown, ChevronRight, Clock, Play, Che
 import { Link, useNavigate } from "react-router-dom";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
 
-export default function EventCard({ event, openEditModal, deleteEvent, isUmbrella, onUmbrellaClick }) {
+export default function EventCard({ event, isUmbrella, onUmbrellaClick }) {
   const [showActions, setShowActions] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -27,35 +27,6 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
   const toggleActions = (e) => {
     e.stopPropagation(); // Prevent triggering card click
     setShowActions(!showActions);
-  };
-
-  const handleEditClick = (e) => {
-    e.stopPropagation(); // Prevent triggering card click
-    setShowActions(false);
-    openEditModal(event);
-  };
-
-  const handleDeleteClick = (e) => {
-    e.stopPropagation(); // Prevent triggering card click
-    setShowActions(false);
-    setShowConfirmDelete(true);
-  };
-
-  // Handle the actual deletion after confirmation
-  const handleDelete = async () => {
-    try {
-      setIsDeleting(true);
-      setDeleteError(null);
-      
-      // Call the deleteEvent function passed from parent
-      await deleteEvent(event);
-      
-      setShowConfirmDelete(false);
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      setDeleteError("Failed to delete event. Please try again.");
-      setIsDeleting(false);
-    }
   };
 
   // Handle the card click for regular events only
@@ -141,39 +112,7 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
           </div>
 
           {/* Actions Menu */}
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              onClick={toggleActions}
-              className="p-1.5 rounded-full hover:bg-[#E6F2E8] text-[#2A6D3A] transition-colors duration-200"
-              aria-label="Event actions"
-            >
-              <MoreVertical size={18} className="text-[#2A6D3A]" />
-            </button>
-
-            {showActions && (
-              <div className="absolute right-0 z-10 mt-1 w-48 origin-top-right bg-white border border-[#E6F2E8] rounded-lg shadow-lg overflow-hidden">
-                <div className="py-1" role="menu" aria-orientation="vertical">
-                  <button
-                    onClick={handleEditClick}
-                    className="flex w-full items-center px-4 py-2.5 text-sm text-[#2A6D3A] hover:bg-[#F7FAF7] transition-colors"
-                    role="menuitem"
-                  >
-                    <Edit size={16} className="mr-2" />
-                    Update
-                  </button>
-                  <button
-                    onClick={handleDeleteClick}
-                    className="flex w-full items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    role="menuitem"
-                  >
-                    <Trash2 size={16} className="mr-2" />
-                    Delete
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          
         </div>
 
         {/* Event Name and Details */}
@@ -219,17 +158,6 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
         </button>
       )}
 
-      {/* Delete Confirmation Modal - Using the same component as IntramuralCard */}
-      <DeleteConfirmationModal
-        isOpen={showConfirmDelete}
-        onClose={() => setShowConfirmDelete(false)}
-        onConfirm={handleDelete}
-        title="Delete Event"
-        itemName={event.name}
-        message={`Are you sure you want to delete "${event.name}"? ${isUmbrella ? "Warning: This will also delete all sub-events!" : "This action cannot be undone."}`}
-        isDeleting={isDeleting}
-        error={deleteError}
-      />
     </div>
   );
 }

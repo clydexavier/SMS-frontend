@@ -225,7 +225,7 @@ export default function GamePage() {
   // Render the "no bracket" message
   const renderNoBracketMessage = () => {
     return (
-      <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+      <div className="bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
         <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
         <h3 className="text-lg font-medium text-gray-600">This event has no bracket</h3>
         <p className="text-gray-500 mt-1">This type of event doesn't use brackets or match scheduling.</p>
@@ -236,7 +236,8 @@ export default function GamePage() {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Main container - removed overflow-hidden to allow parent scrolling */}
+        <div className="flex flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Calendar size={20} className="mr-2" /> Bracket Matches
@@ -291,7 +292,8 @@ export default function GamePage() {
             </div>
           )}
 
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {/* Content area - removed overflow and let parent handle scrolling */}
+          <div className="flex flex-col">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
@@ -299,19 +301,19 @@ export default function GamePage() {
             ) : tournamentType === "no bracket" ? (
               renderNoBracketMessage()
             ) : eventStatus === "completed" ? (
-              <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
+              <div className="bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
                 <Calendar size={48} className="mx-auto mb-4 text-green-400" />
                 <h3 className="text-lg font-medium text-green-800">Event Completed</h3>
                 <p className="text-gray-600 mt-1">This event has been completed. No matches to show.</p>
               </div>
             ) : eventStatus === "pending" ? (
-              <div className="flex-1 bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
+              <div className="bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
                 <Calendar size={48} className="mx-auto mb-4 text-yellow-400" />
                 <h3 className="text-lg font-medium text-yellow-800">Event Pending</h3>
                 <p className="text-gray-600 mt-1">This event is pending. Matches will appear once the event begins.</p>
               </div>
             ) : currentItems.length === 0 ? (
-              <div className="flex-1 bg-blue-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-blue-200">
+              <div className="bg-blue-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-blue-200">
                 <Calendar size={48} className="mx-auto mb-4 text-blue-400" />
                 <h3 className="text-lg font-medium text-blue-800">No matches found</h3>
                 {eventStatus === "in progress" && (
@@ -319,8 +321,8 @@ export default function GamePage() {
                 )}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-                <div className="flex-1 overflow-auto p-4">
+              <div className="flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+                <div className="p-4">
                   <div className="grid gap-3">
                     {currentItems.map((match) => (
                       <div
@@ -405,7 +407,7 @@ export default function GamePage() {
                   </div>
                 </div>
                 
-                <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
+                <div className="p-2 border-t border-[#E6F2E8] bg-white">
                   <PaginationControls
                     pagination={pagination}
                     handlePageChange={handlePageChange}

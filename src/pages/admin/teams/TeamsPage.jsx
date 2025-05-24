@@ -129,8 +129,8 @@ export default function TeamsPage() {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Main container - removed overflow-hidden to allow parent scrolling */}
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           {/* Header section with responsive layout */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -175,22 +175,20 @@ export default function TeamsPage() {
             </div>
           )}
 
-          {/* Scrollable content area */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {/* Content area - removed overflow and let parent handle scrolling */}
+          <div className="flex flex-1 flex-col">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div >
             ) : teams.length === 0 ? (
-              <div className="flex-1 overflow-auto">
-                <div className="flex-1 h-full bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
-                  <Users size={48} className="mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
-                  <p className="text-gray-500 mt-1">Click "Add Team" to create one</p>
-                </div>
+              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                <Users size={48} className="mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
+                <p className="text-gray-500 mt-1">Click "Add Team" to create one</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-4 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-4">
                 {teams.map((team) => (
                   <div key={team.id} className="bg-white rounded-xl border border-[#E6F2E8] shadow-sm">
                     <TeamCard
@@ -204,9 +202,9 @@ export default function TeamsPage() {
             )}
           </div>
 
-          {/* Pagination in a fixed position at the bottom */}
+          {/* Pagination */}
           {!loading && teams.length > 0 && (
-            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4 overflow-x-auto">
+            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4">
               <PaginationControls
                 pagination={pagination}
                 handlePageChange={handlePageChange}

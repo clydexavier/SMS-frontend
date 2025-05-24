@@ -114,7 +114,7 @@ const ResultPage = () => {
     if (eventStatus !== "pending" || loading) return null;
     
     return (
-      <div className="flex-1 bg-yellow-50 border-yellow-200 flex flex-col w-full h-full border rounded-xl shadow-md p-8 text-center">
+      <div className="bg-yellow-50 border-yellow-200 flex flex-col w-full border rounded-xl shadow-md p-8 text-center">
         <svg className="w-12 h-12 mx-auto mb-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
         </svg>
@@ -127,8 +127,8 @@ const ResultPage = () => {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Main container - removed overflow-hidden to allow parent scrolling */}
+        <div className="flex flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           {/* Header section with responsive layout */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -186,22 +186,22 @@ const ResultPage = () => {
             </div>
           )}
 
-          {/* Scrollable content area */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {/* Content area - removed overflow and let parent handle scrolling */}
+          <div className="flex flex-col">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
             ) : podiumData ? (
-              <div className="flex-1 bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-auto">
+              <div className="bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <div className="p-6">
                   <EventPodium podiumData={podiumData} />
                 </div>
               </div>
             ) : (
-              <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+              <div className="flex flex-col">
                 {renderStatusMessage() || (
-                  <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+                  <div className="bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                     <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
                     <h3 className="text-lg font-medium text-gray-600">No Results Available</h3>
                     <p className="text-gray-500 mt-1">

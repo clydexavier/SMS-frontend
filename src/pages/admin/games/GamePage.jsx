@@ -225,7 +225,7 @@ export default function GamePage() {
   // Render the "no bracket" message
   const renderNoBracketMessage = () => {
     return (
-      <div className="bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+      <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
         <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
         <h3 className="text-lg font-medium text-gray-600">This event has no bracket</h3>
         <p className="text-gray-500 mt-1">This type of event doesn't use brackets or match scheduling.</p>
@@ -237,7 +237,7 @@ export default function GamePage() {
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container - removed overflow-hidden to allow parent scrolling */}
-        <div className="flex flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Calendar size={20} className="mr-2" /> Bracket Matches
@@ -293,7 +293,7 @@ export default function GamePage() {
           )}
 
           {/* Content area - removed overflow and let parent handle scrolling */}
-          <div className="flex flex-col">
+          <div className="flex flex-1 flex-col">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
@@ -407,12 +407,10 @@ export default function GamePage() {
                   </div>
                 </div>
                 
-                <div className="p-2 border-t border-[#E6F2E8] bg-white">
                   <PaginationControls
                     pagination={pagination}
                     handlePageChange={handlePageChange}
                   />
-                </div>
               </div>
             )}
           </div>

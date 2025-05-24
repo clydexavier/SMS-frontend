@@ -225,8 +225,8 @@ export default function VarsityPlayersPage() {
             ) : (
               <div className="flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 {/* Table with horizontal and vertical scrolling */}
-                <div className="overflow-auto">
-                  <table className="min-w-full text-sm text-left text-gray-700">
+                <div className="overflow-auto flex flex-1">
+                  <table className="flex-1 min-w-full text-sm text-left text-gray-700">
                     <thead className="bg-[#F7FAF7] text-[#2A6D3A] border-b border-[#E6F2E8] sticky top-0">
                       <tr>
                         <th className="px-6 py-3 font-medium tracking-wider">Name</th>
@@ -268,14 +268,15 @@ export default function VarsityPlayersPage() {
                 
                 {/* Pagination */}
                 <div className="p-2 border-t border-[#E6F2E8] bg-white">
-                  <PaginationControls
-                    pagination={pagination}
-                    handlePageChange={handlePageChange}
-                  />
+                  
                 </div>
               </div>
             )}
           </div>
+          <PaginationControls
+                    pagination={pagination}
+                    handlePageChange={handlePageChange}
+                  />
         </div>
       </div>
 

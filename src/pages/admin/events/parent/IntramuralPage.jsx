@@ -18,7 +18,7 @@ const menuItems = [
   { icon: <Users size={isize} color="black" />, label: 'Teams', route: 'teams' },
   { icon: <UserPlus size={isize} color="black" />, label: 'Varsity Players', route: 'vplayers' },
   //{ icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
-  { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
+  { icon: <Medal size={isize} color="black" />, label: 'Podium Results', route: 'podiums' },
   { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
 ];
 

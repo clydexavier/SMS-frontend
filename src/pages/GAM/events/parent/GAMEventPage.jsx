@@ -32,7 +32,7 @@ export default function EventPage() {
         { icon: <FileUser size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },
       ]
     },
-    { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: '/GAM/podiums' },
+    { icon: <Medal size={isize} color="black" />, label: 'Podium Results', route: '/GAM/podiums' },
 
     { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/GAM/tally` },    
     

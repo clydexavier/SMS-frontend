@@ -113,7 +113,7 @@ export default function TSecretaryPage() {
         { icon: <Medal size={isize} color="black" />, label: 'Event Result', route: 'result' },
       ],
     },       
-    { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
+    { icon: <Medal size={isize} color="black" />, label: 'Podium Results', route: 'podiums' },
     { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
   ];
 

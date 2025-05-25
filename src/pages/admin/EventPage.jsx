@@ -36,7 +36,7 @@ export default function EventPage() {
 
       ]
     },
-    { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: `/admin/${intrams_id}/podiums` },
+    { icon: <Medal size={isize} color="black" />, label: 'Podium Results', route: `/admin/${intrams_id}/podiums` },
 
     { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/admin/${intrams_id}/tally` },    
     

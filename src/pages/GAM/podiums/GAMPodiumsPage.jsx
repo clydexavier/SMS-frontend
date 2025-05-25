@@ -190,7 +190,7 @@ export default function GAMPodiumsPage() {
           {/* Header section with title and download button */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
-              <Medal size={20} className="mr-2" /> Events Results
+              <Medal size={20} className="mr-2" /> Podium Results
             </h2>
             
             {/* Download PDF button - only shown if there are podiums */}

@@ -14,7 +14,7 @@ const isize = 20;
 
 const menuItems = [
   { icon: <House size={isize} color="black" />, label: "Home", route: "/GAM/events" },
-  { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: '/GAM/podiums' },
+  { icon: <Medal size={isize} color="black" />, label: 'Podium Results', route: '/GAM/podiums' },
   { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: '/GAM/tally' },
 ];
 

@@ -2,10 +2,11 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { ChevronRight, Home, Loader } from "lucide-react";
 import axiosClient from "../../axiosClient";
+import { useAuth } from "../../auth/AuthContext";
 
 const Breadcrumb = () => {
+  const {user} = useAuth();
   const location = useLocation();
-  const params = useParams();
   const [intramurals, setIntramurals] = useState({});
   const [events, setEvents] = useState({});
   const [loading, setLoading] = useState(false);
@@ -51,13 +52,61 @@ const Breadcrumb = () => {
     }
     return null;
   };
+
+  // Extract parameters from current route
+  const getRouteParams = () => {
+    const role = getCurrentRole();
+    const pathSegments = location.pathname.split("/").filter(segment => segment !== "");
+    
+    let intrams_id = null;
+    let event_id = null;
+    
+    if (role === "admin") {
+      // Admin routes: /admin/:intrams_id/events/:event_id
+      if (pathSegments.length >= 2 && pathSegments[1] !== "intramurals" && pathSegments[1] !== "users") {
+        intrams_id = pathSegments[1];
+      }
+      if (pathSegments.length >= 4 && pathSegments[2] === "events") {
+        event_id = pathSegments[3];
+      }
+    } else if (role === "secretariat") {
+      // Secretariat routes: /secretariat/:intrams_id/events/:event_id
+      if (pathSegments.length >= 2 && pathSegments[1] !== "intramurals") {
+        intrams_id = pathSegments[1];
+      }
+      if (pathSegments.length >= 4 && pathSegments[2] === "events") {
+        event_id = pathSegments[3];
+      }
+    } else if (role === "scheduler") {
+      // Scheduler routes: /scheduler/:intrams_id/events/:event_id
+      if (pathSegments.length >= 2 && pathSegments[1] !== "intramurals") {
+        intrams_id = pathSegments[1];
+      }
+      if (pathSegments.length >= 4 && pathSegments[2] === "events") {
+        event_id = pathSegments[3];
+      }
+    } else if (role === "GAM") {
+      // GAM routes: /GAM/events/:event_id
+      if (pathSegments.length >= 3 && pathSegments[1] === "events") {
+        event_id = pathSegments[2];
+      }
+    } else if (role === "tsecretary") {
+      // TSecretary routes: /tsecretary (no params in URL)
+      // They get their event from their assignment
+    }
+    
+    return { intrams_id, event_id };
+  };
   
-  // Fetch intramurals data when needed (for roles that have intrams_id)
+  // Fetch intramurals data when needed
   useEffect(() => {
     const role = getCurrentRole();
+    const { intrams_id } = getRouteParams();
+    
+    // Only fetch for roles that have intrams_id in their routes
     const needsIntramurals = ["admin", "secretariat", "scheduler"].includes(role);
     
-    if (needsIntramurals && params.intrams_id && !intramurals[params.intrams_id]) {
+    if (needsIntramurals && intrams_id && !intramurals[intrams_id]) {
       setLoading(true);
       
       axiosClient.get("/intramurals")
@@ -75,62 +124,60 @@ const Breadcrumb = () => {
           setLoading(false);
         });
     }
-  }, [location.pathname, params.intrams_id]);
-
-  // Extract event_id from URL path segments regardless of route parameter naming
-  const getEventIdFromPath = () => {
-    const pathSegments = location.pathname.split("/").filter(segment => segment !== "");
-    const eventsIndex = pathSegments.findIndex(segment => segment === 'events');
-    
-    // If 'events' is found and there's a segment after it
-    if (eventsIndex !== -1 && eventsIndex + 1 < pathSegments.length) {
-      return pathSegments[eventsIndex + 1];
-    }
-    return null;
-  };
+  }, [location.pathname]);
 
   // Fetch event data based on role and available parameters
   useEffect(() => {
-    const eventId = getEventIdFromPath();
     const role = getCurrentRole();
+    const { intrams_id, event_id } = getRouteParams();
     
-    if (eventId && !events[eventId]) {
+    if (event_id && !events[event_id]) {
       setLoading(true);
       
       let eventEndpoint = "";
       
       // Different roles have different ways to access event data
-      if (role === "admin" && params.intrams_id) {
-        eventEndpoint = `/intramurals/${params.intrams_id}/events/${eventId}`;
-      } else if (role === "secretariat" && params.intrams_id) {
-        eventEndpoint = `/intramurals/${params.intrams_id}/events/${eventId}`;
-      } else if (role === "scheduler" && params.intrams_id) {
-        eventEndpoint = `/intramurals/${params.intrams_id}/events/${eventId}`;
+      if (role === "admin" && intrams_id) {
+        eventEndpoint = `/intramurals/${intrams_id}/events/${event_id}`;
+      } else if (role === "secretariat" && intrams_id) {
+        eventEndpoint = `/intramurals/${intrams_id}/events/${event_id}`;
+      } else if (role === "scheduler" && intrams_id) {
+        eventEndpoint = `/intramurals/${intrams_id}/events/${event_id}`;
       } else if (role === "GAM") {
         // GAM might need a different endpoint since they don't have intrams_id in the path
-        // You might need to adjust this based on your API structure
-        eventEndpoint = `/GAM/events/${eventId}`;
-      } else if (role === "tsecretary") {
-        // Tournament Secretary might have their own endpoint
-        eventEndpoint = `/tsecretary/event`;
+        eventEndpoint = `/intramurals/${user.intrams_id}/events/${event_id}`;
       }
       
       if (eventEndpoint) {
         axiosClient.get(eventEndpoint)
           .then(response => {
-            const event = response.data;
+            // Handle different response formats
+            let eventData;
+            if (typeof response.data === 'string') {
+              // If response is just the event name string
+              eventData = { name: response.data };
+            } else if (response.data.name) {
+              // If response is an object with name and possibly category
+              eventData = {
+                name: response.data.name,
+                category: response.data.category
+              };
+            } else {
+              eventData = { name: "Event" };
+            }
+            
             setEvents(prev => ({ 
               ...prev, 
-              [eventId]: {
-                name: event.name,
-                category: event.category
-              } 
+              [event_id]: eventData
             }));
           })
           .catch(error => {
             console.error("Error fetching event:", error);
-            // If the specific role endpoint fails, you might want to try a generic endpoint
-            // or handle this case differently based on your API structure
+            // Set a fallback name
+            setEvents(prev => ({ 
+              ...prev, 
+              [event_id]: { name: "Event" }
+            }));
           })
           .finally(() => {
             setLoading(false);
@@ -139,17 +186,46 @@ const Breadcrumb = () => {
         setLoading(false);
       }
     }
-  }, [location.pathname, params.intrams_id, getCurrentRole()]);
+  }, [location.pathname]);
+
+  // Special handling for TSecretary event data
+  useEffect(() => {
+    const role = getCurrentRole();
+    
+    if (role === "tsecretary" && Object.keys(events).length === 0) {
+      setLoading(true);
+      
+      // Fetch TSecretary's assigned event
+      axiosClient.get(`/intramurals/${user.intrams_id}/events/${user.event_id}`)
+        .then(response => {
+          const eventData = response.data;
+          // Use a special key for tsecretary event since there's no event_id in URL
+          setEvents(prev => ({ 
+            ...prev, 
+            "tsecretary_event": {
+              name: eventData.name || eventData,
+              category: eventData.category
+            }
+          }));
+        })
+        .catch(error => {
+          console.error("Error fetching TSecretary event:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [location.pathname]);
 
   // Generate breadcrumb paths and labels
   const breadcrumbs = useMemo(() => {
     const role = getCurrentRole();
+    const { intrams_id, event_id } = getRouteParams();
     const initialCrumbs = [{ path: "/", label: "Home", clickable: true }];
     
     if (location.pathname === "/") return initialCrumbs;
     
     const pathSegments = location.pathname.split("/").filter(segment => segment !== "");
-    const eventId = getEventIdFromPath();
     
     const routeCrumbs = pathSegments.reduce((acc, segment, index) => {
       const path = `/${pathSegments.slice(0, index + 1).join("/")}`;
@@ -163,12 +239,12 @@ const Breadcrumb = () => {
         clickable = true;
       }
       // Handle intramural ID (for roles that have it)
-      else if (params.intrams_id === segment && ["admin", "secretariat", "scheduler"].includes(role)) {
+      else if (intrams_id === segment && ["admin", "secretariat", "scheduler"].includes(role)) {
         label = intramurals[segment] || "Loading...";
         clickable = true;
       } 
       // Check if this segment is the event ID
-      else if (eventId === segment) {
+      else if (event_id === segment) {
         const event = events[segment];
         label = event ? (event.category ? `${event.category} ${event.name}` : event.name) : "Loading...";
         clickable = true;
@@ -185,9 +261,28 @@ const Breadcrumb = () => {
       
       return acc;
     }, initialCrumbs);
+
+    // Special handling for TSecretary - add event info if available
+    if (role === "tsecretary" && events.tsecretary_event) {
+      const event = events.tsecretary_event;
+      const eventLabel = event.category ? `${event.category} ${event.name}` : event.name;
+      
+      // Find if we're in a specific tsecretary sub-route
+      const currentSegment = pathSegments[pathSegments.length - 1];
+      if (["bracket", "result", "podiums", "tally", "games"].includes(currentSegment)) {
+        // Insert event name before the current page
+        const lastCrumb = routeCrumbs.pop();
+        routeCrumbs.push({
+          path: "/tsecretary",
+          label: eventLabel,
+          clickable: false
+        });
+        routeCrumbs.push(lastCrumb);
+      }
+    }
     
     return routeCrumbs;
-  }, [location.pathname, params, intramurals, events, getCurrentRole()]);
+  }, [location.pathname, intramurals, events]);
 
   // Don't render if only home breadcrumb
   if (breadcrumbs.length <= 1) return null;
@@ -214,13 +309,14 @@ const Breadcrumb = () => {
                     Loading...
                   </span>
                 ) : index === breadcrumbs.length - 1 || !crumb.clickable ? (
-                  <span className={`${index === breadcrumbs.length - 1 ? "font-medium text-green-700" : "text-gray-600"}`}>
+                  <span className={`${index === breadcrumbs.length - 1 ? "font-medium text-green-700" : "text-gray-600"} max-w-[200px] truncate`}>
                     {crumb.label}
                   </span>
                 ) : (
                   <Link 
                     to={crumb.path} 
-                    className="hover:text-green-600 transition-colors"
+                    className="hover:text-green-600 transition-colors max-w-[200px] truncate"
+                    title={crumb.label}
                   >
                     {crumb.label}
                   </Link>

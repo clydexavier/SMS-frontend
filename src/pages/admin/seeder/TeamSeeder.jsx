@@ -304,7 +304,7 @@ export default function TeamSeeder() {
     }
 
     return (
-      <div className={`${bgColor} ${borderColor} flex flex-col w-full h-full border rounded-xl shadow-md p-8 text-center `}>
+      <div className={`${bgColor} ${borderColor} flex flex-col w-full h-full rounded-xl shadow-md p-8 text-center `}>
         {icon}
         <h3 className={`${textColor} text-xl font-medium mb-2`}>{title}</h3>
         <p className="text-gray-600">{message}</p>
@@ -316,7 +316,7 @@ export default function TeamSeeder() {
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 ">
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 ">
           {/* Header section with responsive layout */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -357,7 +357,7 @@ export default function TeamSeeder() {
           )}
 
           {success && (
-            <div className="bg-green-50 p-4 rounded-lg text-green-600 text-center mb-4">
+            <div className="flex-1 bg-green-50 p-4 rounded-lg text-green-600 text-center mb-4">
               Event started successfully! Redirecting to bracket view...
             </div>
           )}

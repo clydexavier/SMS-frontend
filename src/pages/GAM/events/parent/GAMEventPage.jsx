@@ -22,11 +22,11 @@ export default function EventPage() {
 
   const isize = 20;
   const menuItems = [
-    { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/admin/intramurals" },
+    { icon: <House size={isize} color="black" />, label: "Events", route: "/GAM/events" },
     { 
       icon: <Volleyball size={isize} color="black" />, 
       label: `${event}`, 
-      route: `/${intrams_id}/events`,
+      route: `/GAM/events/${event_id}`,
       submenu: [
         { icon: <Users size={isize} color="black" />, label: 'Players', route: 'players' },
         { icon: <FileUser size={isize} color="black" />, label: 'Generate Gallery', route: 'gallery' },

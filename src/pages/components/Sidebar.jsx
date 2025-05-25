@@ -37,12 +37,13 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
     };
   }, [isOpen, setIsOpen]);
 
+  // Auto-expand menus that contain active routes
   useEffect(() => {
     const newExpandedState = {};
     menuItems.forEach((item, index) => {
       if (item.submenu) {
         const hasActiveChild = item.submenu.some((subItem) =>
-          location.pathname.includes(subItem.route)
+          isActiveRoute(subItem.route, true, item.route)
         );
         if (hasActiveChild) {
           newExpandedState[index] = true;
@@ -59,43 +60,293 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
     }));
   };
 
-  const isActiveRoute = (route) => {
-    // Special case for tsecretary parent route - only highlight if exactly on /tsecretary
-    if (route === '/tsecretary' && location.pathname !== '/tsecretary') {
+  const isActiveRoute = (route, isSubmenuCheck = false, parentRoute = null) => {
+    const currentPath = location.pathname;
+    
+    // Handle empty route
+    if (!route) return false;
+    
+    // Handle root route
+    if (route === '/' && currentPath === '/') {
+      return true;
+    }
+    
+    // For submenu items
+    if (isSubmenuCheck) {
+      const pathSegments = currentPath.split('/').filter(Boolean);
+      const lastSegment = pathSegments[pathSegments.length - 1];
+      
+      // Direct match of last segment
+      if (lastSegment === route) {
+        return true;
+      }
+      
       return false;
     }
-
-    // For exact matches (complete URL match)
-    if (location.pathname === route) {
-      return true;
-    }
-
-    // For parent routes (e.g., /admin is active when on /admin/users)
-    // Skip this check for tsecretary parent route
-    if (route !== '/' && route !== '/tsecretary' && location.pathname.startsWith(route + '/')) {
-      return true;
-    }
-
-    // For just the last segment of the URL (original behavior)
-    const lastSegment = location.pathname.split('/').pop();
-    if (lastSegment === route) {
-      return true;
-    }
-
-    // For dynamic routes with parameters (e.g., /admin/:intrams_id/events)
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    const routeSegments = route.split('/').filter(Boolean);
     
-    // If route has fewer segments than path (might be a parent route with parameters)
-    if (routeSegments.length < pathSegments.length) {
-      // Check if all route segments match the beginning of path segments
-      // or are parameter placeholders (starting with ':')
-      return routeSegments.every((segment, i) => {
-        return segment.startsWith(':') || segment === pathSegments[i];
-      });
+    // SPECIAL CASES FOR ROLE-BASED ROUTES
+    
+    // Handle GAM routes
+    if (route.startsWith('/GAM/')) {
+      if (route === '/GAM/events') {
+        return currentPath === '/GAM/events';
+      }
+      
+      if (route === '/GAM/podiums' || route === '/GAM/tally') {
+        return currentPath === route;
+      }
+      
+      // For event-specific routes like /GAM/events/123
+      if (route.startsWith('/GAM/events/')) {
+        return currentPath === route;
+      }
     }
-
+    
+    // Handle Admin routes - MORE COMPREHENSIVE
+    if (route.startsWith('/admin/')) {
+      // For routes like /admin/intramurals - only exact match
+      if (route === '/admin/intramurals') {
+        return currentPath === '/admin/intramurals';
+      }
+      
+      // For routes with intrams_id like /admin/123/podiums or /admin/123/tally  
+      if (route.includes('/podiums') || route.includes('/tally') || route.includes('/events')) {
+        return currentPath === route;
+      }
+      
+      // For event-specific routes like /admin/123/events/456
+      if (route.includes('/events/')) {
+        return currentPath === route;
+      }
+    }
+    
+    // Handle Secretariat routes
+    if (route.startsWith('/secretariat/')) {
+      if (route === '/secretariat/intramurals') {
+        return currentPath === '/secretariat/intramurals';
+      }
+      
+      if (route.includes('/podiums') || route.includes('/tally') || route.includes('/events')) {
+        return currentPath === route;
+      }
+      
+      // For event-specific routes
+      if (route.includes('/events/')) {
+        return currentPath === route;
+      }
+    }
+    
+    // Handle Scheduler routes
+    if (route.startsWith('/scheduler/')) {
+      if (route === '/scheduler/intramurals') {
+        return currentPath === '/scheduler/intramurals';
+      }
+      
+      if (route.includes('/podiums') || route.includes('/tally') || route.includes('/events')) {
+        return currentPath === route;
+      }
+      
+      // For event-specific routes
+      if (route.includes('/events/')) {
+        return currentPath === route;
+      }
+    }
+    
+    // Handle TSecretary routes
+    if (route === '/tsecretary' && currentPath !== '/tsecretary') {
+      return false;
+    }
+    
+    // For parent menu items - general case
+    
+    // First check for exact match
+    if (currentPath === route) {
+      return true;
+    }
+    
+    // If route starts with '/', it's an absolute path
+    if (route.startsWith('/')) {
+      // For non-role routes that haven't been handled above
+      if (!route.startsWith('/GAM/') && 
+          !route.startsWith('/admin/') && 
+          !route.startsWith('/secretariat/') && 
+          !route.startsWith('/scheduler/') &&
+          route !== '/tsecretary') {
+        
+        // Check if current path starts with the route
+        if (currentPath.startsWith(route)) {
+          // Make sure it's a proper path segment match (not partial)
+          if (currentPath === route || currentPath[route.length] === '/') {
+            return true;
+          }
+        }
+        
+        // Handle dynamic route parameters
+        return matchesDynamicRoute(currentPath, route);
+      }
+    }
+    
+    // Special handling for routes with variables like /${intrams_id}/events
+    if (route.includes('${') || route.includes(':')) {
+      return matchesVariableRoute(currentPath, route);
+    }
+    
+    // For relative routes, check if any segment of current path matches
+    const pathSegments = currentPath.split('/').filter(Boolean);
+    
+    // Check if route matches any segment in the path
+    if (pathSegments.includes(route)) {
+      // Additional check: make sure we're not highlighting parent when in deeper context
+      const routeIndex = pathSegments.indexOf(route);
+      
+      // If this is not a submenu check and we have more segments after this route,
+      // check if we might be in a submenu context
+      if (!isSubmenuCheck && routeIndex < pathSegments.length - 1) {
+        const remainingSegments = pathSegments.slice(routeIndex + 1);
+        // If we have submenu items and the remaining path matches a submenu item, don't highlight parent
+        const hasActiveSubmenu = menuItems.some(item => 
+          item.submenu && 
+          item.submenu.some(subItem => remainingSegments.includes(subItem.route))
+        );
+        if (hasActiveSubmenu) {
+          return false;
+        }
+      }
+      
+      return true;
+    }
+    
     return false;
+  };
+
+  // Helper function to match routes with variables like /${intrams_id}/events
+  const matchesVariableRoute = (currentPath, routePattern) => {
+    const currentSegments = currentPath.split('/').filter(Boolean);
+    
+    // Handle role-based patterns
+    const rolePatterns = {
+      'admin': /^\/admin\/\d+\/events/,
+      'secretariat': /^\/secretariat\/\d+\/events/,
+      'scheduler': /^\/scheduler\/\d+\/events/
+    };
+    
+    for (const [role, pattern] of Object.entries(rolePatterns)) {
+      if (routePattern.includes('${intrams_id}/events') && 
+          currentSegments[0] === role && 
+          pattern.test(currentPath)) {
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
+  // Helper function to match dynamic routes with parameters
+  const matchesDynamicRoute = (currentPath, routePattern) => {
+    const currentSegments = currentPath.split('/').filter(Boolean);
+    const routeSegments = routePattern.split('/').filter(Boolean);
+    
+    // If route has more segments than current path, it can't match as a parent
+    if (routeSegments.length > currentSegments.length) {
+      return false;
+    }
+    
+    // Check if all route segments match (considering :param as wildcards)
+    for (let i = 0; i < routeSegments.length; i++) {
+      const routeSegment = routeSegments[i];
+      const currentSegment = currentSegments[i];
+      
+      // Parameter segments (starting with :) match any value
+      if (routeSegment.startsWith(':')) {
+        continue;
+      }
+      
+      // Regular segments must match exactly
+      if (routeSegment !== currentSegment) {
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
+  // Helper function to build the correct link path
+  const buildLinkPath = (route, parentRoute = null) => {
+    // If route starts with '/', it's absolute
+    if (route.startsWith('/')) {
+      return route;
+    }
+    
+    // For relative routes, we need to build the path based on current location
+    const currentSegments = location.pathname.split('/').filter(Boolean);
+    
+    // Special handling for different role contexts
+    const role = currentSegments[0];
+    
+    // Handle Admin routes more carefully
+    if (role === 'admin') {
+      // If we're in an event context like /admin/123/events/456
+      if (currentSegments.length >= 4 && currentSegments[2] === 'events') {
+        const intramsId = currentSegments[1];
+        const eventId = currentSegments[3];
+        return `/admin/${intramsId}/events/${eventId}/${route}`;
+      }
+      // If we're in an intramural context like /admin/123
+      else if (currentSegments.length >= 2 && !isNaN(currentSegments[1])) {
+        const intramsId = currentSegments[1];
+        return `/admin/${intramsId}/${route}`;
+      }
+      // If we're at the top admin level like /admin
+      else {
+        return `/admin/${route}`;
+      }
+    }
+    
+    // Handle other roles
+    if (['GAM', 'secretariat', 'scheduler'].includes(role)) {
+      // For GAM routes
+      if (role === 'GAM' && currentSegments.length >= 3 && currentSegments[1] === 'events') {
+        const eventId = currentSegments[2];
+        return `/GAM/events/${eventId}/${route}`;
+      }
+      
+      // For secretariat routes
+      if (role === 'secretariat' && currentSegments.length >= 4 && currentSegments[2] === 'events') {
+        const intramsId = currentSegments[1];
+        const eventId = currentSegments[3];
+        return `/secretariat/${intramsId}/events/${eventId}/${route}`;
+      }
+      
+      // For scheduler routes
+      if (role === 'scheduler' && currentSegments.length >= 4 && currentSegments[2] === 'events') {
+        const intramsId = currentSegments[1];
+        const eventId = currentSegments[3];
+        return `/scheduler/${intramsId}/events/${eventId}/${route}`;
+      }
+      
+      // Fallback to role-based path
+      return `/${role}/${route}`;
+    }
+    
+    // For tsecretary
+    if (role === 'tsecretary') {
+      return `/tsecretary/${route}`;
+    }
+    
+    // Fallback: build relative to current path
+    const basePath = '/' + currentSegments.slice(0, -1).join('/');
+    
+    if (basePath === '/') {
+      return `/${route}`;
+    }
+    
+    return `${basePath}/${route}`;
+  };
+
+  // Check if a parent menu item should be highlighted (has active submenu)
+  const hasActiveSubmenu = (item) => {
+    if (!item.submenu) return false;
+    return item.submenu.some(subItem => isActiveRoute(subItem.route, true, item.route));
   };
 
   return (
@@ -103,7 +354,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
       className={`fixed md:relative h-full flex flex-col transition-all duration-300 bg-white border-r border-[#E6F2E8] z-30
       ${isOpen ? "w-64 translate-x-0" : "w-16 md:translate-x-0 -translate-x-full"}`}
       ref={sidebarRef}
-      style={{ height: 'calc(100dvh - 4rem)' }} // Subtract header height (4rem = 64px)
+      style={{ height: 'calc(100dvh - 4rem)' }}
     >
       {/* Company Logo/Name - Fixed at top */}
       <div className="p-4 border-b border-[#E6F2E8] flex-shrink-0">
@@ -134,7 +385,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
                   <div
                     className={`px-3 py-2 rounded-md transition-colors cursor-pointer flex items-center justify-between
                     ${
-                      isActiveRoute(item.route)
+                      hasActiveSubmenu(item)
                         ? "bg-[#6BBF59] text-white shadow-md"
                         : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
                     }`}
@@ -168,10 +419,10 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
                       {item.submenu.map((subItem, subIndex) => (
                         <li key={`${index}-${subIndex}`}>
                           <Link
-                            to={subItem.route}
+                            to={buildLinkPath(subItem.route, item.route)}
                             className={`px-3 py-2 rounded-md transition-colors cursor-pointer flex items-center
                             ${
-                              isActiveRoute(subItem.route)
+                              isActiveRoute(subItem.route, true, item.route)
                                 ? "bg-[#6BBF59]/70 text-white shadow-md"
                                 : "text-gray-600 hover:bg-gray-100 hover:text-green-600"
                             }`}
@@ -193,7 +444,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
                 </div>
               ) : (
                 <Link
-                  to={item.route}
+                  to={buildLinkPath(item.route)}
                   className={`px-3 py-2 rounded-md transition-colors cursor-pointer flex items-center
                     ${
                       isActiveRoute(item.route)

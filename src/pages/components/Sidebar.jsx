@@ -103,7 +103,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
       className={`fixed md:relative h-full flex flex-col transition-all duration-300 bg-white border-r border-[#E6F2E8] z-30
       ${isOpen ? "w-64 translate-x-0" : "w-16 md:translate-x-0 -translate-x-full"}`}
       ref={sidebarRef}
-      style={{ height: 'calc(100vh - 4rem)' }} // Subtract header height (4rem = 64px)
+      style={{ height: 'calc(100dvh - 4rem)' }} // Subtract header height (4rem = 64px)
     >
       {/* Company Logo/Name - Fixed at top */}
       <div className="p-4 border-b border-[#E6F2E8] flex-shrink-0">

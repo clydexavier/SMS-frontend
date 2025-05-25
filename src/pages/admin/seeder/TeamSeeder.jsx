@@ -304,7 +304,7 @@ export default function TeamSeeder() {
     }
 
     return (
-      <div className={`${bgColor} ${borderColor} flex flex-col w-full h-full rounded-xl shadow-md p-8 text-center `}>
+      <div className={`${bgColor} ${borderColor} flex flex-col w-full h-full border rounded-xl shadow-md p-8 text-center `}>
         {icon}
         <h3 className={`${textColor} text-xl font-medium mb-2`}>{title}</h3>
         <p className="text-gray-600">{message}</p>
@@ -357,14 +357,14 @@ export default function TeamSeeder() {
           )}
 
           {success && (
-            <div className="flex-1 bg-green-50 p-4 rounded-lg text-green-600 text-center mb-4">
+            <div className="bg-green-50 p-4 rounded-lg text-green-600 text-center mb-4">
               Event started successfully! Redirecting to bracket view...
             </div>
           )}
 
           {/* Informational message about randomized seeding */}
           {eventStatus === "pending" && teams.length > 0 && tournamentType !== "no bracket" && (
-            <div className="flex-1 bg-blue-50 p-4 rounded-lg text-blue-600 text-sm mb-4 border border-blue-100">
+            <div className="bg-blue-50 p-4 rounded-lg text-blue-600 text-sm mb-4 border border-blue-100">
               <div className="flex items-start">
                 <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -443,7 +443,7 @@ export default function TeamSeeder() {
                 </div>
                 
                 {/* Pagination with horizontal scroll if needed */}
-                <div className="p-2 border-t border-[#E6F2E8] bg-white">
+                <div className="p-2  border-t border-[#E6F2E8] bg-white">
                   <div className="flex justify-between items-center">
                     <div>
                       {paginatedTeams.length > 0 && (

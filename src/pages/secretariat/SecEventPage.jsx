@@ -33,7 +33,7 @@ export default function SecEventPage() {
       ]
     },
     
-  { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: `/secretariat/${intrams_id}/podiums` },
+  { icon: <Medal size={isize} color="black" />, label: 'Podium Results', route: `/secretariat/${intrams_id}/podiums` },
     { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/secretariat/${intrams_id}/tally` },    
     
   ];

@@ -16,7 +16,7 @@ const menuItems = [
   { icon: <House size={isize} color="black" />, label: "Intramurals", route: "/scheduler/intramurals" },
   { icon: <Volleyball size={isize} color="black" />, label: 'Events', route: 'events' },
   //{ icon: <IoDocumentsOutline size={isize} color="black" />, label: 'Documents', route: 'documents' },
-  { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: 'podiums' },
+  { icon: <Medal size={isize} color="black" />, label: 'Podium Results', route: 'podiums' },
   { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: 'tally' },
 ];
 

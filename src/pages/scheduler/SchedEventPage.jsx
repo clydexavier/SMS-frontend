@@ -33,7 +33,7 @@ export default function SchedEventPage() {
        
       ]
     },
-    { icon: <Medal size={isize} color="black" />, label: 'Events Result', route: `/scheduler/${intrams_id}/podiums` },
+    { icon: <Medal size={isize} color="black" />, label: 'Podium Results', route: `/scheduler/${intrams_id}/podiums` },
 
     { icon: <Trophy size={isize} color="black" />, label: 'Overall Tally', route: `/scheduler/${intrams_id}/tally` },    
     

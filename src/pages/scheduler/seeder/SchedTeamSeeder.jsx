@@ -315,7 +315,7 @@ export default function SchedTeamSeeder() {
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 ">
           {/* Header section with responsive layout */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -376,7 +376,7 @@ export default function SchedTeamSeeder() {
           )}
 
           {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
@@ -442,7 +442,7 @@ export default function SchedTeamSeeder() {
                 </div>
                 
                 {/* Pagination with horizontal scroll if needed */}
-                <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
+                <div className="p-2  border-t border-[#E6F2E8] bg-white">
                   <div className="flex justify-between items-center">
                     <div>
                       {paginatedTeams.length > 0 && (

@@ -193,8 +193,8 @@ export default function SchedEventsPage() {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Main container - removed overflow-hidden to allow parent scrolling */}
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <CalendarClock size={20} className="mr-2" /> {intramsName} Events
@@ -261,14 +261,14 @@ export default function SchedEventsPage() {
             </div>
           )}
 
-          {/* Scrollable content area */}
-          <div className="mt-4 flex-1 overflow-y-auto min-h-0">
+          {/* Content area - removed overflow-y-auto and let parent handle scrolling */}
+          <div className="flex flex-1 mt-4 flex flex-col">
             {loading ? (
               <div className="flex justify-center items-center py-16">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
               </div>
             ) : events.length === 0 ? (
-              <div className="flex-1 h-full bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+              <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                 <CalendarClock size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600">
                   {activeUmbrellaEvent 
@@ -294,9 +294,9 @@ export default function SchedEventsPage() {
             )}
           </div>
 
-          {/* Pagination in a fixed position at the bottom */}
+          {/* Pagination */}
           {!loading && events.length > 0 && (
-            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4 overflow-x-auto">
+            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4">
               <PaginationControls
                 pagination={pagination}
                 handlePageChange={handlePageChange}

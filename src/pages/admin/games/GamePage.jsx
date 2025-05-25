@@ -301,19 +301,19 @@ export default function GamePage() {
             ) : tournamentType === "no bracket" ? (
               renderNoBracketMessage()
             ) : eventStatus === "completed" ? (
-              <div className="bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
+              <div className="flex-1 bg-green-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-green-200">
                 <Calendar size={48} className="mx-auto mb-4 text-green-400" />
                 <h3 className="text-lg font-medium text-green-800">Event Completed</h3>
                 <p className="text-gray-600 mt-1">This event has been completed. No matches to show.</p>
               </div>
             ) : eventStatus === "pending" ? (
-              <div className="bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
+              <div className="flex-1 bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
                 <Calendar size={48} className="mx-auto mb-4 text-yellow-400" />
                 <h3 className="text-lg font-medium text-yellow-800">Event Pending</h3>
                 <p className="text-gray-600 mt-1">This event is pending. Matches will appear once the event begins.</p>
               </div>
             ) : currentItems.length === 0 ? (
-              <div className="bg-blue-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-blue-200">
+              <div className="flex-1 bg-blue-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-blue-200">
                 <Calendar size={48} className="mx-auto mb-4 text-blue-400" />
                 <h3 className="text-lg font-medium text-blue-800">No matches found</h3>
                 {eventStatus === "in progress" && (

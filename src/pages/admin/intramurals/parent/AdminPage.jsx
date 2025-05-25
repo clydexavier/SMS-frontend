@@ -24,7 +24,7 @@ const menuItems = [
 ];
 
 export default function AdminPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex flex-col w-screen h-dvh overflow-hidden bg-gray-200">

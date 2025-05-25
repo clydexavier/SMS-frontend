@@ -31,6 +31,7 @@ export default function PlayerModal({
   const pictureInputRef = useRef(null);
   const [pictureUploaded, setPictureUploaded] = useState(false);
   const [removePicture, setRemovePicture] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     if (existingPlayer) {
@@ -66,6 +67,9 @@ export default function PlayerModal({
       setPictureUploaded(false);
       setRemovePicture(false);
     }
+    
+    // Clear validation errors when modal opens/closes or player changes
+    setValidationErrors({});
   }, [existingPlayer, isModalOpen]);
 
   const formatIDNumber = (value) => {
@@ -95,6 +99,15 @@ export default function PlayerModal({
     }
     
     setFormData((prev) => ({ ...prev, [name]: newValue }));
+    
+    // Clear validation error for this field when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handlePictureChange = (e) => {
@@ -111,6 +124,15 @@ export default function PlayerModal({
     }));
     setPictureUploaded(true);
     setRemovePicture(false);
+    
+    // Clear picture validation error
+    if (validationErrors.picture) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.picture;
+        return newErrors;
+      });
+    }
   };
 
   const handlePictureDrop = (e) => {
@@ -118,6 +140,16 @@ export default function PlayerModal({
     if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
     
     const file = e.dataTransfer.files[0];
+    
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      setValidationErrors(prev => ({
+        ...prev,
+        picture: "Please upload an image file"
+      }));
+      return;
+    }
+    
     setFormData((prev) => ({
       ...prev,
       picture: file,
@@ -128,6 +160,15 @@ export default function PlayerModal({
     }));
     setPictureUploaded(true);
     setRemovePicture(false);
+    
+    // Clear picture validation error
+    if (validationErrors.picture) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.picture;
+        return newErrors;
+      });
+    }
   };
 
   const handleRemovePicture = () => {
@@ -149,6 +190,17 @@ export default function PlayerModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // First check if it's a new player and picture is missing
+    if (!existingPlayer && !formData.picture && !formData.previews.picture) {
+      setValidationErrors({ picture: "This field is required" });
+      return;
+    }
+    
+    // Clear any existing validation errors
+    setValidationErrors({});
+    
+    // Proceed with form submission
     const playerData = new FormData();
     playerData.append("name", formData.name);
     playerData.append("id_number", formData.id_number);
@@ -182,10 +234,13 @@ export default function PlayerModal({
         (existingPlayer && existingPlayer.picture && !removePicture)) &&
       formData.previews.picture;
 
+    const isRequired = !existingPlayer; // Picture is required for new players only
+    const hasError = validationErrors.picture;
+
     return (
-      <div className="mb-4">
+      <div className="mb-4" id="picture-upload-section">
         <label htmlFor="picture" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-          Picture
+          Picture {isRequired && <span className="text-red-500">*</span>}
         </label>
 
         {showPreview ? (
@@ -217,7 +272,11 @@ export default function PlayerModal({
           </div>
         ) : (
           <div
-            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 border-[#E6F2E8]"
+            className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all bg-gray-50 hover:bg-gray-100 ${
+              hasError 
+                ? 'border-red-300 bg-red-50' 
+                : 'border-[#E6F2E8]'
+            }`}
             onDragOver={(e) => e.preventDefault()}
             onDrop={handlePictureDrop}
           >
@@ -228,16 +287,23 @@ export default function PlayerModal({
               onChange={handlePictureChange}
               ref={pictureInputRef}
               className="hidden"
-              required
             />
             <label htmlFor="picture" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
-              <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-8 h-8 ${hasError ? 'text-red-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
-              <span className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</span>
-              <span className="text-xs text-gray-400">JPG, PNG, etc.</span>
+              <span className={`text-sm mt-2 ${hasError ? 'text-red-500' : 'text-gray-500'}`}>
+                Click to upload or drag and drop
+              </span>
+              <span className={`text-xs ${hasError ? 'text-red-400' : 'text-gray-400'}`}>
+                JPG, PNG, etc. {isRequired && '(Required)'}
+              </span>
             </label>
           </div>
+        )}
+        
+        {hasError && (
+          <p className="mt-1 text-sm text-red-500" data-error="picture">{validationErrors.picture}</p>
         )}
       </div>
     );
@@ -304,7 +370,7 @@ export default function PlayerModal({
                 {/* Full Name */}
                 <div>
                   <label htmlFor="name" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Full Name
+                    Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -322,7 +388,7 @@ export default function PlayerModal({
                 {/* ID Number */}
                 <div>
                   <label htmlFor="id_number" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    ID Number
+                    ID Number <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -340,7 +406,7 @@ export default function PlayerModal({
                 {/* Birthdate */}
                 <div>
                   <label htmlFor="birthdate" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Birthdate
+                    Birthdate <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -437,7 +503,7 @@ export default function PlayerModal({
                 {/* Contact Number */}
                 <div>
                   <label htmlFor="contact" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Contact Number
+                    Contact Number <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -456,7 +522,7 @@ export default function PlayerModal({
                 {/* Course/Degree Program */}
                 <div>
                   <label htmlFor="degree" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Degree Program
+                    Degree Program <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -474,7 +540,7 @@ export default function PlayerModal({
                 {/* Year Level */}
                 <div>
                   <label htmlFor="year" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Year Level
+                    Year Level <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="year"
@@ -499,7 +565,7 @@ export default function PlayerModal({
                 {/* Team Dropdown */}
                 <div>
                   <label htmlFor="team_id" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
-                    Select Team
+                    Select Team <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="team_id"
@@ -520,7 +586,7 @@ export default function PlayerModal({
                   </select>
                 </div>
 
-                {/* Picture Upload Field - Keep only this file upload */}
+                {/* Picture Upload Field */}
                 {renderPictureUpload()}
               </div>
             )}

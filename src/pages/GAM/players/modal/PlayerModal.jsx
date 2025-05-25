@@ -228,6 +228,7 @@ export default function PlayerModal({
               onChange={handlePictureChange}
               ref={pictureInputRef}
               className="hidden"
+              required
             />
             <label htmlFor="picture" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
               <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

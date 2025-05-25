@@ -96,7 +96,7 @@ export default function SecIntramuralsPage() {
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 ">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Trophy size={20} className="mr-2" /> Intramurals
@@ -122,7 +122,7 @@ export default function SecIntramuralsPage() {
           </div>
 
           {/* Scrollable content area */}
-          <div className="mt-4 flex-1 overflow-y-auto flex flex-col min-h-0">
+          <div className="mt-4 flex-1 flex flex-col">
             {loading ? (
               <div className="flex justify-center items-center py-16">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
@@ -148,12 +148,11 @@ export default function SecIntramuralsPage() {
 
           {/* Pagination in a fixed position at the bottom */}
           {!loading && intramurals.length > 0 && (
-            <div className="bg-white shadow-md rounded-xl border border-[#E6F2E8] p-2 mt-4 overflow-x-auto">
+            
               <PaginationControls
                 pagination={pagination}
                 handlePageChange={handlePageChange}
               />
-            </div>
           )}
         </div>
       </div>

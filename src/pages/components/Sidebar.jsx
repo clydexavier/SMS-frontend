@@ -102,7 +102,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
       }
     }
     
-    // Handle Admin routes - MORE COMPREHENSIVE
+    // Handle Admin routes
     if (route.startsWith('/admin/')) {
       // For routes like /admin/intramurals - only exact match
       if (route === '/admin/intramurals') {
@@ -120,17 +120,19 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
       }
     }
     
-    // Handle Secretariat routes
+    // Handle Secretariat routes - SPECIAL CASE ADDED
     if (route.startsWith('/secretariat/')) {
+      // For routes like /secretariat/intramurals - only exact match
       if (route === '/secretariat/intramurals') {
         return currentPath === '/secretariat/intramurals';
       }
       
+      // For routes with intrams_id like /secretariat/123/podiums or /secretariat/123/tally  
       if (route.includes('/podiums') || route.includes('/tally') || route.includes('/events')) {
         return currentPath === route;
       }
       
-      // For event-specific routes
+      // For event-specific routes like /secretariat/123/events/456
       if (route.includes('/events/')) {
         return currentPath === route;
       }
@@ -283,7 +285,7 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
     // Special handling for different role contexts
     const role = currentSegments[0];
     
-    // Handle Admin routes more carefully
+    // Handle Admin routes
     if (role === 'admin') {
       // If we're in an event context like /admin/123/events/456
       if (currentSegments.length >= 4 && currentSegments[2] === 'events') {
@@ -302,19 +304,31 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
       }
     }
     
+    // Handle Secretariat routes - SPECIAL CASE ADDED
+    if (role === 'secretariat') {
+      // If we're in an event context like /secretariat/123/events/456
+      if (currentSegments.length >= 4 && currentSegments[2] === 'events') {
+        const intramsId = currentSegments[1];
+        const eventId = currentSegments[3];
+        return `/secretariat/${intramsId}/events/${eventId}/${route}`;
+      }
+      // If we're in an intramural context like /secretariat/123
+      else if (currentSegments.length >= 2 && !isNaN(currentSegments[1])) {
+        const intramsId = currentSegments[1];
+        return `/secretariat/${intramsId}/${route}`;
+      }
+      // If we're at the top secretariat level like /secretariat
+      else {
+        return `/secretariat/${route}`;
+      }
+    }
+    
     // Handle other roles
-    if (['GAM', 'secretariat', 'scheduler'].includes(role)) {
+    if (['GAM', 'scheduler'].includes(role)) {
       // For GAM routes
       if (role === 'GAM' && currentSegments.length >= 3 && currentSegments[1] === 'events') {
         const eventId = currentSegments[2];
         return `/GAM/events/${eventId}/${route}`;
-      }
-      
-      // For secretariat routes
-      if (role === 'secretariat' && currentSegments.length >= 4 && currentSegments[2] === 'events') {
-        const intramsId = currentSegments[1];
-        const eventId = currentSegments[3];
-        return `/secretariat/${intramsId}/events/${eventId}/${route}`;
       }
       
       // For scheduler routes
@@ -322,6 +336,12 @@ export default function Sidebar({ menuItems, isOpen, setIsOpen }) {
         const intramsId = currentSegments[1];
         const eventId = currentSegments[3];
         return `/scheduler/${intramsId}/events/${eventId}/${route}`;
+      }
+      
+      // For scheduler intramural level
+      if (role === 'scheduler' && currentSegments.length >= 2 && !isNaN(currentSegments[1])) {
+        const intramsId = currentSegments[1];
+        return `/scheduler/${intramsId}/${route}`;
       }
       
       // Fallback to role-based path

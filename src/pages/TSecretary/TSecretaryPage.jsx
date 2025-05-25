@@ -118,7 +118,7 @@ export default function TSecretaryPage() {
   ];
 
   return (
-    <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">
+    <div className="flex flex-col w-screen h-dvh overflow-auto bg-gray-200">
       <noscript>
         <strong className="text-sm sm:text-xs md:text-sm lg:text-sm">
           We're sorry but the frontend doesn't work properly without JavaScript enabled. Please enable it to continue.

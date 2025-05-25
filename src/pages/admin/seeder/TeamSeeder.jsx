@@ -316,7 +316,7 @@ export default function TeamSeeder() {
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div className="flex flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 ">
           {/* Header section with responsive layout */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -364,7 +364,7 @@ export default function TeamSeeder() {
 
           {/* Informational message about randomized seeding */}
           {eventStatus === "pending" && teams.length > 0 && tournamentType !== "no bracket" && (
-            <div className="bg-blue-50 p-4 rounded-lg text-blue-600 text-sm mb-4 border border-blue-100">
+            <div className="flex-1 bg-blue-50 p-4 rounded-lg text-blue-600 text-sm mb-4 border border-blue-100">
               <div className="flex items-start">
                 <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -377,7 +377,7 @@ export default function TeamSeeder() {
           )}
 
           {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0">
             {loading ? (
               <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
                 <Loader size={32} className="animate-spin text-[#2A6D3A]" />
@@ -443,7 +443,7 @@ export default function TeamSeeder() {
                 </div>
                 
                 {/* Pagination with horizontal scroll if needed */}
-                <div className="p-2 overflow-x-auto border-t border-[#E6F2E8] bg-white">
+                <div className="p-2 border-t border-[#E6F2E8] bg-white">
                   <div className="flex justify-between items-center">
                     <div>
                       {paginatedTeams.length > 0 && (

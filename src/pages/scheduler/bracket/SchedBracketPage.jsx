@@ -44,7 +44,7 @@ export default function SchedBracketPage() {
   const renderBracketContent = () => {
     if (loading) {
       return (
-        <div className="flex justify-center items-center py-16 bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+        <div className="flex justify-center items-center py-16 flex-1">
           <Loader size={32} className="animate-spin text-[#2A6D3A]" />
         </div>
       );
@@ -70,7 +70,7 @@ export default function SchedBracketPage() {
     
     if (eventStatus === "pending") {
       return (
-        <div className="flex-1 bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200">
+        <div className="flex-1 bg-yellow-50 p-4 sm:p-8 rounded-xl text-center shadow-sm border border-yellow-200 flex flex-col justify-center">
           <Award size={48} className="mx-auto mb-4 text-yellow-400" />
           <h3 className="text-lg font-medium text-yellow-800">Event Pending</h3>
           <p className="text-gray-600 mt-1">The bracket has not started yet. Please go to Team Seeder page to initialize the seeding of teams.</p>
@@ -80,7 +80,7 @@ export default function SchedBracketPage() {
     
     if ( !bracketId || bracketId === "no bracket") {
       return (
-        <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
+        <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8] flex flex-col justify-center">
           <Award size={48} className="mx-auto mb-4 text-gray-400" />
           <h3 className="text-lg font-medium text-gray-600">No Bracket Available</h3>
           <p className="text-gray-500 mt-1">
@@ -91,19 +91,17 @@ export default function SchedBracketPage() {
     }
     
     return (
-      <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">
-        <div className="flex-1 overflow-y-auto">
-          <iframe
-            src={`https://challonge.com/${bracketId}/module`}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            scrolling="auto"
-            allowtransparency="true"
-            title="Bracket"
-            className="w-full h-full min-h-[600px]"
-          ></iframe>
-        </div>
+      <div className="bg-white rounded-xl border border-[#E6F2E8] shadow-md">
+        <iframe
+          src={`https://challonge.com/${bracketId}/module`}
+          width="100%"
+          height="800"
+          frameBorder="0"
+          scrolling="auto"
+          allowtransparency="true"
+          title="Bracket"
+          className="w-full rounded-xl"
+        ></iframe>
       </div>
     );
   };
@@ -111,8 +109,8 @@ export default function SchedBracketPage() {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full flex-1 flex flex-col">
-        {/* Main container with overflow handling */}
-        <div className="flex flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        {/* Main container - matches EventsPage structure */}
+        <div className="flex flex-1 flex-col w-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200">
           {/* Header section with responsive layout */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
@@ -153,8 +151,8 @@ export default function SchedBracketPage() {
             </div>
           )}
 
-          {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
+          {/* Content area - matches EventsPage structure */}
+          <div className="flex flex-1 mt-4 flex flex-col">
             {renderBracketContent()}
           </div>
         </div>

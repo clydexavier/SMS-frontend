@@ -20,7 +20,7 @@ const menuItems = [
 ];
 
 export default function SecIntramuralPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex flex-col w-screen h-screen overflow-auto bg-gray-200">

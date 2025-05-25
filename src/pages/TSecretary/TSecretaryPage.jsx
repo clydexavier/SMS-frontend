@@ -11,7 +11,7 @@ import logo from '../../assets/vsu_logo.png';
 import { Trophy, Medal, Volleyball, House } from "lucide-react";
 
 export default function TSecretaryPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [event, setEvent] = useState("");
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);

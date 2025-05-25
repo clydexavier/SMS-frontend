@@ -23,7 +23,7 @@ const menuItems = [
 ];
 
 export default function IntramuralPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex flex-col w-screen h-dvh overflow-auto bg-gray-200">

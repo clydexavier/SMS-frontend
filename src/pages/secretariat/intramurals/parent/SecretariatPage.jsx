@@ -19,7 +19,7 @@ const menuItems = [
 ];
 
 export default function SecretariatPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex flex-col w-screen h-dvh overflow-hidden bg-gray-200">

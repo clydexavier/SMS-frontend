@@ -396,7 +396,7 @@ export default function TeamSeeder() {
               <div className="flex-1 bg-white p-4 sm:p-8 rounded-xl text-center shadow-sm border border-[#E6F2E8]">
                 <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600">No teams found</h3>
-                <p className="text-gray-500 mt-1">Add teams to the event before seeding</p>
+                <p className="text-gray-500 mt-1">Add teams to the intramural before seeding</p>
               </div>
             ) : (
               <div className="flex-1 flex flex-col bg-white rounded-xl border border-[#E6F2E8] shadow-md overflow-hidden min-h-0">

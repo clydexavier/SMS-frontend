@@ -70,7 +70,7 @@ export default function AdminPage() {
           setIsOpen={setIsSidebarOpen}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-10 bg-white">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-50 bg-white">
           {/* Add Breadcrumb component here */}
           <Breadcrumb />
           

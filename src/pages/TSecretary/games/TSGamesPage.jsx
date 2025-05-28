@@ -166,11 +166,6 @@ export default function GamePage() {
     setPagination((prev) => ({ ...prev, currentPage: page }));
   };
 
-  // Schedule modal handlers
-  const openScheduleModal = (match) => {
-    setSelectedMatch(match);
-    setIsModalOpen(true);
-  };
 
   const closeScheduleModal = () => {
     setIsModalOpen(false);
@@ -330,12 +325,7 @@ export default function GamePage() {
                   >
                     <div className="text-sm text-gray-500 font-medium">
                       <span>
-                    {match.date && match.time
-                        ? new Date(`${match.date}T${match.time}`).toLocaleString("en-US", {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })
-                        : "TBA"}
+                        Match {match.suggested_play_order}
                         </span>
                          
                     </div>
@@ -356,12 +346,7 @@ export default function GamePage() {
                       {/* If match is scheduled but not completed, show both buttons */}
                       {match.date && match.time && !match.is_completed && (
                         <>
-                          <button
-                            onClick={() => openScheduleModal(match)}
-                            className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                          >
-                            Edit Schedule
-                          </button>
+                      
                           <button
                             onClick={() => openScoreModal(match)}
                             className="text-white bg-[#2A6D3A] hover:bg-[#225E2F] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
@@ -375,12 +360,6 @@ export default function GamePage() {
                       {/* If match is not scheduled yet, only show schedule button */}
                       {(!match.date || !match.time) && !match.is_completed && (
                         <>
-                        <button
-                          onClick={() => openScheduleModal(match)}
-                          className="text-[#2A6D3A] bg-white border border-[#6BBF59]/30 hover:bg-[#F7FAF7] font-medium rounded-lg text-xs px-4 py-2 transition-colors"
-                        >
-                          Set Schedule
-                        </button>
                         <button
                             onClick={() => openScoreModal(match)}
                             className="text-white bg-[#2A6D3A] hover:bg-[#225E2F] font-medium rounded-lg text-xs px-4 py-2 transition-colors"

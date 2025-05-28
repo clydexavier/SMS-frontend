@@ -60,6 +60,7 @@ export default function EventCard({ event, openEditModal, deleteEvent, isUmbrell
 
   // Handle the card click for regular events only
   const handleCardClick = () => {
+    if (showConfirmDelete) return;
     if (!isUmbrella) {
       navigate(`${event.id}/players`, { state: { event_name: event.name } });
     }

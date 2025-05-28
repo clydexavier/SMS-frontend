@@ -273,14 +273,9 @@ export default function SecGamePage() {
                         className={`bg-white rounded-xl border ${match.is_completed ? "border-green-200" : "border-[#E6F2E8]"} shadow-sm p-4 flex flex-col sm:flex-row justify-between items-center gap-4 hover:bg-[#F7FAF7] transition`}
                       >
                         <div className="text-sm text-gray-500 font-medium">
-                          <span>
-                        {match.date && match.time
-                            ? new Date(`${match.date}T${match.time}`).toLocaleString("en-US", {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })
-                            : "TBA"}
-                            </span>
+                        <span>
+                        Match {match.suggested_play_order}
+                        </span>
                              
                         </div>
                         

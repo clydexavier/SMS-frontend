@@ -59,7 +59,7 @@ export default function AdminPage() {
         {/* Mobile Overlay - Only cover the sidebar area when it's open */}
         {isSidebarOpen && (
           <div
-            className="fixed md:hidden left-0 top-16 bottom-0 w-64 bg-black bg-opacity-40"
+            className="fixed md:hidden left-0 top-16 bottom-0 w-64 bg-black bg-opacity-40 z-50"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
@@ -70,7 +70,7 @@ export default function AdminPage() {
           setIsOpen={setIsSidebarOpen}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-50 bg-white">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 relative z-40 bg-white">
           {/* Add Breadcrumb component here */}
           <Breadcrumb />
           

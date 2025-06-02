@@ -23,6 +23,13 @@ export default function IntramuralModal({
 
   const [formData, setFormData] = useState(initialState);
 
+  // Status options for the dropdown
+  const statusOptions = [
+    { value: "pending", label: "Pending", color: "text-yellow-600" },
+    { value: "in progress", label: "In Progress", color: "text-blue-600" },
+    { value: "completed", label: "Completed", color: "text-green-600" }
+  ];
+
   // Populate fields when editing or reset when modal opens/closes
   useEffect(() => {
     if (existingIntramural) {
@@ -66,6 +73,11 @@ export default function IntramuralModal({
     }
   };
 
+  // Get current status for styling
+  const getCurrentStatusOption = () => {
+    return statusOptions.find(option => option.value === formData.status) || statusOptions[0];
+  };
+
   if (!isModalOpen) return null;
 
   return (
@@ -97,7 +109,7 @@ export default function IntramuralModal({
 
             {isLoading ? (
               <div className="space-y-4 animate-pulse">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(6)].map((_, i) => (
                   <div key={i} className="h-10 bg-gray-200 rounded" />
                 ))}
               </div>
@@ -139,9 +151,40 @@ export default function IntramuralModal({
                   />
                 </div>
 
+                {/* Status - Show for both new and existing intramurals */}
+                <div>
+                  <label htmlFor="status" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    required
+                    className={`bg-white border border-[#E6F2E8] text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200 ${getCurrentStatusOption().color}`}
+                  >
+                    {statusOptions.map((option) => (
+                      <option key={option.value} value={option.value} className="text-gray-700">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {/* Status indicator */}
+                  <div className="mt-1 flex items-center">
+                    <div className={`w-2 h-2 rounded-full mr-2 ${
+                      formData.status === 'pending' ? 'bg-yellow-500' :
+                      formData.status === 'in progress' ? 'bg-blue-500' :
+                      'bg-green-500'
+                    }`}></div>
+                    <span className={`text-xs font-medium ${getCurrentStatusOption().color}`}>
+                      {getCurrentStatusOption().label}
+                    </span>
+                  </div>
+                </div>
 
-
-                {/* Dates - Single column layout for consistency */}
+                {/* Dates */}
                 <div>
                   <label htmlFor="start_date" className="block mb-2 text-sm font-medium text-[#2A6D3A]">
                     Start Date

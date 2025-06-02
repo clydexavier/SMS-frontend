@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
-import { Award, Loader, Medal, Trophy } from "lucide-react";
+import { Award, Loader, Medal, Trophy, FileText } from "lucide-react";
 import { GiPodium } from "react-icons/gi";
 
 
@@ -13,6 +13,7 @@ export default function OverallTallyPage() {
   const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("overall");
   const [intramsName, setIntramsName] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Filter categories
   const filterOptions = [
@@ -36,6 +37,40 @@ export default function OverallTallyPage() {
       setError("Failed to fetch medal tally");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Download medal breakdown PDF function
+  const downloadBreakdownPDF = async () => {
+    try {
+      setIsDownloading(true);
+      
+      const response = await axiosClient.post(
+        `/intramurals/${intrams_id}/team_medal_breakdown_pdf`,
+        {},
+        { responseType: 'blob' }
+      );
+      
+      // Create a blob URL for the PDF
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `medal_breakdown_${intrams_id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (err) {
+      console.error("Failed to download breakdown PDF", err);
+      setError("Failed to download breakdown PDF. Please try again.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -74,10 +109,32 @@ export default function OverallTallyPage() {
       <div className="w-full h-full flex-1 flex flex-col">
         {/* Main container with overflow handling */}
         <div className="flex flex-1 flex-col w-full h-full bg-gray-75 p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+          {/* Header section with title and download button */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
             <h2 className="text-lg font-semibold text-[#2A6D3A] flex items-center">
               <Medal size={20} className="mr-2" />  {intramsName} Medal Table
             </h2>
+            
+            {/* Download PDF button - only shown if there are results */}
+            {!loading && tallyData.length > 0 && (
+              <button
+                onClick={downloadBreakdownPDF}
+                disabled={isDownloading}
+                className={`bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader size={16} className="animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <FileText size={16} />
+                    Download Breakdown
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Filter tabs */}

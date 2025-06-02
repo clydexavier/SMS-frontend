@@ -11,6 +11,7 @@ import UnauthorizedPage from "./pages/public/UnauthorizedPage";
 // Public pages
 import LoginPage from "./pages/public/LoginPage";
 import RegisterPage from "./pages/public/RegisterPage";
+import GuestPage from "./pages/public/GuestPage";
 
 // Role-specific pages
 import AdminPage from "./pages/admin/intramurals/parent/AdminPage";
@@ -272,6 +273,10 @@ const routes = [
       {
         path: "/register",
         element: <RegisterPage/>
+      },
+      {
+        path: "/guest",
+        element: <GuestPage/>
       },
     ]
   },

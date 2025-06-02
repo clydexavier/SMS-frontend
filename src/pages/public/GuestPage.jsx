@@ -96,31 +96,52 @@ export default function GuestPage() {
     setEventLoading(true);
     
     try {
-      // Fetch bracket data
-      const bracketRes = await axiosClient.get(
-        `/public/intramurals/${selectedIntramural.id}/events/${event.id}/bracket`
-      );
-      setBracketId(bracketRes.data.bracket_id);
-      setEventStatus(bracketRes.data.status);
-      
-      // Fetch podium data if event is completed
-      if (bracketRes.data.status === 'completed') {
+      // Initialize default values
+      let bracketData = null;
+      let eventStatusValue = event.status; // Use the event status from the events list as fallback
+      let podiumResult = null;
+  
+      // Try to fetch bracket data (this might fail for "no bracket" events)
+      try {
+        const bracketRes = await axiosClient.get(
+          `/public/intramurals/${selectedIntramural.id}/events/${event.id}/bracket`
+        );
+        bracketData = bracketRes.data;
+        setBracketId(bracketData.bracket_id);
+        // Update status from bracket response if available
+        if (bracketData.status) {
+          eventStatusValue = bracketData.status;
+        }
+      } catch (bracketErr) {
+        console.log('No bracket data available or bracket fetch failed:', bracketErr);
+        setBracketId("no bracket");
+        // Don't reset eventStatus here - keep the fallback value
+      }
+  
+      // Set the event status (either from bracket response or fallback)
+      setEventStatus(eventStatusValue);
+  
+      // Try to fetch podium data if event is completed (regardless of bracket availability)
+      if (eventStatusValue === 'completed') {
         try {
           const podiumRes = await axiosClient.get(
             `/public/intramurals/${selectedIntramural.id}/events/${event.id}/podium`
           );
-          setPodiumData(podiumRes.data);
+          podiumResult = podiumRes.data;
+          setPodiumData(podiumResult);
         } catch (podiumErr) {
-          console.log('No podium data available');
+          console.log('No podium data available:', podiumErr);
           setPodiumData(null);
         }
       } else {
         setPodiumData(null);
       }
+  
     } catch (err) {
       console.error('Error fetching event details:', err);
-      setBracketId(null);
-      setEventStatus(null);
+      // Only reset if we couldn't get any data at all
+      setBracketId("no bracket");
+      setEventStatus(event.status); // Use event status from the events list
       setPodiumData(null);
     } finally {
       setEventLoading(false);
@@ -132,35 +153,7 @@ export default function GuestPage() {
     setActiveTab('events');
   };
 
-  const downloadPodiumPDF = async () => {
-    if (!selectedEvent || !podiumData) return;
-    
-    try {
-      setIsDownloading(true);
-      
-      const response = await axiosClient.post(
-        `/public/intramurals/${selectedIntramural.id}/events/${selectedEvent.id}/podium_pdf`,
-        {},
-        { responseType: 'blob' }
-      );
-      
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${selectedEvent.name}_results.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Failed to download podium PDF", err);
-    } finally {
-      setIsDownloading(false);
-    }
-  };
+  
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -201,7 +194,7 @@ export default function GuestPage() {
     
     if (!bracketId || bracketId === "no bracket") {
       return (
-        <div className="bg-white p-8 rounded-xl text-center border border-gray-200">
+        <div className="flex-1 bg-white p-8 rounded-xl text-center border border-gray-200">
           <Award size={48} className="mx-auto mb-4 text-gray-400" />
           <h3 className="text-lg font-medium text-gray-600">No Bracket Available</h3>
           <p className="text-gray-500 mt-1">This event does not use a bracket system.</p>
@@ -233,8 +226,9 @@ export default function GuestPage() {
         </div>
       );
     }
-
-    if (eventStatus !== "completed" || !podiumData) {
+  
+    // Show "no results" only if event is not completed
+    if (eventStatus !== "completed") {
       return (
         <div className="flex-1 bg-white p-8 rounded-xl text-center border border-gray-200">
           <Trophy size={48} className="mx-auto mb-4 text-gray-400" />
@@ -242,16 +236,38 @@ export default function GuestPage() {
           <p className="text-gray-500 mt-1">
             {eventStatus === "in progress" 
               ? "This event is still in progress." 
-              : "Results will be available once the event is completed."}
+              : eventStatus === "pending"
+                ? "This event hasn't started yet."
+                : "Results will be available once the event is completed."}
           </p>
         </div>
       );
     }
-
+  
+    // Event is completed but no podium data available
+    if (!podiumData) {
+      return (
+        <div className="flex-1 bg-white p-8 rounded-xl text-center border border-gray-200">
+          <Trophy size={48} className="mx-auto mb-4 text-orange-400" />
+          <h3 className="text-lg font-medium text-gray-600">Results Pending</h3>
+          <p className="text-gray-500 mt-1">
+            This event has been completed but results are still being processed.
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            Please check back later for the final standings.
+          </p>
+        </div>
+      );
+    }
+  
+    // Event is completed and has podium data - show results
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-gray-900">Event Results</h3>
+          <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+            Completed
+          </span>
         </div>
         
         <div className="space-y-6">
@@ -262,10 +278,10 @@ export default function GuestPage() {
                 <Trophy size={32} className="text-white" />
               </div>
               <h4 className="text-lg font-semibold text-yellow-800">1st Place</h4>
-              <p className="text-xl font-bold text-gray-900">{podiumData.gold_team_name}</p>
+              <p className="text-xl font-bold text-gray-900">{podiumData.gold_team_name || 'TBD'}</p>
             </div>
           </div>
-
+  
           {/* Silver Medal */}
           <div className="flex items-center justify-center p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
             <div className="text-center">
@@ -273,10 +289,10 @@ export default function GuestPage() {
                 <Medal size={32} className="text-white" />
               </div>
               <h4 className="text-lg font-semibold text-gray-600">2nd Place</h4>
-              <p className="text-xl font-bold text-gray-900">{podiumData.silver_team_name}</p>
+              <p className="text-xl font-bold text-gray-900">{podiumData.silver_team_name || 'TBD'}</p>
             </div>
           </div>
-
+  
           {/* Bronze Medal */}
           <div className="flex items-center justify-center p-6 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
             <div className="text-center">
@@ -284,7 +300,7 @@ export default function GuestPage() {
                 <Award size={32} className="text-white" />
               </div>
               <h4 className="text-lg font-semibold text-orange-800">3rd Place</h4>
-              <p className="text-xl font-bold text-gray-900">{podiumData.bronze_team_name}</p>
+              <p className="text-xl font-bold text-gray-900">{podiumData.bronze_team_name || 'TBD'}</p>
             </div>
           </div>
         </div>

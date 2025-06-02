@@ -37,7 +37,7 @@ export default function IntramuralPage() {
             <div className="flex items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="IHK Logo" className={`h-12 w-40 rounded-full ${isSidebarOpen? "": "hidden"}`} />
+            <img src={logo} alt="VSU Logo" className={`h-12 w-40 rounded-full ${isSidebarOpen? "": "hidden"}`} />
             
           </Link>
           {/* Menu button */}

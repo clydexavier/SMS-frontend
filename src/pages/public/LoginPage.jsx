@@ -1,16 +1,17 @@
-// src/pages/public/LoginPage.jsx - With Error Handling
+// src/pages/public/LoginPage.jsx - With Guest Access
 import React, { useRef, useState } from 'react';
 import logo from "../../assets/IHK_logo1.png";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
-import { Loader, Eye, EyeOff, Mail, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Loader, Eye, EyeOff, Mail, AlertCircle, XCircle, Users } from 'lucide-react';
 import GoogleAuthButton from './GoogleAuthButton';
 import axiosClient from "../../axiosClient";
 
 export default function LoginPage() {
   const emailRef = useRef();
   const passwordRef = useRef();
+  const navigate = useNavigate();
   const { setToken, setUser, setRole, redirectToRoleBasedRoute, googleAuthSuccess } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -135,6 +136,11 @@ export default function LoginPage() {
     }
   };
 
+  // Handle guest access
+  const handleGuestAccess = () => {
+    navigate('/guest');
+  };
+
   // Simple error message component
   const ErrorMessage = () => {
     if (!errorMessage) return null;
@@ -237,6 +243,16 @@ export default function LoginPage() {
           </div>
           
           <GoogleAuthButton setErrorMessage={(error) => setErrorMessage(error)} />
+          
+          {/* Guest Access Button */}
+          <button
+            type="button"
+            onClick={handleGuestAccess}
+            className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-300 transition-colors duration-200 flex justify-center items-center mt-3"
+          >
+            <Users size={18} className="mr-2" />
+            Continue as Guest
+          </button>
         </form>
         
         <p className="mt-6 text-center text-sm text-gray-600">

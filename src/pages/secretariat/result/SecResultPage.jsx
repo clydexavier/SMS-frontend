@@ -88,7 +88,7 @@ const SecResultPage = () => {
   };
 
   // Determine if we should show the action button based on status
-  const showActionButton = eventStatus === "completed" || eventStatus === "in progress";
+  //const showActionButton = eventStatus === "completed" || eventStatus === "in progress";
 
   const renderStatusMessage = () => {
     if (eventStatus !== "pending" || loading) return null;

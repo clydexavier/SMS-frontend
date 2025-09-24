@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axiosClient from "../../../axiosClient";
 import Filter from "../../components/Filter";
 import PaginationControls from "../../components/PaginationControls";
@@ -102,7 +102,7 @@ export default function PodiumsPage() {
   }, [search, activeTab, pagination.currentPage, intrams_id]);
 
   // Medal component to display team logo and name
-  const MedalWinner = ({ logo, name, count, icon: Icon, color }) => (
+  const MedalWinner = ({ logo, name, count, color }) => (
     <div className="flex items-center space-x-2">
       
       {count && (

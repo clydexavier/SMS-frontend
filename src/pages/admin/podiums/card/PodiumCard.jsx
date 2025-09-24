@@ -7,7 +7,6 @@ const PodiumCard = ({ podium }) => {
     type, 
     logo, 
     teamName, 
-    icon: Icon, 
     position, 
     bgGradient, 
     borderColor, 

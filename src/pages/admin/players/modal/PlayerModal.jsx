@@ -78,8 +78,8 @@ export default function PlayerModal({
     const part2 = digits.slice(2, 3);
     const part3 = digits.slice(3, 8);
     let formatted = part1;
-    if (part2) formatted += `-${part2}`;
-    if (part3) formatted += `-${part3}`;
+    if (part2) formatted += `${part2}`;
+    if (part3) formatted += `${part3}`;
     return formatted;
   };
 
@@ -559,6 +559,8 @@ export default function PlayerModal({
                     <option value="4">4th Year</option>
                     <option value="5">5th Year</option>
                     <option value="6">6th Year</option>
+                    <option value="N/A">N/A</option>
+
                   </select>
                 </div>
 

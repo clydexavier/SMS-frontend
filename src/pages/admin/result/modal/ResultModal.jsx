@@ -53,10 +53,6 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existing
       return;
     }
 
-    if (gold === silver || gold === bronze || silver === bronze) {
-      setError("Each medal must be awarded to a different team");
-      return;
-    }
 
     try {
       setSubmitting(true);
@@ -81,7 +77,7 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existing
 
   if (!isOpen) return null;
 
-  const renderMedalSelect = (medal, value, setValue, icon, color) => {
+  const renderMedalSelect = (medal, value, setValue, icon) => {
     return (
       <div className="mb-4">
         <label 

@@ -73,7 +73,7 @@ export default function PlayerModal({
   }, [existingPlayer, isModalOpen]);
 
   const formatIDNumber = (value) => {
-    const digits = value.replace(/\D/g, "");
+    const digits = value;
     const part1 = digits.slice(0, 2);
     const part2 = digits.slice(2, 3);
     const part3 = digits.slice(3, 8);

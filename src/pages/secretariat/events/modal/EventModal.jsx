@@ -281,6 +281,7 @@ export default function EventModal({
                       type="text"
                       value={formData.name}
                       onChange={handleChange}
+                      maxLength={20}
                       autoComplete="off"
                       required
                       className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"

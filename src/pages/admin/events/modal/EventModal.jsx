@@ -81,7 +81,7 @@ export default function EventModal({
     value = value.replace(/\D/g, '');
     
     // Convert to number and ensure it's positive
-    let numValue = value === '' ? '' : Math.max(1, parseInt(value, 10));
+    let numValue = value === '' ? '' : Math.max(0, parseInt(value, 10));
     
     // If parsing failed (e.g., for empty string), use empty string
     if (isNaN(numValue)) numValue = '';
@@ -366,14 +366,14 @@ export default function EventModal({
                         id="medalCount"
                         name="medalCount"
                         type="number"
-                        min="1"
+                        min="0"
                         step="1"
                         value={formData.gold} // any of the three will reflect the value
                         onChange={handleMedalCountChange}
                         autoComplete="off"
                         required
                         className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                        placeholder="Enter number of medals (minimum 1)"
+                        placeholder="Enter number of medals (minimum 0)"
                         onKeyDown={(e) => {
                           // Prevent entering negative sign or decimal point
                           if (e.key === '-' || e.key === '.') {

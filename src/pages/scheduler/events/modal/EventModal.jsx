@@ -374,7 +374,7 @@ export default function EventModal({
                         autoComplete="off"
                         required
                         className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-                        placeholder="Enter number of medals (minimum 1)"
+                        placeholder="Enter number of medals (minimum 0)"
                         onKeyDown={(e) => {
                           // Prevent entering negative sign or decimal point
                           if (e.key === '-' || e.key === '.') {

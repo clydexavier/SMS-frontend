@@ -96,11 +96,39 @@ export default function TeamSeeder() {
     setPagination((prev) => ({ ...prev, currentPage: page }));
   };
 
+  // Handle seed input change
+  const handleSeedChange = (teamId, value) => {
+    const parsedValue = value === '' ? '' : parseInt(value, 10);
+    
+    // Allow empty value or valid numbers
+    if (value === '' || (!isNaN(parsedValue) && parsedValue > 0)) {
+      setSeeds(prev => ({
+        ...prev,
+        [teamId]: parsedValue
+      }));
+      
+      // Clear validation error for this team when user starts typing
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[teamId];
+        return newErrors;
+      });
+    }
+  };
+
   // Handle individual team selection
   const handleTeamSelection = (teamId, isSelected) => {
     const newSelectedTeams = new Set(selectedTeams);
     if (isSelected) {
       newSelectedTeams.add(teamId);
+      // Assign next available seed number if not already set
+      if (!seeds[teamId]) {
+        const selectedCount = newSelectedTeams.size;
+        setSeeds(prev => ({
+          ...prev,
+          [teamId]: selectedCount
+        }));
+      }
     } else {
       newSelectedTeams.delete(teamId);
       // Remove seed for unselected team
@@ -121,7 +149,7 @@ export default function TeamSeeder() {
       const initialSeeds = {};
       teams.forEach((team, index) => {
         const teamId = typeof team.id === 'string' ? parseInt(team.id, 10) : team.id;
-        initialSeeds[teamId] = index + 1;
+        initialSeeds[teamId] = seeds[teamId] || index + 1;
       });
       setSeeds(initialSeeds);
     } else {
@@ -185,6 +213,50 @@ export default function TeamSeeder() {
     }
   };
 
+  // Auto-fill missing seeds
+  const autoFillSeeds = () => {
+    try {
+      const selectedTeamsList = teams.filter(team => selectedTeams.has(team.id));
+      if (selectedTeamsList.length === 0) {
+        setError("Please select at least one team before auto-filling seeds.");
+        return;
+      }
+
+      const existingSeeds = selectedTeamsList
+        .map(team => seeds[team.id])
+        .filter(seed => seed !== undefined && seed !== '');
+      
+      const usedSeeds = new Set(existingSeeds);
+      const availableSeeds = [];
+      
+      // Find available seed numbers
+      for (let i = 1; i <= selectedTeamsList.length; i++) {
+        if (!usedSeeds.has(i)) {
+          availableSeeds.push(i);
+        }
+      }
+
+      const newSeeds = { ...seeds };
+      let availableIndex = 0;
+
+      // Assign available seeds to teams without seeds
+      selectedTeamsList.forEach(team => {
+        if (seeds[team.id] === undefined || seeds[team.id] === '') {
+          if (availableIndex < availableSeeds.length) {
+            newSeeds[team.id] = availableSeeds[availableIndex];
+            availableIndex++;
+          }
+        }
+      });
+
+      setSeeds(newSeeds);
+      setValidationErrors({});
+    } catch (err) {
+      console.error("Error in autoFillSeeds:", err);
+      setError("Failed to auto-fill seeds. Please try again.");
+    }
+  };
+
   const validateSeeds = () => {
     try {
       const selectedTeamsList = teams.filter(team => selectedTeams.has(team.id));
@@ -199,16 +271,16 @@ export default function TeamSeeder() {
       }
 
       const selectedTeamIds = selectedTeamsList.map(team => team.id);
-      const values = selectedTeamIds.map(teamId => seeds[teamId]).filter(seed => seed !== undefined);
+      const values = selectedTeamIds.map(teamId => seeds[teamId]).filter(seed => seed !== undefined && seed !== '');
       
       const allInRange = values.every((seed) => seed >= 1 && seed <= selectedTeamsList.length);
       const valueSet = new Set(values);
       const allUnique = valueSet.size === values.length;
       
       // Check if all selected teams have a seed
-      const allSelectedTeamsHaveSeeds = selectedTeamIds.every(teamId => seeds[teamId] !== undefined);
+      const allSelectedTeamsHaveSeeds = selectedTeamIds.every(teamId => seeds[teamId] !== undefined && seeds[teamId] !== '');
       if (!allSelectedTeamsHaveSeeds) {
-        setError("Some selected teams are missing seed values. Please reset and try again.");
+        setError("Some selected teams are missing seed values. Please fill all seed values or use Auto-fill.");
         return false;
       }
       
@@ -410,19 +482,30 @@ export default function TeamSeeder() {
               <div className="flex gap-2 w-full sm:w-auto">
                 <button
                   type="button"
+                  onClick={autoFillSeeds}
+                  className="bg-[#4A90E2] hover:bg-[#3A7FD1] text-white px-3 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                  disabled={loading || submitting || selectedCount === 0}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  Auto-fill
+                </button>
+                <button
+                  type="button"
                   onClick={randomizeSeeds}
-                  className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                  className="bg-[#6BBF59] hover:bg-[#5CAF4A] text-white px-3 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
                   disabled={loading || submitting || selectedCount === 0}
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                   </svg>
-                  Randomize Seeds
+                  Randomize
                 </button>
                 <button
                   type="button"
                   onClick={resetSeeds}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm font-medium flex items-center w-full sm:w-auto justify-center"
                   disabled={loading || submitting || selectedCount === 0}
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -454,7 +537,7 @@ export default function TeamSeeder() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <span>
-                  <strong>Note:</strong> Select teams to participate in the tournament, then use "Randomize Seeds" to automatically assign positions. At least 2 teams must be selected.
+                  <strong>Note:</strong> Select teams and assign seed numbers manually. You can also use "Auto-fill" for missing seeds, "Randomize" for random positions, or "Reset" to return to sequential order. Seeds must be unique numbers between 1 and {selectedCount || 'N'}.
                 </span>
               </div>
             </div>
@@ -537,13 +620,27 @@ export default function TeamSeeder() {
                             idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                           } ${selectedTeams.has(team.id) ? "ring-1 ring-[#6BBF59] ring-opacity-20" : ""}`}
                         >
-                          <td className="px-6 py-4 w-24">
+                          <td className="px-6 py-4 w-32">
                             <div className="relative">
-                              <div className={`border border-gray-200 rounded-lg px-3 py-2 w-full text-center font-medium ${
-                                selectedTeams.has(team.id) ? "bg-[#F7FAF7] border-[#6BBF59]" : "bg-gray-50"
-                              }`}>
-                                {selectedTeams.has(team.id) && seeds[team.id] !== undefined ? seeds[team.id] : "-"}
-                              </div>
+                              {selectedTeams.has(team.id) ? (
+                                <input
+                                  type="number"
+                                  value={seeds[team.id] || ''}
+                                  onChange={(e) => handleSeedChange(team.id, e.target.value)}
+                                  placeholder="Enter seed"
+                                  min="1"
+                                  max={selectedCount}
+                                  className={`border rounded-lg px-3 py-2 w-full text-center font-medium focus:outline-none focus:ring-2 ${
+                                    validationErrors[team.id] 
+                                      ? "border-red-500 bg-red-50 focus:ring-red-500" 
+                                      : "border-gray-300 bg-white focus:ring-[#6BBF59] focus:border-[#6BBF59]"
+                                  }`}
+                                />
+                              ) : (
+                                <div className="border border-gray-200 rounded-lg px-3 py-2 w-full text-center font-medium bg-gray-50 text-gray-400">
+                                  -
+                                </div>
+                              )}
                               {validationErrors[team.id] && (
                                 <div className="absolute right-0 top-0 -mt-1 -mr-1">
                                   <span className="flex h-3 w-3">

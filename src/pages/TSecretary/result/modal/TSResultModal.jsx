@@ -71,7 +71,7 @@ const TSResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existi
 
   if (!isOpen) return null;
 
-  const renderMedalSelect = (medal, value, setValue, icon, color) => {
+  const renderMedalSelect = (medal, value, setValue, icon) => {
     return (
       <div className="mb-4">
         <label 

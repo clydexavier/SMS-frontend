@@ -86,7 +86,7 @@ export default function PlayersPage() {
       await fetchPlayers();
       closeModal();
     } catch (err) {
-      setError("Failed to create player");
+      setError("Failed to create player",err);
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,8 @@ export default function PlayersPage() {
       await fetchPlayers();
       closeModal();
     } catch (err) {
-      setError("Failed to update player");
+
+      setError("Failed to update player", err);
     } finally {
       setLoading(false);
     }

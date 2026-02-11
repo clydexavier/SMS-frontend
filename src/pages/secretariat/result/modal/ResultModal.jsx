@@ -48,16 +48,6 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existing
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!gold || !silver || !bronze) {
-      setError("Please select all medalists");
-      return;
-    }
-
-    if (gold === silver || gold === bronze || silver === bronze) {
-      setError("Each medal must be awarded to a different team");
-      return;
-    }
-
     try {
       setSubmitting(true);
       await onSubmit({
@@ -96,7 +86,6 @@ const ResultModal = ({ isOpen, onClose, onSubmit, event_id, intrams_id, existing
           value={value}
           onChange={(e) => setValue(e.target.value)}
           className="bg-white border border-[#E6F2E8] text-gray-700 text-sm rounded-lg focus:ring-[#6BBF59] focus:border-[#6BBF59] block w-full p-2.5 transition-all duration-200"
-          required
           disabled={submitting}
         >
           <option value="">Select Team</option>
